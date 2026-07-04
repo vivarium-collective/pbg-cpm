@@ -169,6 +169,15 @@ impl World {
         self.world_mut().set_membrane_anchored(cell_type, on);
     }
 
+    fn set_junction(&mut self, cell_type: u16, on: bool) {
+        self.max_type = self.max_type.max(cell_type);
+        self.world_mut().set_junction(cell_type, on);
+    }
+
+    fn set_junction_lambda(&mut self, lambda: f64) {
+        self.world_mut().set_junction_lambda(lambda);
+    }
+
     fn set_target_volume(&mut self, cell_id: u32, v: f64) {
         self.world_mut().set_target_volume(cell_id, v);
     }

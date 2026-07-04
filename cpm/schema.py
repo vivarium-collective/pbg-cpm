@@ -51,5 +51,10 @@ def load_world(spec):
         world.set_membrane(list(mem["anchors"]), float(mem["k"]), float(mem["band"]))
         for t in mem.get("types", []):
             world.set_membrane_anchored(int(t), True)
+    jn = spec.get("junctions")
+    if jn:
+        for t in jn.get("types", []):
+            world.set_junction(int(t), True)
+        world.set_junction_lambda(float(jn.get("lambda", 0.0)))
     world.finalize(int(p["seed"]))
     return world

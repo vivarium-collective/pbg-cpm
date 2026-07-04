@@ -188,3 +188,34 @@ def mean_membrane_distance(world, dist_field, anchored_types):
             total += dist_field[i]
             count += 1
     return total / count if count else 0.0
+
+
+def intercell_gap_faces(world, junction_types):
+    """Count pinched medium faces: a medium voxel whose two opposite axis-neighbours
+    are both junction-enabled cells of DIFFERENT ids (a gap/film/perforation between
+    two bonded cells). Mirrors the Rust E_junction quantity. `junction_types` is a
+    set of type ids. 0 for a confluent tissue; rises as gaps open."""
+    nx, ny, nz = world.dims()
+    labels = world.snapshot()
+    types = world.cell_types()
+    jt = set(junction_types)
+
+    def enabled(o):
+        return o != 0 and types[o] in jt
+
+    total = 0
+    for i, c in enumerate(labels):
+        if c != 0:
+            continue
+        z, rem = divmod(i, nx * ny)
+        y, x = divmod(rem, nx)
+        if 1 <= x < nx - 1 and enabled(labels[i - 1]) and enabled(labels[i + 1]) \
+                and labels[i - 1] != labels[i + 1]:
+            total += 1
+        if 1 <= y < ny - 1 and enabled(labels[i - nx]) and enabled(labels[i + nx]) \
+                and labels[i - nx] != labels[i + nx]:
+            total += 1
+        if nz > 1 and 1 <= z < nz - 1 and enabled(labels[i - nx * ny]) and enabled(labels[i + nx * ny]) \
+                and labels[i - nx * ny] != labels[i + nx * ny]:
+            total += 1
+    return total
