@@ -9,6 +9,7 @@ pub mod sweep;
 pub mod mitosis;
 pub mod init;
 pub mod connectivity;
+pub mod membrane;
 
 #[cfg(test)]
 mod tests {

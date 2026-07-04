@@ -22,6 +22,10 @@ pub struct World {
     pub fields: Vec<crate::field::Field>,
     pub connectivity_types: Vec<bool>,
     pub connectivity_medium: bool,
+    pub membrane_dist: Vec<f32>,
+    pub membrane_k: f64,
+    pub membrane_band: f64,
+    pub membrane_types: Vec<bool>,
 }
 
 impl World {
@@ -45,6 +49,10 @@ impl World {
             fields: Vec::new(),
             connectivity_types: Vec::new(),
             connectivity_medium: false,
+            membrane_dist: Vec::new(),
+            membrane_k: 0.0,
+            membrane_band: 0.0,
+            membrane_types: Vec::new(),
         }
     }
 
@@ -66,6 +74,50 @@ impl World {
 
     pub fn any_connectivity(&self) -> bool {
         self.connectivity_medium || self.connectivity_types.iter().any(|&b| b)
+    }
+
+    pub fn set_membrane(&mut self, anchors: &[usize], k: f64, band: f64) {
+        let dims = [self.lattice.dims_x(), self.lattice.dims_y(), self.lattice.dims_z()];
+        self.membrane_dist = crate::membrane::build_distance_field(dims, anchors);
+        self.membrane_k = k;
+        self.membrane_band = band;
+    }
+
+    pub fn set_membrane_anchored(&mut self, cell_type: u16, on: bool) {
+        let t = cell_type as usize;
+        if t >= self.membrane_types.len() {
+            self.membrane_types.resize(t + 1, false);
+        }
+        self.membrane_types[t] = on;
+    }
+
+    pub fn any_membrane(&self) -> bool {
+        !self.membrane_dist.is_empty() && self.membrane_types.iter().any(|&b| b)
+    }
+
+    fn membrane_type_anchored(&self, cell_type: u16) -> bool {
+        self.membrane_types.get(cell_type as usize).copied().unwrap_or(false)
+    }
+
+    /// Membrane anchor energy change for reassigning `site` to `new_owner`.
+    /// Only `site` changes membership, so this is cost(site,new) - cost(site,old).
+    pub fn delta_membrane(&self, site: usize, new_owner: CellId) -> f64 {
+        if self.membrane_dist.is_empty() {
+            return 0.0;
+        }
+        let d = self.membrane_dist[site];
+        let target = self.lattice.owner(site);
+        let cost_for = |c: CellId| -> f64 {
+            if c == crate::MEDIUM {
+                return 0.0;
+            }
+            if self.membrane_type_anchored(self.cells[c as usize].cell_type) {
+                crate::membrane::cost(d, self.membrane_k, self.membrane_band)
+            } else {
+                0.0
+            }
+        };
+        cost_for(new_owner) - cost_for(target)
     }
 
     pub fn type_is_constrained(&self, cell_type: u16) -> bool {
