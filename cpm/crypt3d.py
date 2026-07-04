@@ -1,24 +1,21 @@
-"""Procedural 3D crypt geometry: a single-cell-thick epithelial shell shaped
-like a capsule (hollow cylinder closed by a hemispherical cap at each end),
-tiled into cells and typed by axial position (stem niche basal). Pure/
-deterministic.
+"""Procedural 3D crypt geometry: a single-cell-thick epithelial shell tiled
+into cells and typed by axial position (stem niche basal). Pure/deterministic.
 
-Deviation from the task-1 brief: the brief's reference implementation left
-the cylinder's far end open (arc length capped at a_cap + cyl_height, so
-every voxel past the cylinder was unconditionally medium). That leaves the
-lumen connected straight through to the domain border, so
-interior_medium_pockets(w) can never be >= 1 as the test requires -
-confirmed empirically (0 enclosed pockets at wall=2 and wall=3, before and
-after finalize). Adding a second, mirrored hemispherical cap at the top
-closes the lumen while keeping the rest of the reference geometry (typing,
-pitch, wall-thickness handling) unchanged.
+Two shapes, selected by ``open_top``:
 
-Biological caveat: a real intestinal crypt is OPEN at its mouth (it drains
-into the gut lumen). The closed capsule here is a structure-first
-simplification for E2 so the lumen is a well-defined enclosed medium pocket
-(the interior_medium_pockets integrity gate). Downstream tasks that need an
-open boundary (secretion/flux into the gut lumen, E2b/E3) should reopen the
-top cap and handle the lumen as a bounded-but-connected compartment instead.
+  * ``open_top=False`` (default) — a closed capsule (hollow cylinder capped by
+    a hemisphere at BOTH ends). The lumen is a fully enclosed interior medium
+    pocket, which the ``interior_medium_pockets`` integrity gate relies on.
+    Used by the junction (E3b) and membrane (E3a) demos, and the geometry test.
+
+  * ``open_top=True`` — a biologically faithful OPEN-TOPPED crypt (a test tube):
+    a hemispherical closed BASE holding the stem niche, a cylindrical wall, and
+    an OPEN mouth at the top that drains into the gut lumen. There is no top cap,
+    so the lumen is an open cavity connected to the exterior through the mouth
+    (validated by lumen depth + a sealed base, not by an enclosed pocket).
+
+Both keep the same typing (basal stem niche -> absorptive -> goblet toward the
+mouth), pitch, and wall-thickness handling.
 """
 import math
 from collections import Counter
@@ -85,16 +82,18 @@ def _split_disconnected(labels, seg_to_type, nx, ny, nz):
     return labels, seg_to_type
 
 
-def build_crypt3d(radius=8, cyl_height=28, wall=2, cell_pitch=6, margin=4):
+def build_crypt3d(radius=8, cyl_height=28, wall=2, cell_pitch=6, margin=4, open_top=False):
     R = float(radius)
     nx = ny = 2 * (radius + margin)
-    nz = 2 * radius + cyl_height + 2 * margin
+    # a closed capsule needs room for a top cap (2*radius of z); an open crypt
+    # only needs a margin of medium above the rim for the mouth.
+    nz = (radius if open_top else 2 * radius) + cyl_height + 2 * margin
     cx = cy = nx / 2.0
     z_base = margin + radius              # bottom cap pole at z=margin, equator at z=z_base
-    z_top = z_base + cyl_height            # top cap equator; top pole at z_top + radius
+    z_top = z_base + cyl_height            # cylinder top; closed cap equator OR open rim
     half = wall / 2.0
     a_cap = R * (math.pi / 2.0)           # profile arc length of one cap
-    a_max = 2 * a_cap + cyl_height         # bottom cap + cylinder + top cap
+    a_max = a_cap + cyl_height + (0.0 if open_top else a_cap)  # + top cap only when closed
 
     labels = [0] * (nx * ny * nz)
     cellmap, seg_to_type = {}, {}
@@ -107,8 +106,10 @@ def build_crypt3d(radius=8, cyl_height=28, wall=2, cell_pitch=6, margin=4):
             for x in range(nx):
                 dx = x + 0.5 - cx
                 r = math.hypot(dx, dy)
-                if zc >= z_top:                      # top hemispherical cap
-                    d = math.sqrt(dx * dx + dy * dy + (zc - z_top) ** 2)
+                if zc >= z_top:                      # above the cylinder
+                    if open_top:
+                        continue                    # OPEN mouth: medium drains to the gut lumen
+                    d = math.sqrt(dx * dx + dy * dy + (zc - z_top) ** 2)  # top hemispherical cap
                     if abs(d - R) > half:
                         continue
                     cphi = max(-1.0, min(1.0, (zc - z_top) / R))

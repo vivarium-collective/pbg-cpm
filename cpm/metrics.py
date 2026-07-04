@@ -219,3 +219,26 @@ def intercell_gap_faces(world, junction_types):
                 and labels[i - nx * ny] != labels[i + nx * ny]:
             total += 1
     return total
+
+
+def central_axis_column(world):
+    """Cell ids along the crypt's central vertical axis (x=nx//2, y=ny//2),
+    for z = 0..nz-1. Used to inspect an open-topped crypt's lumen."""
+    nx, ny, nz = world.dims()
+    lab = world.snapshot()
+    cx, cy = nx // 2, ny // 2
+    return [lab[cx + cy * nx + z * nx * ny] for z in range(nz)]
+
+
+def open_lumen_depth(world):
+    """Depth in voxels of the open medium cavity, measured DOWN the central axis
+    from the top of the domain until the first cell voxel (the sealed base cap).
+    Large for an open-topped crypt with a real lumen; near zero if a lid seals
+    the mouth or the tube has collapsed onto the axis."""
+    depth = 0
+    for v in reversed(central_axis_column(world)):
+        if v == 0:
+            depth += 1
+        else:
+            break
+    return depth

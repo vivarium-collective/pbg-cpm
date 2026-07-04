@@ -1,6 +1,7 @@
 from cpm import cpm_core
 from cpm.crypt3d import build_crypt3d
-from cpm.metrics import radial_thickness, interior_medium_pockets, connected_components
+from cpm.metrics import (radial_thickness, interior_medium_pockets, connected_components,
+                         central_axis_column, open_lumen_depth)
 
 
 def test_build_crypt3d_is_a_thin_typed_shell():
@@ -28,6 +29,27 @@ def test_build_crypt3d_is_a_thin_typed_shell():
     stem_z = [coms[c][2] for c in range(1, len(types)) if types[c] == 1]
     gob_z = [coms[c][2] for c in range(1, len(types)) if types[c] == 3]
     assert stem_z and gob_z and (sum(stem_z) / len(stem_z)) < (sum(gob_z) / len(gob_z))
+
+
+def test_open_top_crypt_has_an_open_lumen_and_sealed_base():
+    # The open-topped crypt (test-tube shape) must be closed at the base and open
+    # at the mouth: no cell lid on the central axis in the upper half, a cap cell
+    # low on the axis, a deep open lumen, and NO enclosed medium pocket (it drains
+    # through the mouth).
+    (nx, ny, nz), labels, seg_to_type, type_names = build_crypt3d(open_top=True)
+    assert len(seg_to_type) > 30
+    assert type_names == ["Epithelial Stem", "Absorptive", "Goblet"]
+    w = cpm_core.World((nx, ny, nz), "noflux", 2, 5.0)
+    w.seed_from_labels(labels, seg_to_type, 1, 20.0, 3.0)
+    w.finalize(1)
+    axis = central_axis_column(w)
+    assert any(axis[z] != 0 for z in range(nz // 2)), "base should be capped (cell low on axis)"
+    assert not [z for z in range(nz // 2, nz) if axis[z] != 0], "mouth should be open (no lid)"
+    assert open_lumen_depth(w) >= 0.35 * nz, "lumen should be a deep open cavity"
+    assert interior_medium_pockets(w) == 0, "open lumen drains out; it is not an enclosed pocket"
+    # still a thin monolayer wall
+    mean_t, max_t = radial_thickness(w, nx / 2.0, ny / 2.0)
+    assert mean_t < 1.6
 
 
 def test_every_generated_cell_is_one_connected_component():

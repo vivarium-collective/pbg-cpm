@@ -384,9 +384,12 @@ const BLURB = {
     "erodes and the cell fragments, or the mouth closes and traps a gap); the RIGHT panel " +
     "runs WITH it and stays whole. The constraint forbids any flip that would disconnect a " +
     "cell (or pinch off the medium), so structure is preserved under thermal stress.",
-  crypt3d: "3D crypt structure — a procedural single-cell-thick epithelial shell (capped " +
-    "cylinder), cells typed by height (stem niche basal). The E1 connectivity constraint " +
-    "keeps every cell whole and the lumen enclosed as the monolayer relaxes under the CPM. " +
+  crypt3d: "3D crypt structure — a procedural single-cell-thick epithelial tube shaped like " +
+    "a real intestinal crypt: a closed rounded base holding the stem niche, a cylindrical " +
+    "wall, and an OPEN mouth at the top that drains into the gut lumen. Cells are typed by " +
+    "height (stem basal → absorptive → goblet toward the mouth). The E1 connectivity " +
+    "constraint keeps every cell whole and, with medium connectivity, keeps the mouth from " +
+    "sealing, so the crypt holds a deep open lumen as the monolayer relaxes under the CPM. " +
     "Connectivity alone can't seal a razor-thin wall or resist curling — that's what the " +
     "basement membrane / junctions (Sub-project E3) add.",
   membrane: "Basement membrane (Sub-project E3a) — the crypt monolayer anchored to " +

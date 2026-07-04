@@ -1,7 +1,10 @@
 """3D crypt structure: a procedural single-cell-thick epithelial shell held
-together by the connectivity constraint. Builds it, relaxes briefly with
-connectivity ON (cells + medium), validates that it stays a coherent monolayer
-with an enclosed lumen and a basal stem niche, and exports it for the viewer.
+together by the connectivity constraint. Builds an OPEN-TOPPED crypt (a test
+tube: a closed rounded base holding the stem niche, a cylindrical wall, and an
+open mouth that drains into the gut lumen — the real intestinal-crypt shape),
+relaxes briefly with connectivity ON (cells + medium), validates that it stays a
+coherent monolayer with a deep open lumen, a sealed base, and a basal stem
+niche, and exports it for the viewer.
 
 Usage (repo root, venv active):  python demos/run_crypt3d.py
 """
@@ -14,7 +17,8 @@ from cpm import cpm_core
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from cpm.crypt3d import build_crypt3d
 from cpm.metrics import (radial_thickness, radial_cell_counts,
-                         interior_medium_pockets, connected_components)
+                         connected_components, central_axis_column,
+                         open_lumen_depth)
 
 DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "viewer", "data"))
 
@@ -75,13 +79,11 @@ def build_world(labels, seg_to_type, dims, median):
 def main(n_frames=8, mcs_per_frame=3):
     # wall=3: a single-CELL-thick wall needs a few voxels of radial margin to
     # survive boundary roughening -- a razor-thin 2-voxel wall perforates within
-    # a handful of MCS and the lumen breaches (interior_medium_pockets -> 0).
-    # E1 connectivity forbids fragmentation and medium-pocket PINCH-OFF, but a
-    # wall breach MERGES lumen with the exterior (medium becomes more connected),
-    # which connectivity permits -- so keeping the lumen sealed under relaxation
-    # is a matter of wall robustness here, and full monolayer stability under
-    # growth is what the basement membrane / junctions (E3) are for.
-    (nx, ny, nz), labels, seg_to_type, type_names = build_crypt3d(wall=3)
+    # a handful of MCS. Here the lumen is OPEN at the mouth by design, so the
+    # integrity claim is that the tube keeps a deep open cavity with a sealed
+    # base (not an enclosed pocket); full monolayer stability under growth is
+    # what the basement membrane / junctions (E3) are for.
+    (nx, ny, nz), labels, seg_to_type, type_names = build_crypt3d(wall=3, open_top=True)
     from collections import Counter
     # Median cell size -- only the seed's finalize scalar; build_world overwrites
     # each cell's target with its own volume after finalize, so this just sets a
@@ -98,7 +100,7 @@ def main(n_frames=8, mcs_per_frame=3):
     prev_snap = None
     total_churn = 0                       # voxels that changed owner over the run
     min_step_churn = None                 # smallest per-step churn (proves EVERY step moved)
-    min_pockets = 10**9
+    min_lumen = 10**9                      # worst-case (shallowest) open-lumen depth over frames
     worst_mean_t = 0.0                     # max over frames of mean cells-per-ray
     worst_p90 = 0                          # max over frames of the 90th-pctile cells-per-ray
     for f in range(n_frames + 1):
@@ -115,7 +117,7 @@ def main(n_frames=8, mcs_per_frame=3):
         p90 = counts[int(0.90 * len(counts))]
         worst_mean_t = max(worst_mean_t, mean_t)
         worst_p90 = max(worst_p90, p90)
-        min_pockets = min(min_pockets, interior_medium_pockets(w))
+        min_lumen = min(min_lumen, open_lumen_depth(w))
         frames.append({"mcs": f * mcs_per_frame, "voxels": surface_3d(w), "churn": churn})
         if f < n_frames:
             w.step(mcs_per_frame)
@@ -128,6 +130,12 @@ def main(n_frames=8, mcs_per_frame=3):
     alive = sum(1 for c in range(1, len(types)) if vols[c] > 0)
     stem_z = [coms[c][2] for c in range(1, len(types)) if types[c] == 1 and vols[c] > 0]
     gob_z = [coms[c][2] for c in range(1, len(types)) if types[c] == 3 and vols[c] > 0]
+    # open crypt certificate: sealed base = a cap cell low on the central axis;
+    # open mouth = NO cell lid on the axis in the upper half of the domain.
+    axis = central_axis_column(w)
+    base_capped = any(axis[z] != 0 for z in range(nz // 2))
+    top_lid = [z for z in range(nz // 2, nz) if axis[z] != 0]
+    lumen_min_depth = int(0.35 * nz)
 
     checks = [
         # Monolayer certificate over the whole run, on two robust statistics:
@@ -142,8 +150,10 @@ def main(n_frames=8, mcs_per_frame=3):
          f"worst p90 {worst_p90} <= 2; final max {max_t} reported for context)",
          worst_mean_t < 1.5 and worst_p90 <= 2),
         (f"no cell fragmented ({frag} of {alive} cells split)", frag == 0),
-        (f"lumen stays enclosed / no wall breach (min interior pockets {min_pockets} >= 1)",
-         min_pockets >= 1),
+        (f"open lumen throughout: axis cavity stays >= {lumen_min_depth} voxels deep "
+         f"(worst {min_lumen}) with a sealed base and an open mouth "
+         f"(no axis lid in upper half: {len(top_lid)} lid voxels)",
+         min_lumen >= lumen_min_depth and base_capped and not top_lid),
         (f"stem niche is basal (mean stem z {sum(stem_z)/len(stem_z):.1f} < goblet z "
          f"{sum(gob_z)/len(gob_z):.1f})" if stem_z and gob_z else "stem + goblet present",
          bool(stem_z) and bool(gob_z) and sum(stem_z)/len(stem_z) < sum(gob_z)/len(gob_z)),
