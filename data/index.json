@@ -286,41 +286,6 @@
       ]
     },
     {
-      "file": "crypt_differentiation.json",
-      "name": "Crypt Differentiation (subcellular)",
-      "is3d": false,
-      "n_cells": 118,
-      "dims": [
-        64,
-        512,
-        1
-      ],
-      "kind": "subcell",
-      "validated": true,
-      "checks": [
-        {
-          "text": "basal stemness niche retained: 8 wired cells stay stem (state>=0.4) and sit nearer the Wnt source (mean |y-base| 43 < differentiated 292)",
-          "pass": true
-        },
-        {
-          "text": "differentiation progressed: Goblet 39 -> 58 (+19 via fate switch, no division)",
-          "pass": true
-        },
-        {
-          "text": "both fates present (Goblet 58, Absorptive 52); secretory fraction 0.29 in [0.1,0.6] (diff_goblet 19 / (diff_goblet 19 + diff_absorptive 47))",
-          "pass": true
-        },
-        {
-          "text": "causality: corr(stemness, local Wnt) = 0.70 > 0.4 across 71 wired cells (the ODE drove fate)",
-          "pass": true
-        },
-        {
-          "text": "composite integrity: ran under process_bigraph.Composite with 71 subcell processes",
-          "pass": true
-        }
-      ]
-    },
-    {
       "file": "hra_mibitof.json",
       "name": "HRA / MIBI-TOF Colon (from imaging)",
       "is3d": false,
