@@ -55,6 +55,10 @@ impl Lattice {
         self.site.len()
     }
 
+    pub fn dims_x(&self) -> usize { self.dims[0] }
+    pub fn dims_y(&self) -> usize { self.dims[1] }
+    pub fn dims_z(&self) -> usize { self.dims[2] }
+
     #[inline]
     pub fn index(&self, x: usize, y: usize, z: usize) -> usize {
         x + y * self.dims[0] + z * self.dims[0] * self.dims[1]

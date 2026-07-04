@@ -92,3 +92,67 @@ fn would_stay_connected_flags_local_articulation() {
     w.set_connectivity_medium(true);
     assert!(w.any_connectivity());
 }
+
+#[test]
+fn connectivity_keeps_cell_in_one_piece_under_stress() {
+    use cpm_core::energy::ContactMatrix;
+    use cpm_core::lattice::{Boundary, Lattice, Neighborhood};
+    use cpm_core::sweep::Cpm;
+    use cpm_core::world::World;
+
+    // Count connected components of a cell's pixels via a global flood-fill
+    // (Moore adjacency), for the test only.
+    fn components(w: &World, cid: u32) -> usize {
+        let [nx, ny, nz] = [w.lattice.dims_x(), w.lattice.dims_y(), w.lattice.dims_z()];
+        let sites: Vec<usize> = (0..w.lattice.n_sites())
+            .filter(|&i| w.lattice.owner(i) == cid)
+            .collect();
+        let inset: std::collections::HashSet<usize> = sites.iter().copied().collect();
+        let mut seen = std::collections::HashSet::new();
+        let mut comps = 0;
+        for &s in &sites {
+            if seen.contains(&s) { continue; }
+            comps += 1;
+            let mut stack = vec![s];
+            seen.insert(s);
+            while let Some(c) = stack.pop() {
+                let cz = c / (nx * ny);
+                let cy = (c % (nx * ny)) / nx;
+                let cx = c % nx;
+                for dz in -1i64..=1 { for dy in -1i64..=1 { for dx in -1i64..=1 {
+                    if dx == 0 && dy == 0 && dz == 0 { continue; }
+                    let (x2, y2, z2) = (cx as i64 + dx, cy as i64 + dy, cz as i64 + dz);
+                    if x2 < 0 || y2 < 0 || z2 < 0 || x2 >= nx as i64 || y2 >= ny as i64 || z2 >= nz as i64 { continue; }
+                    let n = x2 as usize + y2 as usize * nx + z2 as usize * nx * ny;
+                    if inset.contains(&n) && !seen.contains(&n) { seen.insert(n); stack.push(n); }
+                }}}
+            }
+        }
+        comps
+    }
+
+    fn dumbbell(connectivity: bool) -> usize {
+        let lat = Lattice::new([25, 9, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let mut w = World::new(lat, 30.0); // high temperature -> stress
+        let c = w.add_cell(1, 40.0, 1.0, 0.0, 0.0);
+        // two 5x5 blobs joined by a single 1px neck at x=12,y=4
+        for y in 2..7 { for x in 5..10 { let i = w.lattice.index(x, y, 0); w.paint(i, c); } }
+        for y in 2..7 { for x in 15..20 { let i = w.lattice.index(x, y, 0); w.paint(i, c); } }
+        let neck = w.lattice.index(12, 4, 0); w.paint(neck, c);
+        // bridge the neck to both blobs so it starts connected
+        for x in 10..12 { let i = w.lattice.index(x, 4, 0); w.paint(i, c); }
+        for x in 13..15 { let i = w.lattice.index(x, 4, 0); w.paint(i, c); }
+        let mut m = ContactMatrix::new(2);
+        m.set(0, 1, -2.0); // negative medium adhesion -> cell wants boundary -> shreds
+        w.set_contact_matrix(m);
+        w.recompute_trackers();
+        if connectivity { w.set_connectivity(1, true); }
+        let mut cpm = Cpm::new(w, 1);
+        cpm.step(40);
+        components(&cpm.world, c)
+    }
+
+    // Without the constraint the stressed dumbbell fragments; with it, it stays whole.
+    assert!(dumbbell(false) > 1, "stress must actually fragment (guard against vacuous test)");
+    assert_eq!(dumbbell(true), 1, "connectivity must keep the cell in one piece");
+}

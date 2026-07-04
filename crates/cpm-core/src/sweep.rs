@@ -31,6 +31,18 @@ impl Cpm {
                     + self.world.delta_chemotaxis(s, pick, source_owner);
                 let accept = dh <= 0.0 || self.rng.gen::<f64>() < (-dh / t).exp();
                 if accept {
+                    if self.world.any_connectivity() {
+                        let target = self.world.lattice.owner(s);
+                        let constrained = if target == 0 {
+                            self.world.connectivity_medium
+                        } else {
+                            self.world
+                                .type_is_constrained(self.world.cells[target as usize].cell_type)
+                        };
+                        if constrained && !self.world.would_stay_connected(s, target) {
+                            continue; // reject: would fragment `target`
+                        }
+                    }
                     self.world.apply_flip(s, source_owner);
                 }
             }
