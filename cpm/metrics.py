@@ -96,3 +96,36 @@ def interior_medium_pockets(world):
         if not touches_border:
             pockets += 1
     return pockets
+
+
+def radial_thickness(world, cx=None, cy=None, n_theta=24):
+    """Mean and max number of distinct cells crossed along radial rays from the
+    axis (cx, cy) outward, over a (z, theta) sample grid. ~1 for a monolayer."""
+    import math
+    nx, ny, nz = world.dims()
+    labels = world.snapshot()
+    if cx is None:
+        cx = nx / 2.0
+    if cy is None:
+        cy = ny / 2.0
+    rmax = int(math.hypot(nx, ny)) + 1
+    counts = []
+    for z in range(nz):
+        base = z * nx * ny
+        for ti in range(n_theta):
+            theta = 2.0 * math.pi * ti / n_theta
+            ct, st = math.cos(theta), math.sin(theta)
+            crossed = set()
+            for r in range(rmax):
+                x = int(cx + r * ct)
+                y = int(cy + r * st)
+                if not (0 <= x < nx and 0 <= y < ny):
+                    break
+                o = labels[base + x + y * nx]
+                if o != 0:
+                    crossed.add(o)
+            if crossed:
+                counts.append(len(crossed))
+    if not counts:
+        return 0.0, 0
+    return sum(counts) / len(counts), max(counts)
