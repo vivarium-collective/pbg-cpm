@@ -11,3 +11,6 @@ dependencies = ["process-bigraph"]
 [tool.maturin]
 manifest-path = "crates/cpm-py/Cargo.toml"
 module-name = "cpm_core"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
