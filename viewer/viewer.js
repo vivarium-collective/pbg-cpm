@@ -24,9 +24,15 @@ let camera, controls, current = null, playing = false, frameIdx = 0;
 let lastStep = 0;
 
 // ---- color: type hue + stable per-cell lightness ----
-const TYPE_HUE = { 1: 0.58, 2: 0.09, 3: 0.33, 4: 0.78 }; // blue, orange, green, violet
+// type 1 = blue, 2 = orange, then distinct hues for many-type (imaging) models
+const HUES = [0.58, 0.09, 0.33, 0.78, 0.50, 0.00, 0.16, 0.66, 0.42, 0.88, 0.25, 0.72];
+function typeHue(cellType) { return HUES[(Math.max(1, cellType) - 1) % HUES.length]; }
+function typeSwatch(cellType) {
+  const c = new THREE.Color(); c.setHSL(typeHue(cellType), 0.6, 0.55);
+  return `rgb(${(c.r*255)|0},${(c.g*255)|0},${(c.b*255)|0})`;
+}
 function cellColor(cellId, cellType, out) {
-  const hue = TYPE_HUE[cellType] ?? 0.0;
+  const hue = typeHue(cellType);
   // deterministic per-cell jitter so neighboring same-type cells are distinct
   const j = ((cellId * 2654435761) >>> 0) / 4294967295;
   const light = 0.42 + 0.30 * j;
@@ -225,7 +231,21 @@ async function loadModel(entry) {
       "(ATTR, shown as the heatmap); the Macrophage chemotaxes up the gradient and hunts it.",
     growth: "CC3D cell growth & division — cells grow (target volume ↑) and divide at ~2× " +
       "via mitosis, forming a proliferating colony.",
+    imaging: "Initialized from REAL imaging — a MIBI-TOF human colon-carcinoma field of view " +
+      "(scverse/squidpy). Each cell is placed at its exact segmented pixels and colored by its " +
+      "annotated cell type, then relaxed as a Cellular Potts tissue.",
   }[entry.kind] || "";
+  // cell-type legend (imaging models carry named types)
+  let legend = "";
+  if (model.type_names && model.type_names.length > 1) {
+    const counts = model.type_counts || {};
+    legend = `<div style="margin-top:8px;font-size:11.5px;display:flex;flex-wrap:wrap;gap:6px 12px">` +
+      model.type_names.slice(1).map((nm, i) =>
+        `<span style="display:inline-flex;align-items:center;gap:5px">` +
+        `<span style="width:10px;height:10px;border-radius:2px;background:${typeSwatch(i + 1)}"></span>` +
+        `${nm}${counts[nm] ? ` <span style="color:#6f7d8c">(${counts[nm]})</span>` : ""}</span>`).join("") +
+      `</div>`;
+  }
   const checks = (entry.checks || []).map((c) =>
     `<div style="font-size:12px;margin-top:3px;color:${c.pass ? '#5ad17f' : '#ff6b6b'}">` +
     `${c.pass ? '✓' : '✗'} ${c.text}</div>`).join("");
@@ -235,7 +255,7 @@ async function loadModel(entry) {
   infoEl.innerHTML = `<h2>${model.name}</h2><p>${blurb}</p>` +
     `<p style="margin-top:6px;color:#6f7d8c">${model.n_cells} cells · ` +
     `${model.dims.join("×")} lattice · ${model.frames.length} frames</p>` +
-    `<div style="margin-top:8px;font-size:12.5px;font-weight:600">${badge}</div>${checks}`;
+    `<div style="margin-top:8px;font-size:12.5px;font-weight:600">${badge}</div>${checks}${legend}`;
   loadingEl.style.display = "none";
   onResize();
 }
