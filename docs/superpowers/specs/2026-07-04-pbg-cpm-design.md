@@ -35,7 +35,8 @@ Two hard, explicit success criteria beyond "it works":
 | **B** | PDE field solver (Rust) | Diffusion–reaction–secretion–decay on lattice fields; per-cell-type secretion; boundary conditions. Separate pbg Process sharing field memory with A. |
 | **C** | Schema + ontology layer | Extend multicell-schema into canonical typed schemas (Potts config, cell types, energy terms, fields, plugins), ontology-annotated. Round-trip a CC3DML/`.cc3d` demo ↔ our JSON. |
 | **D** | Subcellular plugin layer | Per-cell ODE (SBML/RoadRunner), Boolean network, and generic pbg-Process attachment. Reuses existing pbg ODE wrappers. |
-| **E** | Demo-parity suite | Port CC3D demos as schema files + regression tests + read-only report/viewer. |
+| **E** | Demo-parity suite | Port CC3D demos as schema files + regression tests. |
+| **F** | Interactive 3D viewer | Dedicated web viewer for 3D CPM simulations (like parsimony's), rendering cells + fields with time playback, fed by an exported data-pack format. |
 
 ## Architecture — process/store topology
 
@@ -70,7 +71,14 @@ pbg-cpm/
     processes/     # CPMProcess, DiffusionProcess
   schemas/         # Sub-project C
   demos/           # Sub-project E (schema files + expected outputs)
+  viewer/          # Sub-project F (static three.js web viewer + data/)
 ```
+
+## Interactive 3D viewer (Sub-project F, sketch)
+
+Mirrors parsimony's `viewer/`: a static three.js web app (importmap-loaded three.js, `OrbitControls`, `EffectComposer` postprocessing, a web worker for geometry building), deployable to R2/GitHub Pages, fed by an exported **`cpm.pack`** data format — no server required.
+
+CPM-specific rendering (vs parsimony's meshes/spheres): the state is a 3D label lattice, so the viewer renders **cell surfaces extracted from boundary voxels** (per-cell surface mesh or marching-cubes, only boundary voxels — instancing every voxel of thousands of cells is too heavy), colored by cell type, with optional **field slices / iso-surfaces** overlaid and a **timeline scrubber** for playback across saved timesteps. The exporter (a seam added in Sub-project A: `cpm-py` already reads back lattice snapshots) writes `cpm.pack` frames; surface extraction can run in Rust (fast, reuses the boundary-voxel tracker) or in the viewer's worker.
 
 ## 3D performance strategy (the differentiator)
 
@@ -113,12 +121,12 @@ Each cell is a place in the bigraph; a subcellular model is a pbg Process attach
   - Metropolis copy-attempt sweep with Boltzmann acceptance at temperature `T`.
   - Energy plugins needed for sorting + near-term demos: **Volume**, **Surface**, **Contact/Adhesion** (type-pair `J` matrix). Stub seams for Chemotaxis / ExternalPotential / Connectivity (Chemotaxis wired in B).
   - Incremental trackers: volume, surface, center-of-mass, neighbor-contact table.
-- `cpm-py` pyo3 bindings: construct a world from config, run N sweeps, read back per-cell aggregates + a lattice snapshot for viz.
+- `cpm-py` pyo3 bindings: construct a world from config, run N sweeps, read back per-cell aggregates + a lattice snapshot; export a minimal single-frame `cpm.pack` (the seam the Sub-project F viewer consumes).
 - `cpm/processes/CPMProcess.py`: process-bigraph Process wrapping the core; a minimal schema loader that builds a world from a `PottsConfig` + `CellType` + `EnergyTerm` JSON (minimal slice of Sub-project C).
 - Cell-sorting demo schema + regression tests (2D and 3D).
 - `cpm-bench` skeleton with a first 3D sweeps/sec measurement (single-threaded baseline).
 
-**Out of scope for A:** PDE/fields (B), full schema+ontology layer (C), subcellular models (D), broader demo suite (E), parallel/GPU sweeps.
+**Out of scope for A:** PDE/fields (B), full schema+ontology layer (C), subcellular models (D), broader demo suite (E), the full interactive viewer (F) — only the `cpm.pack` export seam is in A — and parallel/GPU sweeps.
 
 **Acceptance:**
 
