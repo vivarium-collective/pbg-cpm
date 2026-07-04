@@ -28,7 +28,12 @@ impl Cpm {
                     continue;
                 }
                 let dh = self.world.delta_hamiltonian(s, source_owner)
-                    + self.world.delta_chemotaxis(s, pick, source_owner);
+                    + self.world.delta_chemotaxis(s, pick, source_owner)
+                    + if self.world.any_membrane() {
+                        self.world.delta_membrane(s, source_owner)
+                    } else {
+                        0.0
+                    };
                 let accept = dh <= 0.0 || self.rng.gen::<f64>() < (-dh / t).exp();
                 if accept {
                     if self.world.any_connectivity() {
