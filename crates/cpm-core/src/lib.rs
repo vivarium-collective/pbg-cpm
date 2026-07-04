@@ -4,6 +4,7 @@ pub const MEDIUM: CellId = 0;
 pub mod lattice;
 pub mod world;
 pub mod energy;
+pub mod field;
 pub mod sweep;
 
 #[cfg(test)]

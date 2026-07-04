@@ -27,12 +27,14 @@ impl Cpm {
                 if source_owner == self.world.lattice.owner(s) {
                     continue;
                 }
-                let dh = self.world.delta_hamiltonian(s, source_owner);
+                let dh = self.world.delta_hamiltonian(s, source_owner)
+                    + self.world.delta_chemotaxis(s, pick, source_owner);
                 let accept = dh <= 0.0 || self.rng.gen::<f64>() < (-dh / t).exp();
                 if accept {
                     self.world.apply_flip(s, source_owner);
                 }
             }
+            self.world.advance_fields();
         }
     }
 }

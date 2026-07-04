@@ -107,6 +107,27 @@ impl Lattice {
         }
         out
     }
+
+    /// Axis-aligned (face/von-Neumann) neighbors only: up to 2 per dimension
+    /// in use (2D: up to 4; 3D: up to 6), honoring per-axis boundary (NoFlux
+    /// drops out-of-range, Periodic wraps). Independent of the CPM
+    /// neighborhood order used for `neighbors` — diffusion always uses faces.
+    pub fn face_neighbors(&self, idx: usize) -> Vec<usize> {
+        let [x, y, z] = self.coords(idx);
+        let ndim = if self.dims[2] > 1 { 3 } else { 2 };
+        let mut out = Vec::with_capacity(2 * ndim);
+        let coords = [x, y, z];
+        for axis in 0..ndim {
+            for off in [-1i64, 1i64] {
+                if let Some(v) = self.wrap(coords[axis], off, self.dims[axis], axis) {
+                    let mut nc = coords;
+                    nc[axis] = v;
+                    out.push(self.index(nc[0], nc[1], nc[2]));
+                }
+            }
+        }
+        out
+    }
 }
 
 #[cfg(test)]
@@ -147,5 +168,33 @@ mod tests {
         let lat = Lattice::new([5, 5, 5], [Boundary::NoFlux; 3], Neighborhood::new(true, 1));
         let c = lat.index(2, 2, 2);
         assert_eq!(lat.neighbors(c).len(), 6);
+    }
+
+    #[test]
+    fn face_neighbors_3d_interior_has_6() {
+        let lat = Lattice::new([5, 5, 5], [Boundary::NoFlux; 3], Neighborhood::new(true, 2));
+        let c = lat.index(2, 2, 2);
+        assert_eq!(lat.face_neighbors(c).len(), 6);
+    }
+
+    #[test]
+    fn face_neighbors_2d_interior_has_4() {
+        let lat = Lattice::new([5, 5, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let c = lat.index(2, 2, 0);
+        assert_eq!(lat.face_neighbors(c).len(), 4);
+    }
+
+    #[test]
+    fn face_neighbors_noflux_corner_2d_has_2() {
+        let lat = Lattice::new([5, 5, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let corner = lat.index(0, 0, 0);
+        assert_eq!(lat.face_neighbors(corner).len(), 2);
+    }
+
+    #[test]
+    fn face_neighbors_noflux_corner_3d_has_3() {
+        let lat = Lattice::new([5, 5, 5], [Boundary::NoFlux; 3], Neighborhood::new(true, 2));
+        let corner = lat.index(0, 0, 0);
+        assert_eq!(lat.face_neighbors(corner).len(), 3);
     }
 }

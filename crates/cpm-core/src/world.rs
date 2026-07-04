@@ -19,6 +19,7 @@ pub struct World {
     pub cells: Vec<Cell>,
     pub temperature: f64,
     pub contact: crate::energy::ContactMatrix,
+    pub fields: Vec<crate::field::Field>,
 }
 
 impl World {
@@ -39,6 +40,7 @@ impl World {
             cells: vec![medium],
             temperature,
             contact: crate::energy::ContactMatrix::new(1),
+            fields: Vec::new(),
         }
     }
 

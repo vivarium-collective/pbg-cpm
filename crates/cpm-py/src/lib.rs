@@ -18,6 +18,9 @@ impl World {
     fn world_ref(&self) -> &CoreWorld {
         if let Some(c) = &self.cpm { &c.world } else { self.core.as_ref().unwrap() }
     }
+    fn world_mut(&mut self) -> &mut CoreWorld {
+        if let Some(c) = &mut self.cpm { &mut c.world } else { self.core.as_mut().unwrap() }
+    }
 }
 
 #[pymethods]
@@ -100,6 +103,27 @@ impl World {
     }
     fn dims(&self) -> (usize, usize, usize) {
         (self.dims[0], self.dims[1], self.dims[2])
+    }
+
+    fn add_field(&mut self, name: &str, d: f64, decay: f64) -> PyResult<usize> {
+        let core = self.core.as_mut().ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("add_field after finalize"))?;
+        Ok(core.add_field(name, d, decay))
+    }
+
+    fn set_secretion(&mut self, field_idx: usize, cell_type: u16, rate: f64) {
+        self.world_mut().set_secretion(field_idx, cell_type, rate);
+    }
+
+    fn set_chemotaxis(&mut self, field_idx: usize, cell_type: u16, lambda_val: f64) {
+        self.world_mut().set_chemotaxis(field_idx, cell_type, lambda_val);
+    }
+
+    fn field_conc(&self, field_idx: usize) -> Vec<f32> {
+        self.world_ref().field_conc(field_idx)
+    }
+
+    fn field_mean_at_cell(&self, field_idx: usize, cell_id: u32) -> f64 {
+        self.world_ref().field_mean_at_cell(field_idx, cell_id)
     }
 }
 
