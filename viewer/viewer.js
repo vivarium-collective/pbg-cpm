@@ -442,9 +442,6 @@ const BLURB = {
     "colonic-crypt FTU (hubmapconsortium ccf-2d-reference-object-library). Every cell polygon " +
     "in the atlas Crosswalk layer is rasterized and placed with its Cell-Ontology type, then " +
     "relaxed as a Cellular Potts tissue.",
-  subcell: "Per-cell subcellular models run as a process-bigraph Composite: each " +
-    "stem cell carries an SBML stemness ODE (pbg-tellurium) and a Boolean fate switch. " +
-    "Basal Wnt keeps cells stem; in low-Wnt regions they differentiate (colour = stemness).",
   integrity: "CPM connectivity constraint (Sub-project E1) — the SAME stressed cell shown " +
     "side by side: the LEFT panel runs WITHOUT the constraint and breaks (the thin neck " +
     "erodes and the cell fragments, or the mouth closes and traps a gap); the RIGHT panel " +

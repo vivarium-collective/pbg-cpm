@@ -179,7 +179,7 @@ def main(n_frames=8, mcs_per_frame=3):
                      "validated": ok, "checks": [{"text": t, "pass": bool(p)} for t, p in checks]})
     order = ["cellsort_2d.json", "cellsort_3d.json", "spheroid_3d.json",
              "bacterium_macrophage.json", "growth_mitosis.json", "scale_2d.json",
-             "hra_mibitof.json", "hra_ftu.json", "crypt_differentiation.json",
+             "hra_mibitof.json", "hra_ftu.json",
              "connectivity_2d.json", "connectivity_3d.json", "connectivity_gap.json",
              "crypt3d.json"]
     manifest.sort(key=lambda m: order.index(m["file"]) if m["file"] in order else 99)

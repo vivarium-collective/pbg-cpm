@@ -220,7 +220,7 @@ def main():
     order = ["cellsort_2d.json", "cellsort_3d.json", "spheroid_3d.json",
              "bacterium_macrophage.json", "growth_mitosis.json", "scale_2d.json",
              "connectivity_2d.json", "connectivity_3d.json", "connectivity_gap.json",
-             "crypt3d.json", "crypt_dynamics.json", "crypt_differentiation.json",
+             "crypt3d.json", "crypt_dynamics.json",
              "hra_mibitof.json", "hra_ftu.json"]
     manifest.sort(key=lambda m: order.index(m["file"]) if m["file"] in order else 99)
     json.dump({"models": manifest}, open(idx, "w"), indent=2)
