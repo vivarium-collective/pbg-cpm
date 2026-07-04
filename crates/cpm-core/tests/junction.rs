@@ -31,7 +31,7 @@ fn gap_faces(w: &World, jt: &[bool]) -> u32 {
 }
 
 // two 3-wide cells pressed together as a 6x8 block, split down the middle
-fn run(junctions: bool) -> u32 {
+fn run(junctions: bool) -> (u32, u64) {
     let lat = Lattice::new(DIMS, [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
     // temp=10 / lambda=80 tuned up from the brief's 22/12 starting point: at 22/12 the
     // `with` run still transiently opened 1-4 gap faces over 30 MCS across many seeds
@@ -63,21 +63,30 @@ fn run(junctions: bool) -> u32 {
     // make the control's gap-face count tautologically 0, since then no cell_type would
     // ever be marked "enabled" -- that would make `without > 0` unfalsifiable.)
     let jt = vec![false, true];
+    let n = w.lattice.n_sites();
+    let snap = |cpm: &Cpm| -> Vec<u32> { (0..n).map(|i| cpm.world.lattice.owner(i)).collect() };
     let mut cpm = Cpm::new(w, 5);
     let mut worst = 0u32;
+    let mut churn = 0u64; // total owner changes -> proves the with-run isn't frozen
     for _ in 0..30 {
+        let before = snap(&cpm);
         cpm.step(1);
+        let after = snap(&cpm);
+        churn += before.iter().zip(&after).filter(|(a, b)| a != b).count() as u64;
         worst = worst.max(gap_faces(&cpm.world, &jt));
     }
-    worst
+    (worst, churn)
 }
 
 #[test]
 fn junctions_prevent_gaps_between_cells() {
-    let with = run(true);
-    let without = run(false);
+    let (with, with_churn) = run(true);
+    let (without, _) = run(false);
     assert_eq!(with, 0, "junctions should keep the two cells gap-free, saw {with}");
     assert!(without > 0, "control must open a gap or the test is vacuous, saw {without}");
+    // ...and the with-run seals gaps while STILL relaxing (the A-B interface churns
+    // freely -- the junction term is 0 for cell-cell moves), not by freezing.
+    assert!(with_churn > 0, "with-junctions run froze (churn 0) -> 'gap-free' is vacuous");
 }
 
 #[test]
