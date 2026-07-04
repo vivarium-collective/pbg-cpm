@@ -392,10 +392,7 @@ async function loadModel(entry) {
 
   if (entry.checks && entry.checks.length) {
     validSection.style.display = "";
-    const badge = entry.validated
-      ? `<div class="check" style="color:var(--good);font-weight:600">✓ matches expected behavior</div>`
-      : `<div class="check" style="color:var(--bad);font-weight:600">✗ validation failed</div>`;
-    checksEl.innerHTML = badge + entry.checks.map((c) =>
+    checksEl.innerHTML = entry.checks.map((c) =>
       `<div class="check" style="color:${c.pass?'var(--good)':'var(--bad)'}">` +
       `${c.pass?'✓':'✗'} ${c.text}</div>`).join("");
   } else validSection.style.display = "none";
