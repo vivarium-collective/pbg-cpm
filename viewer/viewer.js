@@ -42,6 +42,8 @@ let hiddenTypes = new Set();
 let hoveredCell = 0;      // cell id currently under the cursor (0 = none)
 
 // ---- color helpers ----
+// kinds that default to the per-cell "stain" look (per-type hue + per-cell jitter)
+const STAIN_KINDS = new Set(["imaging", "ftu", "crypt3d"]);
 const HUES = [0.58, 0.09, 0.33, 0.78, 0.50, 0.00, 0.16, 0.66, 0.42, 0.88, 0.25, 0.72];
 const typeHue = (t) => HUES[(Math.max(1, t) - 1) % HUES.length];
 function typeSwatch(t) {
@@ -71,6 +73,15 @@ function buildPalettes(cellTypes) {
     jit[id*3] = c.r*255; jit[id*3+1] = c.g*255; jit[id*3+2] = c.b*255;
   }
   return { flat, jit };
+}
+
+// per-cell stain: a type's hue with per-cell brightness jitter, so a zone reads as
+// one colour while individual cells (and their membranes) stay distinct.
+const _stainCol = new THREE.Color();
+function stainRGB(id, hue, out) {
+  const j = ((id * 2654435761) >>> 0) / 4294967295;
+  _stainCol.setHSL(hue, 0.55 + 0.20*(1-j), 0.40 + 0.30*j);
+  out[0] = _stainCol.r*255; out[1] = _stainCol.g*255; out[2] = _stainCol.b*255;
 }
 
 // color for a cell id at the current frame, honoring color mode + volume ramp
@@ -141,7 +152,9 @@ function computeVolNorm(fi) {
 // ---------- 2D ----------
 function setup2D(model) {
   const [nx, ny] = model.dims;
-  const tex = new THREE.DataTexture(new Uint8Array(nx*ny*4), nx, ny, THREE.RGBAFormat);
+  const S = 4;                       // supersample: each site -> S×S texels so a
+  const W = nx * S, H = ny * S;      // membrane can be a thin 1-texel line, not a full pixel
+  const tex = new THREE.DataTexture(new Uint8Array(W*H*4), W, H, THREE.RGBAFormat);
   tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
   const aspect = nx / ny;
   const plane = new THREE.Mesh(new THREE.PlaneGeometry(aspect, 1),
@@ -174,19 +187,33 @@ function setup2D(model) {
       const rgb = [0,0,0];
       for (let i = 0; i < labels.length; i++) {
         const id = labels[i];
-        const x = i % nx, y = ny - 1 - ((i / nx) | 0);
-        const d = (y * nx + x) * 4;
+        const x = i % nx, yy = (i / nx) | 0, y = ny - 1 - yy;
+        // base colour for this site
+        let r, g, b;
         const hidden = id !== 0 && hiddenTypes.has(model.cell_types[id]);
         if (id === 0 || hidden) {
           if (showField && field && this.fieldMax > 0) {
-            const c = heat((field[i] / this.fieldMax) * op);
-            data[d]=c[0]; data[d+1]=c[1]; data[d+2]=c[2];
-          } else { data[d]=11; data[d+1]=15; data[d+2]=20; }
-          data[d+3] = 255;
-        } else {
-          cellRGB(id, rgb);
-          if (id === hoveredCell) { rgb[0]=255; rgb[1]=255; rgb[2]=255; }
-          data[d]=rgb[0]; data[d+1]=rgb[1]; data[d+2]=rgb[2]; data[d+3]=255;
+            const c = heat((field[i] / this.fieldMax) * op); r=c[0]; g=c[1]; b=c[2];
+          } else { r=11; g=15; b=20; }
+        } else if (id === hoveredCell) { r=255; g=255; b=255; }
+        else { cellRGB(id, rgb); r=rgb[0]; g=rgb[1]; b=rgb[2]; }
+        // thin membrane: draw a 1-texel dark line on the sub-edge of a cell-cell
+        // interface, once per boundary (lower id owns it) so it stays hair-thin.
+        // texture rows: label +nx ("up") is the block ABOVE (sy=0); -nx is sy=S-1.
+        const memL = id && x>0    && labels[i-1]  && labels[i-1] !==id && id<labels[i-1];
+        const memR = id && x<nx-1 && labels[i+1]  && labels[i+1] !==id && id<labels[i+1];
+        const memU = id && yy<ny-1&& labels[i+nx] && labels[i+nx]!==id && id<labels[i+nx];
+        const memD = id && yy>0   && labels[i-nx] && labels[i-nx]!==id && id<labels[i-nx];
+        for (let sy = 0; sy < S; sy++) {
+          const trow = (y*S + sy) * W;
+          for (let sx = 0; sx < S; sx++) {
+            const mem = (memL && sx===0) || (memR && sx===S-1) ||
+                        (memU && sy===0) || (memD && sy===S-1);
+            const d = (trow + x*S + sx) * 4;
+            if (mem) { data[d]=(r*0.28)|0; data[d+1]=(g*0.28)|0; data[d+2]=(b*0.28)|0; }
+            else { data[d]=r; data[d+1]=g; data[d+2]=b; }
+            data[d+3] = 255;
+          }
         }
       }
       tex.needsUpdate = true;
@@ -228,6 +255,14 @@ function setup3D(model) {
   mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(maxV*3), 3);
   mesh.count = 0; scene.add(mesh);
 
+  // thin dark plates drawn on cell-cell interface faces -> crisp membrane lines
+  const SEAM = 0.08;                 // plate thickness (fraction of a voxel)
+  const memMax = maxV * 3;
+  const memMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshBasicMaterial({ color: 0x0a0d12 }), memMax);
+  memMesh.count = 0; scene.add(memMesh);
+  const memTmp = new THREE.Object3D();
+
   const cam = new THREE.PerspectiveCamera(45, wrap.clientWidth/wrap.clientHeight, 0.1, 5000);
   const c = Math.max(nx, ny, nz);
   cam.position.set(c*1.4, c*1.1, c*1.6); camera = cam;
@@ -248,6 +283,13 @@ function setup3D(model) {
       if (colorMode === "volume") computeVolNorm(fi);
       this.frameState = model.frames[fi].state || null;
       const vox = model.frames[fi].voxels;
+      // occupancy map (voxel -> cell id) so we can darken cell-cell interfaces
+      // into visible membranes, the way a stained section shows cell borders.
+      const occ = new Map();
+      for (let i = 0; i < vox.length; i++) {
+        const v = vox[i];
+        occ.set(v[0] + v[1]*nx + v[2]*nx*ny, v[3]);
+      }
       let n = 0; const rgb = [0,0,0];
       for (let i = 0; i < vox.length; i++) {
         const v = vox[i], id = v[3];
@@ -255,6 +297,11 @@ function setup3D(model) {
         tmp.position.set(v[0], v[1], v[2]); tmp.updateMatrix();
         mesh.setMatrixAt(n, tmp.matrix);
         if (id === hoveredCell) col.setRGB(1,1,1);
+        else if (colorMode === "type" && v.length > 4) {
+          // per-FRAME type (living crypt): zonation hue + per-cell brightness jitter,
+          // so differentiation zones animate as cells rise and slough.
+          stainRGB(id, typeHue(v[4]), rgb); col.setRGB(rgb[0]/255, rgb[1]/255, rgb[2]/255);
+        }
         else { cellRGB(id, rgb); col.setRGB(rgb[0]/255, rgb[1]/255, rgb[2]/255); }
         mesh.setColorAt(n, col);
         n++;
@@ -262,6 +309,25 @@ function setup3D(model) {
       mesh.count = n;
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      // thin membrane: a dark plate on each cell-cell interface FACE only (drawn
+      // once per face, id<nid), so borders read as thin lines, not whole voxels.
+      const POS = [[1,0,0],[0,1,0],[0,0,1]];   // only +face per axis, dedup by id<nid
+      let m = 0;
+      for (let i = 0; i < vox.length; i++) {
+        const v = vox[i], id = v[3];
+        if (hiddenTypes.has(model.cell_types[id])) continue;
+        for (let a = 0; a < 3; a++) {
+          const [dx,dy,dz] = POS[a];
+          const nid = occ.get((v[0]+dx) + (v[1]+dy)*nx + (v[2]+dz)*nx*ny);
+          if (!nid || nid === id || id > nid || hiddenTypes.has(model.cell_types[nid])) continue;
+          memTmp.position.set(v[0]+dx*0.5, v[1]+dy*0.5, v[2]+dz*0.5);
+          memTmp.scale.set(a===0?SEAM:0.99, a===1?SEAM:0.99, a===2?SEAM:0.99);
+          memTmp.updateMatrix();
+          if (m < memMax) memMesh.setMatrixAt(m++, memTmp.matrix);
+        }
+      }
+      memMesh.count = m;
+      memMesh.instanceMatrix.needsUpdate = true;
     },
     pickInstance(instanceId) {
       // instances are packed skipping hidden cells; rebuild the mapping is costly,
@@ -384,6 +450,12 @@ const BLURB = {
     "erodes and the cell fragments, or the mouth closes and traps a gap); the RIGHT panel " +
     "runs WITH it and stays whole. The constraint forbids any flip that would disconnect a " +
     "cell (or pinch off the medium), so structure is preserved under thermal stress.",
+  cryptlife: "Living crypt (life-cycle) — a colonic crypt sized from Human Reference Atlas " +
+    "proportions, running the full epithelial conveyor: stem cells at the BASE grow and divide, " +
+    "their progeny are pushed UP the wall, differentiate by height (stem → transit-amplifying → " +
+    "goblet / colonocyte, shown by colour), and slough / die at the mouth. The population turns " +
+    "over while holding a homeostatic steady state; the E1 connectivity constraint + a basement " +
+    "membrane keep it a single-cell-thick monolayer with an open lumen.",
   crypt3d: "3D crypt structure — a procedural single-cell-thick epithelial tube shaped like " +
     "a real intestinal crypt: a closed rounded base holding the stem niche, a cylindrical " +
     "wall, and an OPEN mouth at the top that drains into the gut lumen. Cells are typed by " +
@@ -400,7 +472,13 @@ async function loadModel(entry) {
   const model = await (await fetch("./data/" + entry.file)).json();
   clearScene();
   playing = false; playBtn.textContent = "▶";
-  hiddenTypes = new Set(); hoveredCell = 0; colorMode = "type"; colormodeEl.value = "type";
+  // Tissue-like models default to the per-cell "stain" (per-type hue + per-cell
+  // brightness jitter) so individual cells + their boundaries read like a stained
+  // section, while still showing type zonation by hue. Demos where the TYPE itself
+  // is the message (connectivity's two panels, cell sorting) stay flat-per-type.
+  hiddenTypes = new Set(); hoveredCell = 0;
+  colorMode = STAIN_KINDS.has(entry.kind) ? "cell" : "type";
+  colormodeEl.value = colorMode;
   tip.style.display = "none";
   if (model.is3d) setup3D(model); else setup2D(model);
 
