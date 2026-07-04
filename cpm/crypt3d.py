@@ -12,6 +12,13 @@ confirmed empirically (0 enclosed pockets at wall=2 and wall=3, before and
 after finalize). Adding a second, mirrored hemispherical cap at the top
 closes the lumen while keeping the rest of the reference geometry (typing,
 pitch, wall-thickness handling) unchanged.
+
+Biological caveat: a real intestinal crypt is OPEN at its mouth (it drains
+into the gut lumen). The closed capsule here is a structure-first
+simplification for E2 so the lumen is a well-defined enclosed medium pocket
+(the interior_medium_pockets integrity gate). Downstream tasks that need an
+open boundary (secretion/flux into the gut lumen, E2b/E3) should reopen the
+top cap and handle the lumen as a bounded-but-connected compartment instead.
 """
 import math
 from collections import Counter
@@ -75,6 +82,12 @@ def build_crypt3d(radius=8, cyl_height=28, wall=2, cell_pitch=6, margin=4):
                     seg = next_seg
                     next_seg += 1
                     cellmap[key] = seg
+                    # Axial typing: basal band -> stem niche, middle ->
+                    # absorptive, upper -> goblet. The top cap (a beyond
+                    # a_cap + cyl_height) exceeds the highest cutoff, so it
+                    # falls through to GOB by construction — keep the cutoffs
+                    # below a_cap + cyl_height if you retune, or the apical
+                    # cap's type will change with them.
                     if a <= a_cap + cyl_height * 0.25:
                         seg_to_type[seg] = STEM
                     elif a <= a_cap + cyl_height * 0.60:
