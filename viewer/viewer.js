@@ -389,6 +389,11 @@ const BLURB = {
     "thin band hugging the membrane). Under a relaxation the free-standing E2 shell " +
     "can't survive, the anchored monolayer stays coherent on its membrane — the physics " +
     "that keeps the structure consistent. Junctions (E3b) and per-cell mechanics (E3c) follow.",
+  junction: "Cell-cell junctions (Sub-project E3b) — an anti-gap energy that penalises " +
+    "medium pinched between two bonded cells, so a gap or wall perforation can't open " +
+    "between neighbours (without adding surface tension, so the sheet doesn't curl). " +
+    "Under a stress that breaches the un-jointed control, the jointed crypt keeps its " +
+    "seams sealed and its lumen enclosed — the 'no gaps, no merging' physics.",
 };
 
 async function loadModel(entry) {
