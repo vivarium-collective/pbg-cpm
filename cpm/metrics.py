@@ -27,10 +27,17 @@ def heterotypic_boundary(world):
 
 
 def _neighbors_moore(cx, cy, cz, nx, ny, nz):
+    # Adjacency matching the CPM lattice at neighbor_order 2: the 8-neighbourhood
+    # in 2D (Moore) and the 18-neighbourhood in 3D (Manhattan distance <= 2, i.e.
+    # excluding the 8 cube corners). Keeping this identical to the constraint's
+    # notion of connectivity is what makes the integrity metrics measure exactly
+    # what would_stay_connected enforces.
     for dz in (-1, 0, 1):
         for dy in (-1, 0, 1):
             for dx in (-1, 0, 1):
                 if dx == 0 and dy == 0 and dz == 0:
+                    continue
+                if abs(dx) + abs(dy) + abs(dz) == 3:   # 3D cube corners: not adjacent
                     continue
                 x2, y2, z2 = cx + dx, cy + dy, cz + dz
                 if 0 <= x2 < nx and 0 <= y2 < ny and 0 <= z2 < nz:
@@ -38,8 +45,9 @@ def _neighbors_moore(cx, cy, cz, nx, ny, nz):
 
 
 def connected_components(world, cell_id):
-    """Number of connected components of `cell_id`'s pixels (Moore adjacency,
-    bounded/no-wrap domain)."""
+    """Number of connected components of `cell_id`'s pixels, using the same
+    adjacency as the CPM constraint (8-conn 2D / 18-conn 3D), bounded no-wrap
+    domain."""
     nx, ny, nz = world.dims()
     labels = world.snapshot()
     sites = {i for i, v in enumerate(labels) if v == cell_id}
