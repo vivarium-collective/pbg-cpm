@@ -112,6 +112,11 @@ def build_crypt_composite(core, *, downscale=1.0, mcs_per_update=8, subcell_ever
     meta = {"dims": [nx, ny, 1], "type_names": names, "stem_type": stem,
             "goblet_type": goblet, "absorptive_type": absorp, "wnt_field": 0,
             "n_subcells": len(stem_cell_ids)}
+    meta["initial_counts"] = {
+        "stem": sum(1 for t in probe_types[1:] if t == stem),
+        "goblet": sum(1 for t in probe_types[1:] if t == goblet),
+        "absorptive": sum(1 for t in probe_types[1:] if t == absorp),
+    }
     return comp, meta
 
 
