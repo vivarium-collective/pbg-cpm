@@ -182,6 +182,10 @@ impl World {
         self.world_mut().set_target_volume(cell_id, v);
     }
 
+    fn remove_cells(&mut self, ids: Vec<u32>) {
+        self.world_mut().remove_cells(&ids);
+    }
+
     fn divide_cells(&mut self, threshold: f64, reset_target: f64) -> Vec<u32> {
         self.world_mut().divide_cells(threshold, reset_target)
     }

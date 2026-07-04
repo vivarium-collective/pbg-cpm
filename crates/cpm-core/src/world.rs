@@ -290,6 +290,30 @@ impl World {
         self.cells[cell_id as usize].target_volume = v;
     }
 
+    /// Instantly extrude (slough) cells: set every voxel they own to medium and
+    /// rebuild trackers. Models apoptotic shedding at the crypt mouth so the
+    /// neighbours flow in and the monolayer advances. O(n_sites); batch ids for a
+    /// single tracker rebuild. Ids that are already gone / medium are ignored.
+    pub fn remove_cells(&mut self, ids: &[CellId]) {
+        if ids.is_empty() {
+            return;
+        }
+        let mut kill = vec![false; self.cells.len()];
+        for &id in ids {
+            if id != MEDIUM && (id as usize) < kill.len() {
+                kill[id as usize] = true;
+            }
+        }
+        let n = self.lattice.n_sites();
+        for i in 0..n {
+            let o = self.lattice.owner(i);
+            if o != MEDIUM && kill[o as usize] {
+                self.lattice.set_owner(i, MEDIUM);
+            }
+        }
+        self.recompute_trackers();
+    }
+
     pub fn recompute_trackers(&mut self) {
         for cell in self.cells.iter_mut() {
             cell.volume = 0;
