@@ -15,6 +15,16 @@ impl ContactMatrix {
         self.j[a * self.n_types + b] = val;
         self.j[b * self.n_types + a] = val;
     }
+    /// Returns the pairwise contact energy J(a, b).
+    ///
+    /// Returns `0.0` for any type pair outside the allocated matrix (i.e.
+    /// `a` or `b` >= the `n_types` this matrix was sized with), rather than
+    /// panicking. This is intentional: callers MUST size the matrix (via
+    /// `ContactMatrix::new(n_types)` / `set_contact_matrix`) to cover every
+    /// cell type in use, or the contact energy for the missing type will
+    /// silently be treated as zero — i.e. "no interfacial tension configured"
+    /// is indistinguishable from "matrix undersized". Do not rely on this
+    /// fallback; it exists for bounds-safety, not as a valid default.
     pub fn get(&self, a: u16, b: u16) -> f64 {
         let (a, b) = (a as usize, b as usize);
         if a >= self.n_types || b >= self.n_types {
