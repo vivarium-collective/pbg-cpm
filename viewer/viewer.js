@@ -379,6 +379,11 @@ const BLURB = {
   subcell: "Per-cell subcellular models run as a process-bigraph Composite: each " +
     "stem cell carries an SBML stemness ODE (pbg-tellurium) and a Boolean fate switch. " +
     "Basal Wnt keeps cells stem; in low-Wnt regions they differentiate (colour = stemness).",
+  crypt3d: "3D crypt structure — a procedural single-cell-thick epithelial shell (capped " +
+    "cylinder), cells typed by height (stem niche basal). The E1 connectivity constraint " +
+    "keeps every cell whole and the lumen enclosed as the monolayer relaxes under the CPM. " +
+    "Connectivity alone can't seal a razor-thin wall or resist curling — that's what the " +
+    "basement membrane / junctions (Sub-project E3) add.",
 };
 
 async function loadModel(entry) {
