@@ -357,6 +357,10 @@ const BLURB = {
   imaging: "Initialized from REAL imaging — a MIBI-TOF human colon-carcinoma field of view " +
     "(scverse/squidpy). Each cell is placed at its exact segmented pixels, colored by its " +
     "annotated type, then relaxed as a Cellular Potts tissue.",
+  ftu: "Converted from a Human Reference Atlas 2D Functional Tissue Unit illustration — the " +
+    "colonic-crypt FTU (hubmapconsortium ccf-2d-reference-object-library). Every cell polygon " +
+    "in the atlas Crosswalk layer is rasterized and placed with its Cell-Ontology type, then " +
+    "relaxed as a Cellular Potts tissue.",
 };
 
 async function loadModel(entry) {
