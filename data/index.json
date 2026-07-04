@@ -1,0 +1,386 @@
+{
+  "models": [
+    {
+      "file": "cellsort_2d.json",
+      "name": "2D Cell Sorting",
+      "is3d": false,
+      "n_cells": 144,
+      "dims": [
+        100,
+        100,
+        1
+      ],
+      "kind": "cellsort",
+      "validated": true,
+      "checks": [
+        {
+          "text": "heterotypic boundary decreases (645 \u2192 348)",
+          "pass": true
+        },
+        {
+          "text": "Condensing engulfed: medium-exposure/cell C=0.00 < NC=4.00",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "cellsort_3d.json",
+      "name": "3D Cell Sorting",
+      "is3d": true,
+      "n_cells": 216,
+      "dims": [
+        50,
+        50,
+        50
+      ],
+      "kind": "cellsort",
+      "validated": true,
+      "checks": [
+        {
+          "text": "heterotypic boundary decreases (6200 \u2192 1577)",
+          "pass": true
+        },
+        {
+          "text": "Condensing engulfed: medium-exposure/cell C=0.76 < NC=17.68",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "spheroid_3d.json",
+      "name": "3D Tumor Spheroid (growth)",
+      "is3d": true,
+      "n_cells": 64,
+      "dims": [
+        60,
+        60,
+        60
+      ],
+      "kind": "growth",
+      "validated": true,
+      "checks": [
+        {
+          "text": "3D colony proliferates (8 \u2192 64 cells)",
+          "pass": true
+        },
+        {
+          "text": "stays a compact spheroid (bbox aspect 1.08 < 1.6, extent [13, 14, 14])",
+          "pass": true
+        },
+        {
+          "text": "cell volumes bounded (max 42 < 110)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "bacterium_macrophage.json",
+      "name": "Bacterium\u2013Macrophage (chemotaxis)",
+      "is3d": false,
+      "n_cells": 2,
+      "dims": [
+        100,
+        100,
+        1
+      ],
+      "kind": "chemotaxis",
+      "validated": true,
+      "checks": [
+        {
+          "text": "macrophage approaches bacterium (dist 46.0 \u2192 4.5)",
+          "pass": true
+        },
+        {
+          "text": "ATTR at macrophage rises (0.00 \u2192 2999.84)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "growth_mitosis.json",
+      "name": "Cell Growth & Division",
+      "is3d": false,
+      "n_cells": 16,
+      "dims": [
+        130,
+        130,
+        1
+      ],
+      "kind": "growth",
+      "validated": true,
+      "checks": [
+        {
+          "text": "cell count grows (4 \u2192 16)",
+          "pass": true
+        },
+        {
+          "text": "cell volumes bounded (max 32 < 96)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "scale_2d.json",
+      "name": "Scale Test \u2014 10,000 cells",
+      "is3d": false,
+      "n_cells": 10000,
+      "dims": [
+        500,
+        500,
+        1
+      ],
+      "kind": "scale",
+      "validated": true,
+      "checks": [
+        {
+          "text": "ran 10000 cells on a 500\u00d7500 lattice",
+          "pass": true
+        },
+        {
+          "text": "throughput 4.4 MCS/s (1.1M copy-attempts/s), single-thread",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "connectivity_2d.json",
+      "name": "Connectivity \u2014 2D Anti-Fragmentation",
+      "is3d": false,
+      "n_cells": 2,
+      "dims": [
+        53,
+        9,
+        1
+      ],
+      "kind": "integrity",
+      "validated": true,
+      "checks": [
+        {
+          "text": "left panel (no constraint) fragments (components 4 > 1)",
+          "pass": true
+        },
+        {
+          "text": "right panel (with constraint) stays one connected cell (components 1 == 1)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "connectivity_3d.json",
+      "name": "Connectivity \u2014 3D Anti-Fragmentation",
+      "is3d": true,
+      "n_cells": 2,
+      "dims": [
+        39,
+        8,
+        8
+      ],
+      "kind": "integrity",
+      "validated": true,
+      "checks": [
+        {
+          "text": "left panel (no constraint) fragments (components 19 > 1)",
+          "pass": true
+        },
+        {
+          "text": "right panel (with constraint) stays one connected cell (components 1 == 1)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "connectivity_gap.json",
+      "name": "Connectivity \u2014 No Interior Gaps",
+      "is3d": false,
+      "n_cells": 2,
+      "dims": [
+        39,
+        18,
+        1
+      ],
+      "kind": "integrity",
+      "validated": true,
+      "checks": [
+        {
+          "text": "left panel (no medium connectivity) closes its mouth and traps a gap (interior pockets 1 >= 1)",
+          "pass": true
+        },
+        {
+          "text": "right panel (with medium connectivity) keeps its mouth open, no gap (interior pockets 0 == 0)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "crypt3d.json",
+      "name": "3D Crypt (structure)",
+      "is3d": true,
+      "n_cells": 54,
+      "dims": [
+        24,
+        24,
+        44
+      ],
+      "kind": "crypt3d",
+      "validated": true,
+      "checks": [
+        {
+          "text": "single-cell-thick monolayer throughout (worst mean 1.14 < 1.5, worst p90 2 <= 2; final max 4 reported for context)",
+          "pass": true
+        },
+        {
+          "text": "no cell fragmented (0 of 54 cells split)",
+          "pass": true
+        },
+        {
+          "text": "open lumen throughout: axis cavity stays >= 15 voxels deep (worst 38) with a sealed base and an open mouth (no axis lid in upper half: 0 lid voxels)",
+          "pass": true
+        },
+        {
+          "text": "stem niche is basal (mean stem z 11.9 < goblet z 34.1)",
+          "pass": true
+        },
+        {
+          "text": "structure persists (all 54 cells survive: 54 alive)",
+          "pass": true
+        },
+        {
+          "text": "relaxation is non-trivial (total voxel reassignments 1003, min per-step 98 > 0 -- genuinely relaxing every step, not pinned)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "crypt_dynamics.json",
+      "name": "Living Crypt (life-cycle)",
+      "is3d": true,
+      "n_cells": 207,
+      "dims": [
+        26,
+        26,
+        71
+      ],
+      "kind": "cryptlife",
+      "validated": true,
+      "checks": [
+        {
+          "text": "the crypt renews: 59 births and 45 deaths (turnover), living population held steady near 162 (148-162 over 2nd half)",
+          "pass": true
+        },
+        {
+          "text": "conveyor: cells are BORN at the base (mean division height 0.00) and SLOUGH at the mouth (mean death height 0.83); rise > 0.35",
+          "pass": true
+        },
+        {
+          "text": "differentiation zonation by height: stem 0.01 < transit-amplifying 0.33 < differentiated 0.55",
+          "pass": true
+        },
+        {
+          "text": "single-cell-thick monolayer stays intact: no cell fragments (0 of 191)",
+          "pass": true
+        },
+        {
+          "text": "lumen stays open throughout (min axial depth 64 >= 21)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "crypt_differentiation.json",
+      "name": "Crypt Differentiation (subcellular)",
+      "is3d": false,
+      "n_cells": 118,
+      "dims": [
+        64,
+        512,
+        1
+      ],
+      "kind": "subcell",
+      "validated": true,
+      "checks": [
+        {
+          "text": "basal stemness niche retained: 8 wired cells stay stem (state>=0.4) and sit nearer the Wnt source (mean |y-base| 43 < differentiated 292)",
+          "pass": true
+        },
+        {
+          "text": "differentiation progressed: Goblet 39 -> 58 (+19 via fate switch, no division)",
+          "pass": true
+        },
+        {
+          "text": "both fates present (Goblet 58, Absorptive 52); secretory fraction 0.29 in [0.1,0.6] (diff_goblet 19 / (diff_goblet 19 + diff_absorptive 47))",
+          "pass": true
+        },
+        {
+          "text": "causality: corr(stemness, local Wnt) = 0.70 > 0.4 across 71 wired cells (the ODE drove fate)",
+          "pass": true
+        },
+        {
+          "text": "composite integrity: ran under process_bigraph.Composite with 71 subcell processes",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "hra_mibitof.json",
+      "name": "HRA / MIBI-TOF Colon (from imaging)",
+      "is3d": false,
+      "n_cells": 1016,
+      "dims": [
+        256,
+        256,
+        1
+      ],
+      "kind": "imaging",
+      "validated": true,
+      "checks": [
+        {
+          "text": "seeded 1016 cells with exact placement from the real segmentation (8 cell types)",
+          "pass": true
+        },
+        {
+          "text": "cell-type composition preserved (max fraction drift 0.000 < 0.03)",
+          "pass": true
+        },
+        {
+          "text": "cells stay near their imaged positions (mean COM drift 3.2px < 4)",
+          "pass": true
+        },
+        {
+          "text": "structural integrity: no cell fragments (0 of 1016 cells split into pieces)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "hra_ftu.json",
+      "name": "HRA FTU \u2014 Colonic Crypt (converted)",
+      "is3d": false,
+      "n_cells": 118,
+      "dims": [
+        64,
+        512,
+        1
+      ],
+      "kind": "ftu",
+      "validated": true,
+      "checks": [
+        {
+          "text": "converted 118 cells with exact placement from the HRA FTU illustration (5 atlas cell types)",
+          "pass": true
+        },
+        {
+          "text": "cell-type composition preserved (max fraction drift 0.000 < 0.05)",
+          "pass": true
+        },
+        {
+          "text": "cells stay near their illustrated positions (mean COM drift 1.5px < 6)",
+          "pass": true
+        },
+        {
+          "text": "structural integrity: no cell fragments (0 of 118 cells split into pieces)",
+          "pass": true
+        }
+      ]
+    }
+  ]
+}
