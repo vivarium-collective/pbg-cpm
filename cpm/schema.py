@@ -40,5 +40,11 @@ def load_world(spec):
             world.set_secretion(idx, int(s["type"]), float(s["rate"]))
         for c in f.get("chemotaxis", []):
             world.set_chemotaxis(idx, int(c["type"]), float(c["lambda"]))
+    conn = spec.get("connectivity")
+    if conn is not None:
+        for t in conn.get("types", []):
+            world.set_connectivity(int(t), True)
+        if conn.get("medium", False):
+            world.set_connectivity_medium(True)
     world.finalize(int(p["seed"]))
     return world
