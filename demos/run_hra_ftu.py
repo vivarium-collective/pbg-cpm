@@ -25,9 +25,17 @@ from cpm import cpm_core
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from cpm.ftu import load_ftu_cells, rasterize
+from cpm.metrics import connected_components
 
 HERE = os.path.dirname(__file__)
 DATA = os.path.abspath(os.path.join(HERE, "..", "viewer", "data"))
+
+# canonical sidebar order across every demo (entries not listed sort to the end)
+DEMO_ORDER = ["cellsort_2d.json", "cellsort_3d.json", "spheroid_3d.json",
+              "bacterium_macrophage.json", "growth_mitosis.json", "scale_2d.json",
+              "connectivity_2d.json", "connectivity_3d.json", "connectivity_gap.json",
+              "crypt3d.json", "membrane.json", "junction.json",
+              "hra_mibitof.json", "hra_ftu.json"]
 
 
 def validate_and_run(mcs_total=60, n_frames=15):
@@ -46,6 +54,10 @@ def validate_and_run(mcs_total=60, n_frames=15):
         w.set_contact(0, t, 14.0)
         for u in range(t, K + 1):
             w.set_contact(t, u, 6.0)
+    # structural integrity: the E1 connectivity constraint keeps every atlas cell
+    # a single whole blob through relaxation (no fragmentation).
+    for t in range(1, K + 1):
+        w.set_connectivity(t, True)
     w.finalize(1)
 
     coms0 = {cid: w.cell_coms()[cid] for cid in seg_to_cell.values()}
@@ -69,6 +81,7 @@ def validate_and_run(mcs_total=60, n_frames=15):
     coms1 = w.cell_coms()
     drifts = [math.hypot(coms1[c][0] - coms0[c][0], coms1[c][1] - coms0[c][1]) for c in alive]
     mean_drift = sum(drifts) / len(drifts) if drifts else 0.0
+    fragmented = sum(1 for cid in alive if connected_components(w, cid) > 1)
 
     checks = [
         (f"converted {n_seed} cells with exact placement from the HRA FTU illustration "
@@ -77,6 +90,8 @@ def validate_and_run(mcs_total=60, n_frames=15):
          max_drift < 0.05),
         (f"cells stay near their illustrated positions (mean COM drift {mean_drift:.1f}px < 6)",
          mean_drift < 6.0),
+        (f"structural integrity: no cell fragments ({fragmented} of {len(alive)} "
+         f"cells split into pieces)", fragmented == 0),
     ]
     data = {"name": "HRA FTU — Colonic Crypt (converted)", "kind": "ftu",
             "dims": [nx, ny, 1], "is3d": False, "n_cells": w.n_cells(),
@@ -100,10 +115,8 @@ def main():
                      "n_cells": data["n_cells"], "dims": data["dims"], "kind": "ftu",
                      "validated": ok,
                      "checks": [{"text": t, "pass": bool(p)} for t, p in checks]})
-    order = ["cellsort_2d.json", "cellsort_3d.json", "spheroid_3d.json",
-             "bacterium_macrophage.json", "growth_mitosis.json", "scale_2d.json",
-             "hra_mibitof.json", "hra_ftu.json"]
-    manifest.sort(key=lambda m: order.index(m["file"]) if m["file"] in order else 99)
+    manifest.sort(key=lambda m: DEMO_ORDER.index(m["file"])
+                  if m["file"] in DEMO_ORDER else 99)
     with open(idx_path, "w") as fh:
         json.dump({"models": manifest}, fh, indent=2)
 
