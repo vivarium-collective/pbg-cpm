@@ -27,6 +27,64 @@ TYPE_NAMES = ["Epithelial Stem", "Absorptive", "Goblet"]
 STEM, ABS, GOB = 1, 2, 3
 
 
+def _neighbors18(cx, cy, cz, nx, ny, nz):
+    # Same adjacency as the CPM connectivity constraint / cpm.metrics
+    # (18-neighbourhood: Manhattan offset <= 2, excluding the 8 cube corners).
+    for dz in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                if dx == 0 and dy == 0 and dz == 0:
+                    continue
+                if abs(dx) + abs(dy) + abs(dz) == 3:
+                    continue
+                x2, y2, z2 = cx + dx, cy + dy, cz + dz
+                if 0 <= x2 < nx and 0 <= y2 < ny and 0 <= z2 < nz:
+                    yield x2 + y2 * nx + z2 * nx * ny
+
+
+def _split_disconnected(labels, seg_to_type, nx, ny, nz):
+    """The (axial_bin, theta_bin) binning key can, near the cap/cylinder
+    seam and the poles, be revisited by two spatially disjoint voxel blobs
+    (float rounding of the arc-length parameter `a` folds a cylinder-side
+    ring and a cap-side ring into the same bin). That silently merges two
+    unconnected regions under one cell id -- a latent fragmented cell that
+    breaks the CPM connectivity constraint's invariant before the CPM ever
+    runs. Split every label into its 18-connected components (matching the
+    constraint's own adjacency) so every returned cell id is one contiguous
+    blob; extra components become new cell ids of the same type."""
+    by_label = {}
+    for i, v in enumerate(labels):
+        if v:
+            by_label.setdefault(v, []).append(i)
+
+    next_id = (max(seg_to_type) if seg_to_type else 0) + 1
+    for seg, sites in by_label.items():
+        remaining = set(sites)
+        first = True
+        while remaining:
+            start = next(iter(remaining))
+            comp, stack = [], [start]
+            remaining.discard(start)
+            while stack:
+                c = stack.pop()
+                comp.append(c)
+                cz, rem = divmod(c, nx * ny)
+                cy, cx = divmod(rem, nx)
+                for n in _neighbors18(cx, cy, cz, nx, ny, nz):
+                    if n in remaining:
+                        remaining.discard(n)
+                        stack.append(n)
+            if first:
+                first = False
+                continue  # keep the first component under the original id
+            new_id = next_id
+            next_id += 1
+            seg_to_type[new_id] = seg_to_type[seg]
+            for i in comp:
+                labels[i] = new_id
+    return labels, seg_to_type
+
+
 def build_crypt3d(radius=8, cyl_height=28, wall=2, cell_pitch=6, margin=4):
     R = float(radius)
     nx = ny = 2 * (radius + margin)
@@ -96,7 +154,10 @@ def build_crypt3d(radius=8, cyl_height=28, wall=2, cell_pitch=6, margin=4):
                         seg_to_type[seg] = GOB
                 labels[x + y * nx + z * nx * ny] = seg
 
-    # drop tiny cells and re-index consecutively from 1
+    # split any label whose voxels form >1 connected component (bin-key
+    # collisions near the pole/cap-cylinder seam), then drop tiny cells and
+    # re-index consecutively from 1
+    labels, seg_to_type = _split_disconnected(labels, seg_to_type, nx, ny, nz)
     sizes = Counter(v for v in labels if v)
     keep = sorted(s for s, c in sizes.items() if c >= 3)
     remap = {s: i + 1 for i, s in enumerate(keep)}
