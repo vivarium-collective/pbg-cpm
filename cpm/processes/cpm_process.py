@@ -23,15 +23,24 @@ class CPMProcess(Process):
         self.dims = self.world.dims()
 
     def inputs(self):
-        return {"fates": "maybe[list]"}
+        # fates is a map keyed by string cell id so subcellular processes can
+        # wire a single cell's fate (``[fates, str(cid)]``); integer-index paths
+        # into a plain list are rejected by the type system. The composite
+        # pre-initialises the fates store with a key per wired cell so per-key
+        # overwrite writes land (an absent map key would be dropped).
+        return {"fates": "map[integer]"}
 
     def outputs(self):
         return {
             "volumes": "overwrite[list]",
             "types": "overwrite[list]",
             "positions": "overwrite[list]",
-            "field_at_cell": "overwrite[list]",
-            "neighbor_secretory": "overwrite[list]",
+            # per-cell readouts are maps keyed by string cell id, so a subcell
+            # can wire ``[<port>, str(cid)]`` to its own cell. ``overwrite`` wraps
+            # the map so emitting the whole dict atomically replaces the store
+            # (a bare ``map[..]`` apply ignores keys absent from the prior map).
+            "field_at_cell": "overwrite[map[float]]",
+            "neighbor_secretory": "overwrite[map[integer]]",
         }
 
     def _neighbor_secretory_counts(self, types):
@@ -63,23 +72,24 @@ class CPMProcess(Process):
         return counts
 
     def update(self, state, interval):
-        fates = (state or {}).get("fates")
-        if fates:
-            for cid, t in enumerate(fates):
-                if t and cid > 0:
-                    self.world.set_cell_type(cid, int(t))
+        fates = (state or {}).get("fates") or {}
+        for cid_key, t in fates.items():
+            cid = int(cid_key)
+            if t and cid > 0:
+                self.world.set_cell_type(cid, int(t))
         self.world.step(self.mcs)
 
         types = list(self.world.cell_types())
         n = len(types)
-        field_at = [0.0] * n
+        field_at = {}
         if self.n_fields > 0:
             for cid in range(1, n):
-                field_at[cid] = self.world.field_mean_at_cell(0, cid)
+                field_at[str(cid)] = self.world.field_mean_at_cell(0, cid)
+        neigh = self._neighbor_secretory_counts(types)
         return {
             "volumes": list(self.world.cell_volumes()),
             "types": types,
             "positions": [list(c) for c in self.world.cell_coms()],
             "field_at_cell": field_at,
-            "neighbor_secretory": self._neighbor_secretory_counts(types),
+            "neighbor_secretory": {str(cid): neigh[cid] for cid in range(1, n)},
         }

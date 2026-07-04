@@ -19,7 +19,8 @@ def test_outputs_expose_per_cell_readouts():
     proc = CPMProcess({"spec": SPEC, "mcs_per_update": 3, "n_fields": 1}, core=core)
     out = proc.update({}, 1.0)
     assert len(out["types"]) == 2 and out["types"][1] == 1
-    assert out["field_at_cell"][1] >= 0.0
+    # per-cell readouts are maps keyed by string cell id
+    assert out["field_at_cell"]["1"] >= 0.0
     assert len(out["positions"]) == 2 and len(out["positions"][1]) == 3
 
 
@@ -27,6 +28,6 @@ def test_fates_input_switches_cell_type():
     core = pb.allocate_core()
     proc = CPMProcess({"spec": SPEC, "mcs_per_update": 1, "n_fields": 1}, core=core)
     proc.update({}, 1.0)
-    # cell 1 -> type 2
-    out = proc.update({"fates": [0, 2]}, 1.0)
+    # cell 1 -> type 2 (fates is a map keyed by string cell id)
+    out = proc.update({"fates": {"1": 2}}, 1.0)
     assert out["types"][1] == 2

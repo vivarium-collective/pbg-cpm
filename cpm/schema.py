@@ -5,21 +5,34 @@ def load_world(spec):
     p = spec["potts"]
     dims = tuple(p["dims"])
     world = cpm_core.World(dims, p["boundary"], int(p["neighbor_order"]), float(p["temperature"]))
+    sl = spec.get("seed_labels")
     ids = []
-    for c in spec.get("cells", []):
-        cid = world.add_cell(
-            int(c["type"]),
-            float(c["target_volume"]),
-            float(c["lambda_volume"]),
-            float(c["target_surface"]),
-            float(c["lambda_surface"]),
-        )
-        ids.append(cid)  # remember assigned id, locally (do not mutate spec)
+    if sl is None:
+        for c in spec.get("cells", []):
+            cid = world.add_cell(
+                int(c["type"]),
+                float(c["target_volume"]),
+                float(c["lambda_volume"]),
+                float(c["target_surface"]),
+                float(c["lambda_surface"]),
+            )
+            ids.append(cid)  # remember assigned id, locally (do not mutate spec)
     for pair in spec.get("contact", []):
         world.set_contact(int(pair["a"]), int(pair["b"]), float(pair["j"]))
-    for c, cid in zip(spec.get("cells", []), ids):
-        x0, y0, z0, x1, y1, z1 = c["seed_block"]
-        world.seed_block(cid, x0, y0, z0, x1, y1, z1)
+    if sl is not None:
+        # seed exact cell placement from a segmentation label array; skip the
+        # per-cell `cells` loop (the two seeding paths are mutually exclusive).
+        world.seed_from_labels(
+            list(sl["labels"]),
+            {int(k): int(v) for k, v in sl["types"].items()},
+            int(sl["default_type"]),
+            float(sl["target_volume"]),
+            float(sl["lambda_volume"]),
+        )
+    else:
+        for c, cid in zip(spec.get("cells", []), ids):
+            x0, y0, z0, x1, y1, z1 = c["seed_block"]
+            world.seed_block(cid, x0, y0, z0, x1, y1, z1)
     for fi, f in enumerate(spec.get("fields", [])):
         idx = world.add_field(f["name"], float(f["d"]), float(f["decay"]))
         # idx equals fi by construction; keep them in sync
