@@ -25,6 +25,42 @@ from cpm.metrics import connected_components, interior_medium_pockets
 
 DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "viewer", "data"))
 
+# Each demo runs the SAME stressed configuration twice and shows both outcomes
+# SIDE BY SIDE in one lattice so the objective is visible: the left panel (type 1)
+# runs WITHOUT the constraint and breaks; the right panel (type 2) runs WITH it and
+# holds. GAP medium columns/voxels separate the two panels.
+GAP = 3
+
+
+def stitch_2d(frames_off, frames_on, nx, ny):
+    """Place the OFF run (relabelled to cell type 1) on the left and the ON run
+    (relabelled to cell type 2) on the right of a single wide lattice."""
+    w_comb = 2 * nx + GAP
+    out = []
+    for fo, fn in zip(frames_off, frames_on):
+        grid = [0] * (w_comb * ny)
+        lo, ln = fo["labels"], fn["labels"]
+        for y in range(ny):
+            row = y * w_comb
+            for x in range(nx):
+                if lo[x + y * nx]:
+                    grid[row + x] = 1
+                if ln[x + y * nx]:
+                    grid[row + x + nx + GAP] = 2
+        out.append({"mcs": fo["mcs"], "labels": grid})
+    return out, (w_comb, ny, 1)
+
+
+def stitch_3d(frames_off, frames_on, nx, ny, nz):
+    """Same side-by-side compositing for the 3D surface-voxel frames."""
+    dx = nx + GAP
+    out = []
+    for fo, fn in zip(frames_off, frames_on):
+        vox = [[x, y, z, 1] for x, y, z, _ in fo["voxels"]]
+        vox += [[x + dx, y, z, 2] for x, y, z, _ in fn["voxels"]]
+        out.append({"mcs": fo["mcs"], "voxels": vox})
+    return out, (2 * nx + GAP, ny, nz)
+
 
 def labels_2d(w):
     return list(w.snapshot())
@@ -156,46 +192,53 @@ def main():
     manifest = json.load(open(idx))["models"] if os.path.exists(idx) else []
     results = []
 
-    # 2D anti-fragmentation
-    w_off, _ = run_dumbbell_2d(False)
+    # 2D anti-fragmentation (left: unconstrained, fragments; right: constrained, whole)
+    w_off, frames_off = run_dumbbell_2d(False)
     w_on, frames_on = run_dumbbell_2d(True)
+    frames, dims = stitch_2d(frames_off, frames_on, *w_on.dims()[:2])
     checks = [
-        (f"without constraint the dumbbell fragments (components "
+        (f"left panel (no constraint) fragments (components "
          f"{connected_components(w_off, 1)} > 1)", connected_components(w_off, 1) > 1),
-        (f"with constraint it stays one connected cell (components "
+        (f"right panel (with constraint) stays one connected cell (components "
          f"{connected_components(w_on, 1)} == 1)", connected_components(w_on, 1) == 1),
     ]
     emit("connectivity_2d", {"name": "Connectivity — 2D Anti-Fragmentation",
-         "kind": "integrity", "dims": list(w_on.dims()), "is3d": False,
-         "n_cells": w_on.n_cells(), "cell_types": list(w_on.cell_types()),
-         "frames": frames_on}, checks, manifest, results)
+         "kind": "integrity", "dims": list(dims), "is3d": False, "n_cells": 2,
+         "cell_types": [0, 1, 2],
+         "type_names": ["Medium", "Unconstrained (fragments)", "Constrained (whole)"],
+         "frames": frames}, checks, manifest, results)
 
     # 3D anti-fragmentation
-    w3_off, _ = run_dumbbell_3d(False)
-    w3_on, frames3 = run_dumbbell_3d(True)
+    w3_off, frames3_off = run_dumbbell_3d(False)
+    w3_on, frames3_on = run_dumbbell_3d(True)
+    frames3, dims3 = stitch_3d(frames3_off, frames3_on, *w3_on.dims())
     checks = [
-        (f"without constraint the 3D dumbbell fragments (components "
+        (f"left panel (no constraint) fragments (components "
          f"{connected_components(w3_off, 1)} > 1)", connected_components(w3_off, 1) > 1),
-        (f"with constraint it stays one connected cell (components "
+        (f"right panel (with constraint) stays one connected cell (components "
          f"{connected_components(w3_on, 1)} == 1)", connected_components(w3_on, 1) == 1),
     ]
     emit("connectivity_3d", {"name": "Connectivity — 3D Anti-Fragmentation",
-         "kind": "integrity", "dims": list(w3_on.dims()), "is3d": True,
-         "n_cells": w3_on.n_cells(), "cell_types": list(w3_on.cell_types()),
+         "kind": "integrity", "dims": list(dims3), "is3d": True, "n_cells": 2,
+         "cell_types": [0, 1, 2],
+         "type_names": ["Medium", "Unconstrained (fragments)", "Constrained (whole)"],
          "frames": frames3}, checks, manifest, results)
 
-    # confluent no-gap (medium connectivity)
-    _, _, pockets_off = run_horseshoe(False)
-    w_h, frames_h, pockets_on = run_horseshoe(True)
+    # confluent no-gap (medium connectivity): left traps an interior gap, right stays open
+    w_h_off, frames_h_off, pockets_off = run_horseshoe(False)
+    w_h_on, frames_h_on, pockets_on = run_horseshoe(True)
+    frames_h, dims_h = stitch_2d(frames_h_off, frames_h_on, *w_h_on.dims()[:2])
     checks = [
-        (f"without medium connectivity the mouth closes and traps a gap "
+        (f"left panel (no medium connectivity) closes its mouth and traps a gap "
          f"(interior pockets {pockets_off} >= 1)", pockets_off >= 1),
-        (f"with medium connectivity no interior gap forms "
+        (f"right panel (with medium connectivity) keeps its mouth open, no gap "
          f"(interior pockets {pockets_on} == 0)", pockets_on == 0),
     ]
     emit("connectivity_gap", {"name": "Connectivity — No Interior Gaps",
-         "kind": "integrity", "dims": list(w_h.dims()), "is3d": False,
-         "n_cells": w_h.n_cells(), "cell_types": list(w_h.cell_types()),
+         "kind": "integrity", "dims": list(dims_h), "is3d": False, "n_cells": 2,
+         "cell_types": [0, 1, 2],
+         "type_names": ["Medium", "Without constraint (traps gap)",
+                        "With medium connectivity (stays open)"],
          "frames": frames_h}, checks, manifest, results)
 
     order = ["cellsort_2d.json", "cellsort_3d.json", "spheroid_3d.json",
