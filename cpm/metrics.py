@@ -98,9 +98,14 @@ def interior_medium_pockets(world):
     return pockets
 
 
-def radial_thickness(world, cx=None, cy=None, n_theta=24):
-    """Mean and max number of distinct cells crossed along radial rays from the
-    axis (cx, cy) outward, over a (z, theta) sample grid. ~1 for a monolayer."""
+def radial_cell_counts(world, cx=None, cy=None, n_theta=24):
+    """Sorted list of the number of distinct cells crossed along each radial ray
+    from the axis (cx, cy) outward, over a (z, theta) sample grid. A single-cell
+    wall yields mostly 1s (with a few 2s where a ray grazes a cell boundary or
+    skims obliquely through a hemispherical cap). This is the raw distribution
+    behind the monolayer thickness measures: the mean is the robust central
+    certificate; an upper-tail percentile (e.g. p90 <= 2) catches genuine
+    multilayering while ignoring the corner-grazing tail that inflates the max."""
     import math
     nx, ny, nz = world.dims()
     labels = world.snapshot()
@@ -126,6 +131,15 @@ def radial_thickness(world, cx=None, cy=None, n_theta=24):
                     crossed.add(o)
             if crossed:
                 counts.append(len(crossed))
+    return sorted(counts)
+
+
+def radial_thickness(world, cx=None, cy=None, n_theta=24):
+    """Mean and max number of distinct cells crossed along radial rays from the
+    axis (cx, cy) outward, over a (z, theta) sample grid. ~1 for a monolayer.
+    (The max is sampling-sensitive; use radial_cell_counts for an upper-tail
+    percentile when a robust multilayering guard is needed.)"""
+    counts = radial_cell_counts(world, cx, cy, n_theta)
     if not counts:
         return 0.0, 0
     return sum(counts) / len(counts), max(counts)

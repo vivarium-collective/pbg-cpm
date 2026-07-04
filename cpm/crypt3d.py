@@ -126,7 +126,7 @@ def build_crypt3d(radius=8, cyl_height=28, wall=2, cell_pitch=6, margin=4):
                         continue
                     cphi = max(-1.0, min(1.0, (z_base - zc) / R))
                     phi = math.acos(cphi)           # 0 at pole -> pi/2 at equator
-                    a = R * (math.pi / 2.0 - phi)   # 0 at pole -> a_cap at equator
+                    a = R * phi                     # 0 at pole -> a_cap at equator (joins cylinder)
                     r_local = max(1.0, R * math.sin(phi))
                 if a < 0 or a > a_max:
                     continue

@@ -13,7 +13,8 @@ import cpm_core
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from cpm.crypt3d import build_crypt3d
-from cpm.metrics import radial_thickness, interior_medium_pockets, connected_components
+from cpm.metrics import (radial_thickness, radial_cell_counts,
+                         interior_medium_pockets, connected_components)
 
 DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "viewer", "data"))
 
@@ -82,40 +83,64 @@ def main(n_frames=8, mcs_per_frame=3):
     # growth is what the basement membrane / junctions (E3) are for.
     (nx, ny, nz), labels, seg_to_type, type_names = build_crypt3d(wall=3)
     from collections import Counter
-    median = int(Counter(v for v in labels if v).most_common()[len(Counter(v for v in labels if v)) // 2][1])
+    # Median cell size -- only the seed's finalize scalar; build_world overwrites
+    # each cell's target with its own volume after finalize, so this just sets a
+    # reasonable initial target before that per-cell re-anchoring.
+    sizes = sorted(Counter(v for v in labels if v).values())
+    median = sizes[len(sizes) // 2]
     w = build_world(labels, seg_to_type, (nx, ny, nz), median)
     n0 = w.n_cells()
 
-    frames, min_pockets = [], 10**9
+    # Track structural gates over EVERY frame (worst case), not just the endpoint:
+    # the claim is the shell STAYS a monolayer throughout the relaxation, so a
+    # transient thickening or breach must fail even if it settles back by the end.
+    frames = []
     prev_snap = None
     total_churn = 0                       # voxels that changed owner over the run
+    min_step_churn = None                 # smallest per-step churn (proves EVERY step moved)
+    min_pockets = 10**9
+    worst_mean_t = 0.0                     # max over frames of mean cells-per-ray
+    worst_p90 = 0                          # max over frames of the 90th-pctile cells-per-ray
     for f in range(n_frames + 1):
         snap = w.snapshot()
-        churn = 0 if prev_snap is None else sum(1 for a, b in zip(prev_snap, snap) if a != b)
-        total_churn += churn
+        if prev_snap is not None:
+            churn = sum(1 for a, b in zip(prev_snap, snap) if a != b)
+            total_churn += churn
+            min_step_churn = churn if min_step_churn is None else min(min_step_churn, churn)
+        else:
+            churn = 0
         prev_snap = snap
-        frames.append({"mcs": f * mcs_per_frame, "voxels": surface_3d(w), "churn": churn})
+        counts = radial_cell_counts(w, nx / 2.0, ny / 2.0)
+        mean_t = sum(counts) / len(counts)
+        p90 = counts[int(0.90 * len(counts))]
+        worst_mean_t = max(worst_mean_t, mean_t)
+        worst_p90 = max(worst_p90, p90)
         min_pockets = min(min_pockets, interior_medium_pockets(w))
+        frames.append({"mcs": f * mcs_per_frame, "voxels": surface_3d(w), "churn": churn})
         if f < n_frames:
             w.step(mcs_per_frame)
 
     types = w.cell_types()
     coms = w.cell_coms()
     vols = w.cell_volumes()
-    mean_t, max_t = radial_thickness(w, nx / 2.0, ny / 2.0)
+    _, max_t = radial_thickness(w, nx / 2.0, ny / 2.0)
     frag = sum(1 for c in range(1, len(types)) if vols[c] > 0 and connected_components(w, c) != 1)
     alive = sum(1 for c in range(1, len(types)) if vols[c] > 0)
     stem_z = [coms[c][2] for c in range(1, len(types)) if types[c] == 1 and vols[c] > 0]
     gob_z = [coms[c][2] for c in range(1, len(types)) if types[c] == 3 and vols[c] > 0]
 
     checks = [
-        # Gate on MEAN cells-per-ray, not max: max is a ray-sampling artifact
-        # (a single ray grazing a roughened corner of a still-single-cell wall
-        # reads 3+ once boundaries fluctuate) and does not distinguish a genuine
-        # monolayer from multilayering; mean ~1.2 is an unambiguous monolayer
-        # certificate. max is reported for context, not gated.
-        (f"single-cell-thick monolayer (mean radial cells {mean_t:.2f} < 1.5; "
-         f"max {max_t} reported for context)", mean_t < 1.5),
+        # Monolayer certificate over the whole run, on two robust statistics:
+        #   - worst-frame MEAN cells-per-ray < 1.5 (central tendency), and
+        #   - worst-frame 90th-percentile cells-per-ray <= 2 (upper tail).
+        # We gate the p90, not the raw max: max is a ray-sampling artifact (a
+        # single ray grazing a cell corner or skimming a hemispherical cap reads
+        # 3+ even for a true single-cell wall), so it flags sampling geometry, not
+        # multilayering. p90 <= 2 catches genuine multilayering while ignoring that
+        # ~5% corner-grazing tail. max is reported for context only.
+        (f"single-cell-thick monolayer throughout (worst mean {worst_mean_t:.2f} < 1.5, "
+         f"worst p90 {worst_p90} <= 2; final max {max_t} reported for context)",
+         worst_mean_t < 1.5 and worst_p90 <= 2),
         (f"no cell fragmented ({frag} of {alive} cells split)", frag == 0),
         (f"lumen stays enclosed / no wall breach (min interior pockets {min_pockets} >= 1)",
          min_pockets >= 1),
@@ -123,8 +148,11 @@ def main(n_frames=8, mcs_per_frame=3):
          f"{sum(gob_z)/len(gob_z):.1f})" if stem_z and gob_z else "stem + goblet present",
          bool(stem_z) and bool(gob_z) and sum(stem_z)/len(stem_z) < sum(gob_z)/len(gob_z)),
         (f"structure persists (all {n0} cells survive: {alive} alive)", alive == n0),
-        (f"relaxation is non-trivial (total voxel reassignments {total_churn} > 0 -- "
-         f"the shell is genuinely relaxing under the CPM, not pinned rigid)", total_churn > 0),
+        # Not just "moved once": require EVERY relaxation step to move some voxels,
+        # so the run can't pass by fluctuating a single flip then freezing.
+        (f"relaxation is non-trivial (total voxel reassignments {total_churn}, "
+         f"min per-step {min_step_churn} > 0 -- genuinely relaxing every step, not pinned)",
+         (min_step_churn or 0) > 0),
     ]
 
     data = {"name": "3D Crypt (structure)", "kind": "crypt3d", "dims": [nx, ny, nz],
