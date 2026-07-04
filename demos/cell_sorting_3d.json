@@ -1,0 +1,10 @@
+{
+  "potts": {"dims": [30, 30, 30], "boundary": "periodic",
+            "neighbor_order": 2, "temperature": 10.0, "seed": 23},
+  "cell_types": [{"name": "medium", "id": 0},
+                 {"name": "dark", "id": 1}, {"name": "light", "id": 2}],
+  "contact": [{"a": 0, "b": 1, "j": 16.0}, {"a": 0, "b": 2, "j": 16.0},
+              {"a": 1, "b": 1, "j": 2.0}, {"a": 2, "b": 2, "j": 2.0},
+              {"a": 1, "b": 2, "j": 11.0}],
+  "cells": []
+}

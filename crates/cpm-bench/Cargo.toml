@@ -1,0 +1,11 @@
+[package]
+name = "cpm-bench"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "cpm-bench"
+path = "src/main.rs"
+
+[dependencies]
+cpm-core = { workspace = true }

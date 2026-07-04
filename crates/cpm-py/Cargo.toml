@@ -1,0 +1,12 @@
+[package]
+name = "cpm-py"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "cpm_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+cpm-core = { workspace = true }
+pyo3 = { version = "0.22", features = ["extension-module"] }

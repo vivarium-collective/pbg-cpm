@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = ["crates/cpm-core", "crates/cpm-py", "crates/cpm-bench"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[workspace.dependencies]
+cpm-core = { path = "crates/cpm-core" }
+rand = "0.8"
