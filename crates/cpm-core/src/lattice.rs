@@ -1,1 +1,151 @@
-// placeholder
+use crate::CellId;
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Boundary {
+    NoFlux,
+    Periodic,
+}
+
+pub struct Neighborhood {
+    offsets: Vec<[i64; 3]>,
+}
+
+impl Neighborhood {
+    /// `order` = maximum Manhattan distance of an offset.
+    /// 2D order 1 -> 4 (von Neumann), order 2 -> 8 (Moore).
+    /// 3D order 1 -> 6, order 2 -> 18, order 3 -> 26.
+    pub fn new(is_3d: bool, order: u8) -> Neighborhood {
+        let zr: i64 = if is_3d { 1 } else { 0 };
+        let mut offsets = Vec::new();
+        for dz in -zr..=zr {
+            for dy in -1i64..=1 {
+                for dx in -1i64..=1 {
+                    if dx == 0 && dy == 0 && dz == 0 {
+                        continue;
+                    }
+                    let manhattan = dx.abs() + dy.abs() + dz.abs();
+                    if manhattan <= order as i64 {
+                        offsets.push([dx, dy, dz]);
+                    }
+                }
+            }
+        }
+        Neighborhood { offsets }
+    }
+
+    pub fn offsets(&self) -> &[[i64; 3]] {
+        &self.offsets
+    }
+}
+
+pub struct Lattice {
+    pub dims: [usize; 3],
+    pub boundary: [Boundary; 3],
+    site: Vec<CellId>,
+    pub nbr: Neighborhood,
+}
+
+impl Lattice {
+    pub fn new(dims: [usize; 3], boundary: [Boundary; 3], nbr: Neighborhood) -> Lattice {
+        let n = dims[0] * dims[1] * dims[2];
+        Lattice { dims, boundary, site: vec![crate::MEDIUM; n], nbr }
+    }
+
+    pub fn n_sites(&self) -> usize {
+        self.site.len()
+    }
+
+    #[inline]
+    pub fn index(&self, x: usize, y: usize, z: usize) -> usize {
+        x + y * self.dims[0] + z * self.dims[0] * self.dims[1]
+    }
+
+    pub fn coords(&self, idx: usize) -> [usize; 3] {
+        let nx = self.dims[0];
+        let ny = self.dims[1];
+        let x = idx % nx;
+        let y = (idx / nx) % ny;
+        let z = idx / (nx * ny);
+        [x, y, z]
+    }
+
+    #[inline]
+    pub fn owner(&self, idx: usize) -> CellId {
+        self.site[idx]
+    }
+
+    #[inline]
+    pub fn set_owner(&mut self, idx: usize, c: CellId) {
+        self.site[idx] = c;
+    }
+
+    /// Resolve one axis coordinate + offset under this axis' boundary.
+    /// Returns None if NoFlux and out of range.
+    #[inline]
+    fn wrap(&self, coord: usize, off: i64, dim: usize, axis: usize) -> Option<usize> {
+        let v = coord as i64 + off;
+        match self.boundary[axis] {
+            Boundary::NoFlux => {
+                if v < 0 || v >= dim as i64 {
+                    None
+                } else {
+                    Some(v as usize)
+                }
+            }
+            Boundary::Periodic => Some(((v % dim as i64 + dim as i64) % dim as i64) as usize),
+        }
+    }
+
+    pub fn neighbors(&self, idx: usize) -> Vec<usize> {
+        let [x, y, z] = self.coords(idx);
+        let mut out = Vec::with_capacity(self.nbr.offsets().len());
+        for off in self.nbr.offsets() {
+            let nx = match self.wrap(x, off[0], self.dims[0], 0) { Some(v) => v, None => continue };
+            let ny = match self.wrap(y, off[1], self.dims[1], 1) { Some(v) => v, None => continue };
+            let nz = match self.wrap(z, off[2], self.dims[2], 2) { Some(v) => v, None => continue };
+            out.push(self.index(nx, ny, nz));
+        }
+        out
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn index_roundtrip() {
+        let lat = Lattice::new([4, 3, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let idx = lat.index(2, 1, 0);
+        assert_eq!(lat.coords(idx), [2, 1, 0]);
+        assert_eq!(lat.n_sites(), 12);
+    }
+
+    #[test]
+    fn moore_2d_interior_has_8_neighbors() {
+        let lat = Lattice::new([5, 5, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let center = lat.index(2, 2, 0);
+        assert_eq!(lat.neighbors(center).len(), 8);
+    }
+
+    #[test]
+    fn noflux_corner_drops_neighbors() {
+        let lat = Lattice::new([5, 5, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let corner = lat.index(0, 0, 0);
+        assert_eq!(lat.neighbors(corner).len(), 3); // E, N, NE
+    }
+
+    #[test]
+    fn periodic_corner_wraps_to_full() {
+        let lat = Lattice::new([5, 5, 1], [Boundary::Periodic; 3], Neighborhood::new(false, 2));
+        let corner = lat.index(0, 0, 0);
+        assert_eq!(lat.neighbors(corner).len(), 8);
+    }
+
+    #[test]
+    fn von_neumann_3d_has_6() {
+        let lat = Lattice::new([5, 5, 5], [Boundary::NoFlux; 3], Neighborhood::new(true, 1));
+        let c = lat.index(2, 2, 2);
+        assert_eq!(lat.neighbors(c).len(), 6);
+    }
+}
