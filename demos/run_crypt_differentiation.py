@@ -70,6 +70,13 @@ def main(n_frames=30, mcs_per_update=80):
 
     world = _cpm_world(comp)
 
+    # Wnt-source stem cells' INITIAL positions, captured before any comp.run
+    # (the spec calls for the crypt base reference to be the t0 niche
+    # location, not wherever the niche cells have drifted to by the end).
+    types0 = list(world.cell_types())
+    coms0 = [list(c) for c in world.cell_coms()]
+    stem_ids0 = [c for c in range(1, len(types0)) if types0[c] == stem]
+
     def capture(mcs):
         types = list(world.cell_types())
         return {"mcs": mcs, "labels": list(world.snapshot()), "types": types,
@@ -93,10 +100,11 @@ def main(n_frames=30, mcs_per_update=80):
     st = lambda c: float(cs.get(str(c), 0.0))
     fl = lambda c: float(field.get(str(c), 0.0))
 
-    # base region = mean y of the (permanent) Wnt-secreting stem cells at t0.
-    # They carry no subcell so they keep type==stem for the whole run.
-    stem_ids = [c for c in range(1, n) if types[c] == stem]
-    base_y = (mean([coms[c][1] for c in stem_ids]) if stem_ids
+    # base region = mean INITIAL y of the (permanent) Wnt-secreting stem
+    # cells (captured at t0, before the run loop, per spec) -- they carry
+    # no subcell so they keep type==stem for the whole run, but their
+    # position may drift; the niche reference must stay anchored at t0.
+    base_y = (mean([coms0[c][1] for c in stem_ids0]) if stem_ids0
               else mean([coms[c][1] for c in wired]))
     dist = lambda c: abs(coms[c][1] - base_y)
 
