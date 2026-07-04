@@ -33,6 +33,11 @@ impl Cpm {
                         self.world.delta_membrane(s, source_owner)
                     } else {
                         0.0
+                    }
+                    + if self.world.any_junction() {
+                        self.world.delta_junction(s, source_owner)
+                    } else {
+                        0.0
                     };
                 let accept = dh <= 0.0 || self.rng.gen::<f64>() < (-dh / t).exp();
                 if accept {
