@@ -28,8 +28,7 @@ MIN_PIX = 4       # drop cells smaller than this after downsampling
 DEMO_ORDER = ["cellsort_2d.json", "cellsort_3d.json", "spheroid_3d.json",
               "bacterium_macrophage.json", "growth_mitosis.json", "scale_2d.json",
               "connectivity_2d.json", "connectivity_3d.json", "connectivity_gap.json",
-              "crypt3d.json", "membrane.json", "junction.json",
-              "hra_mibitof.json", "hra_ftu.json"]
+              "crypt3d.json", "hra_mibitof.json", "hra_ftu.json"]
 
 
 def load_fov(fov):

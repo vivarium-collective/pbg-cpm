@@ -34,8 +34,7 @@ DATA = os.path.abspath(os.path.join(HERE, "..", "viewer", "data"))
 DEMO_ORDER = ["cellsort_2d.json", "cellsort_3d.json", "spheroid_3d.json",
               "bacterium_macrophage.json", "growth_mitosis.json", "scale_2d.json",
               "connectivity_2d.json", "connectivity_3d.json", "connectivity_gap.json",
-              "crypt3d.json", "membrane.json", "junction.json",
-              "hra_mibitof.json", "hra_ftu.json"]
+              "crypt3d.json", "hra_mibitof.json", "hra_ftu.json"]
 
 
 def validate_and_run(mcs_total=60, n_frames=15):
