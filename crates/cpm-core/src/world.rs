@@ -26,6 +26,8 @@ pub struct World {
     pub membrane_k: f64,
     pub membrane_band: f64,
     pub membrane_types: Vec<bool>,
+    pub junction_types: Vec<bool>,
+    pub lambda_junction: f64,
 }
 
 impl World {
@@ -53,6 +55,8 @@ impl World {
             membrane_k: 0.0,
             membrane_band: 0.0,
             membrane_types: Vec::new(),
+            junction_types: Vec::new(),
+            lambda_junction: 0.0,
         }
     }
 
@@ -126,6 +130,103 @@ impl World {
             }
         };
         cost_for(new_owner) - cost_for(target)
+    }
+
+    pub fn set_junction(&mut self, cell_type: u16, on: bool) {
+        let t = cell_type as usize;
+        if t >= self.junction_types.len() {
+            self.junction_types.resize(t + 1, false);
+        }
+        self.junction_types[t] = on;
+    }
+
+    pub fn set_junction_lambda(&mut self, lambda: f64) {
+        self.lambda_junction = lambda;
+    }
+
+    pub fn any_junction(&self) -> bool {
+        self.lambda_junction > 0.0 && self.junction_types.iter().any(|&b| b)
+    }
+
+    fn junction_type_enabled(&self, cell_type: u16) -> bool {
+        self.junction_types.get(cell_type as usize).copied().unwrap_or(false)
+    }
+
+    // owner of `idx`, but treating site `s` as if it were `new`
+    #[inline]
+    fn owner_ov(&self, idx: usize, s: usize, new: CellId) -> CellId {
+        if idx == s { new } else { self.lattice.owner(idx) }
+    }
+
+    // (owner_id, is_junction_type) for `idx` under the s->new override; medium = (0,false)
+    #[inline]
+    fn junction_tag(&self, idx: usize, s: usize, new: CellId) -> (u32, bool) {
+        let o = self.owner_ov(idx, s, new);
+        if o == crate::MEDIUM {
+            (0, false)
+        } else {
+            (o, self.junction_type_enabled(self.cells[o as usize].cell_type))
+        }
+    }
+
+    // number of pinched axes at medium centre `c`, under the s->new override
+    fn pinch_at(&self, c: usize, s: usize, new: CellId) -> u32 {
+        if self.owner_ov(c, s, new) != crate::MEDIUM {
+            return 0; // only a medium voxel can be a pinch centre
+        }
+        let (nx, ny, nz) = (self.lattice.dims_x(), self.lattice.dims_y(), self.lattice.dims_z());
+        let z = c / (nx * ny);
+        let rem = c % (nx * ny);
+        let y = rem / nx;
+        let x = rem % nx;
+        let mut n = 0u32;
+        if x >= 1 && x + 1 < nx
+            && crate::junction::axis_is_pinch(self.junction_tag(c - 1, s, new), self.junction_tag(c + 1, s, new))
+        {
+            n += 1;
+        }
+        if y >= 1 && y + 1 < ny
+            && crate::junction::axis_is_pinch(self.junction_tag(c - nx, s, new), self.junction_tag(c + nx, s, new))
+        {
+            n += 1;
+        }
+        if nz > 1 && z >= 1 && z + 1 < nz
+            && crate::junction::axis_is_pinch(
+                self.junction_tag(c - nx * ny, s, new),
+                self.junction_tag(c + nx * ny, s, new),
+            )
+        {
+            n += 1;
+        }
+        n
+    }
+
+    /// Junction (anti-gap) energy change for reassigning `site` to `new_owner`.
+    /// Only `site` changes owner, so pinch counts change only at `site` (a pinch
+    /// centre while medium) and its medium 6-neighbours (for which `site` is one
+    /// axis side). E = lambda_junction * total_pinches.
+    pub fn delta_junction(&self, site: usize, new_owner: CellId) -> f64 {
+        let old = self.lattice.owner(site);
+        let mut d: i64 = self.pinch_at(site, site, new_owner) as i64
+            - self.pinch_at(site, site, old) as i64;
+        let (nx, ny, nz) = (self.lattice.dims_x(), self.lattice.dims_y(), self.lattice.dims_z());
+        let z = site / (nx * ny);
+        let rem = site % (nx * ny);
+        let y = rem / nx;
+        let x = rem % nx;
+        let mut nb: Vec<usize> = Vec::with_capacity(6);
+        if x + 1 < nx { nb.push(site + 1); }
+        if x >= 1 { nb.push(site - 1); }
+        if y + 1 < ny { nb.push(site + nx); }
+        if y >= 1 { nb.push(site - nx); }
+        if nz > 1 && z + 1 < nz { nb.push(site + nx * ny); }
+        if nz > 1 && z >= 1 { nb.push(site - nx * ny); }
+        for m in nb {
+            if self.lattice.owner(m) == crate::MEDIUM {
+                d += self.pinch_at(m, site, new_owner) as i64 - self.pinch_at(m, site, old) as i64;
+            }
+        }
+        self.lambda_junction * d as f64
     }
 
     pub fn type_is_constrained(&self, cell_type: u16) -> bool {

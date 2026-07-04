@@ -10,6 +10,7 @@ pub mod mitosis;
 pub mod init;
 pub mod connectivity;
 pub mod membrane;
+pub mod junction;
 
 #[cfg(test)]
 mod tests {
