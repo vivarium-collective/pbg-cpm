@@ -384,6 +384,11 @@ const BLURB = {
     "keeps every cell whole and the lumen enclosed as the monolayer relaxes under the CPM. " +
     "Connectivity alone can't seal a razor-thin wall or resist curling — that's what the " +
     "basement membrane / junctions (Sub-project E3) add.",
+  membrane: "Basement membrane (Sub-project E3a) — the crypt monolayer anchored to " +
+    "its basal surface by a new CPM energy term (anchored cells pay energy to leave a " +
+    "thin band hugging the membrane). Under a relaxation the free-standing E2 shell " +
+    "can't survive, the anchored monolayer stays coherent on its membrane — the physics " +
+    "that keeps the structure consistent. Junctions (E3b) and per-cell mechanics (E3c) follow.",
 };
 
 async function loadModel(entry) {
