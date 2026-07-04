@@ -6,7 +6,12 @@ build-backend = "maturin"
 name = "pbg-cpm"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["process-bigraph"]
+dependencies = [
+    "process-bigraph",
+    "libroadrunner>=2.9",
+    "tellurium>=2.2",
+    "pbg-tellurium",
+]
 
 [tool.maturin]
 manifest-path = "crates/cpm-py/Cargo.toml"
