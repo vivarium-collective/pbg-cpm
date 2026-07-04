@@ -5,17 +5,39 @@ build-backend = "maturin"
 [project]
 name = "pbg-cpm"
 version = "0.1.0"
+description = "A process-bigraph Cellular Potts Model framework: a fast Rust CPM engine (2D/3D) with pluggable subcellular models, structural constraints, and metrics."
+readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Vivarium Collective" }]
+keywords = ["cellular-potts-model", "process-bigraph", "multiscale", "tissue", "vivarium"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 dependencies = [
     "process-bigraph",
-    "libroadrunner>=2.9",
-    "tellurium>=2.2",
-    "pbg-tellurium",
 ]
+
+[project.optional-dependencies]
+# SBML/ODE subcellular models (cpm.subcellular.sbml -> pbg-tellurium/RoadRunner).
+sbml = ["libroadrunner>=2.9", "tellurium>=2.2", "pbg-tellurium"]
+# Human Reference Atlas FTU illustration -> CPM conversion (cpm.ftu).
+ftu = ["numpy", "matplotlib"]
+# Everything, for running the full demo suite.
+all = ["pbg-cpm[sbml,ftu]"]
+
+[project.urls]
+Homepage = "https://github.com/vivarium-collective/pbg-cpm"
+Repository = "https://github.com/vivarium-collective/pbg-cpm"
 
 [tool.maturin]
 manifest-path = "crates/cpm-py/Cargo.toml"
-module-name = "cpm_core"
+module-name = "cpm.cpm_core"
+python-source = "."
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

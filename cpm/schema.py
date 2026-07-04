@@ -1,4 +1,4 @@
-import cpm_core
+from cpm import cpm_core
 
 
 def load_world(spec):

@@ -10,7 +10,7 @@ import json
 import os
 import time
 
-import cpm_core
+from cpm import cpm_core
 from run_cc3d_demos import run_cellsort, labels_2d, surface_3d, heterotypic_boundary
 
 DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "viewer", "data"))

@@ -1,5 +1,5 @@
 import json
-import cpm_core
+from cpm import cpm_core
 from cpm.pack import write_pack
 
 

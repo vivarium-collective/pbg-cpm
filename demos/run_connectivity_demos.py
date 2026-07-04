@@ -18,7 +18,7 @@ import json
 import os
 import sys
 
-import cpm_core
+from cpm import cpm_core
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from cpm.metrics import connected_components, interior_medium_pockets

@@ -1,4 +1,4 @@
-import cpm_core
+from cpm import cpm_core
 from cpm.crypt3d import build_crypt3d
 from cpm.metrics import radial_thickness, interior_medium_pockets, connected_components
 

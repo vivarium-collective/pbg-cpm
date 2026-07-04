@@ -1,4 +1,4 @@
-import cpm_core
+from cpm import cpm_core
 
 
 def _build_growing_world():

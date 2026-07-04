@@ -1,4 +1,4 @@
-import cpm_core
+from cpm import cpm_core
 
 
 def test_single_cell_shrinks_to_target():

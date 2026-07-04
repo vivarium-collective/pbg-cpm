@@ -4,3 +4,6 @@ __pycache__/
 .venv/
 .DS_Store
 /data/
+
+# maturin develop places the compiled engine here
+cpm/*.so

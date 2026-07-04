@@ -1,4 +1,4 @@
-import cpm_core
+from cpm import cpm_core
 
 
 def test_seed_from_labels_two_blocks():
