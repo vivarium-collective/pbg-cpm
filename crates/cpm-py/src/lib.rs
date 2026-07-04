@@ -125,6 +125,18 @@ impl World {
     fn field_mean_at_cell(&self, field_idx: usize, cell_id: u32) -> f64 {
         self.world_ref().field_mean_at_cell(field_idx, cell_id)
     }
+
+    fn grow(&mut self, cell_type: u16, rate: f64) {
+        self.world_mut().grow(cell_type, rate);
+    }
+
+    fn divide_cells(&mut self, threshold: f64, reset_target: f64) -> Vec<u32> {
+        self.world_mut().divide_cells(threshold, reset_target)
+    }
+
+    fn n_cells(&self) -> usize {
+        self.world_ref().cells.len() - 1
+    }
 }
 
 #[pymodule]

@@ -6,6 +6,7 @@ pub mod world;
 pub mod energy;
 pub mod field;
 pub mod sweep;
+pub mod mitosis;
 
 #[cfg(test)]
 mod tests {
