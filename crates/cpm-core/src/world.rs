@@ -20,6 +20,8 @@ pub struct World {
     pub temperature: f64,
     pub contact: crate::energy::ContactMatrix,
     pub fields: Vec<crate::field::Field>,
+    pub connectivity_types: Vec<bool>,
+    pub connectivity_medium: bool,
 }
 
 impl World {
@@ -41,11 +43,52 @@ impl World {
             temperature,
             contact: crate::energy::ContactMatrix::new(1),
             fields: Vec::new(),
+            connectivity_types: Vec::new(),
+            connectivity_medium: false,
         }
     }
 
     pub fn set_contact_matrix(&mut self, m: crate::energy::ContactMatrix) {
         self.contact = m;
+    }
+
+    pub fn set_connectivity(&mut self, cell_type: u16, on: bool) {
+        let t = cell_type as usize;
+        if t >= self.connectivity_types.len() {
+            self.connectivity_types.resize(t + 1, false);
+        }
+        self.connectivity_types[t] = on;
+    }
+
+    pub fn set_connectivity_medium(&mut self, on: bool) {
+        self.connectivity_medium = on;
+    }
+
+    pub fn any_connectivity(&self) -> bool {
+        self.connectivity_medium || self.connectivity_types.iter().any(|&b| b)
+    }
+
+    pub fn type_is_constrained(&self, cell_type: u16) -> bool {
+        self.connectivity_types
+            .get(cell_type as usize)
+            .copied()
+            .unwrap_or(false)
+    }
+
+    /// Would removing pixel `site` keep cell `target` locally connected?
+    /// Local test over `site`'s same-owner neighbours; O(neighbourhood^2).
+    pub fn would_stay_connected(&self, site: usize, target: CellId) -> bool {
+        let members: Vec<usize> = self
+            .lattice
+            .neighbors(site)
+            .into_iter()
+            .filter(|&n| self.lattice.owner(n) == target)
+            .collect();
+        if members.len() <= 1 {
+            return true;
+        }
+        let adj = |a: usize, b: usize| self.lattice.neighbors(a).contains(&b);
+        crate::connectivity::count_components(&members, &adj) == 1
     }
 
     pub fn add_cell(
