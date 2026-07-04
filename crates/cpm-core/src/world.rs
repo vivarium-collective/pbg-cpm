@@ -18,6 +18,7 @@ pub struct World {
     pub lattice: Lattice,
     pub cells: Vec<Cell>,
     pub temperature: f64,
+    pub contact: crate::energy::ContactMatrix,
 }
 
 impl World {
@@ -33,7 +34,16 @@ impl World {
             target_surface: 0.0,
             lambda_surface: 0.0,
         };
-        World { lattice, cells: vec![medium], temperature }
+        World {
+            lattice,
+            cells: vec![medium],
+            temperature,
+            contact: crate::energy::ContactMatrix::new(1),
+        }
+    }
+
+    pub fn set_contact_matrix(&mut self, m: crate::energy::ContactMatrix) {
+        self.contact = m;
     }
 
     pub fn add_cell(
