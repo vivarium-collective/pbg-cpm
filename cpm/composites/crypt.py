@@ -1,18 +1,22 @@
 """Crypt differentiation as a process-bigraph ``Composite``.
 
 A single ``CPMProcess`` runs the colonic-crypt Cellular Potts world seeded
-from the HRA FTU illustration. Every Epithelial-Stem cell additionally gets
-two subcellular processes wired to its local environment:
+from the HRA FTU illustration. The two ``Epithelial Stem`` cells at the crypt
+base are a permanent Wnt-secreting niche (they carry no subcell and never
+differentiate). Every cell in the *progenitor pool* (the Absorptive cells)
+additionally gets two subcellular processes wired to its local environment:
 
   * an ``SBMLSubcell`` integrating a stemness ODE driven by the local Wnt
     concentration (``field_at_cell`` -> ``ligand``), publishing stemness ``S``;
   * a ``BooleanSubcell`` that reads stemness plus the count of secretory
-    neighbours (``neighbor_secretory``) and emits a fate: stay stem, become
+    neighbours (``neighbor_secretory``) and emits a fate: stay put, become
     goblet (secretory), or become absorptive (Notch-style lateral inhibition).
 
-The CPM consumes the per-cell fates on the next update and relabels cells,
-so differentiation feeds back into the tissue. The whole thing is advanced by
-``Composite.run`` -- there is no bypass of the engine.
+A progenitor near the base sees high Wnt and keeps ``S`` high (stays
+undifferentiated); one farther up sees low Wnt, ``S`` falls below threshold,
+and it differentiates. The CPM consumes the per-cell fates on the next update
+and relabels cells, so differentiation feeds back into the tissue. The whole
+thing is advanced by ``Composite.run`` -- there is no bypass of the engine.
 """
 import process_bigraph as pb
 
@@ -85,14 +89,14 @@ def build_crypt_composite(core, *, downscale=1.0, mcs_per_update=8, subcell_ever
     progenitor_types = {absorp}
     probe = load_world(spec)
     probe_types = list(probe.cell_types())          # index == cell id, 0 == medium
-    stem_cell_ids = [cid for cid in range(1, len(probe_types))
+    progenitor_cell_ids = [cid for cid in range(1, len(probe_types))
                      if probe_types[cid] in progenitor_types]
 
     state = {
         # pre-seed the fates map with a 0 entry per wired cell so the per-cell
         # Boolean writes (overwrite[integer] into ``[fates, str(cid)]``) update an
         # existing key instead of being dropped by the map's apply.
-        "fates": {str(cid): 0 for cid in stem_cell_ids},
+        "fates": {str(cid): 0 for cid in progenitor_cell_ids},
         "cpm": {
             "_type": "process", "address": CPM_ADDR,
             "config": {"spec": spec, "mcs_per_update": mcs_per_update,
@@ -103,7 +107,7 @@ def build_crypt_composite(core, *, downscale=1.0, mcs_per_update=8, subcell_ever
                         "neighbor_secretory": ["neighbor_secretory"]},
         },
     }
-    for cid in stem_cell_ids:
+    for cid in progenitor_cell_ids:
         state[f"sbml_{cid}"] = {
             "_type": "process", "address": SBML_ADDR,
             "config": {"model": STEMNESS_MODEL, "ligand_species": "Wnt",
@@ -125,10 +129,10 @@ def build_crypt_composite(core, *, downscale=1.0, mcs_per_update=8, subcell_ever
     comp = pb.Composite({"state": state}, core=core)
     meta = {"dims": [nx, ny, 1], "type_names": names, "stem_type": stem,
             "goblet_type": goblet, "absorptive_type": absorp, "wnt_field": 0,
-            "n_subcells": len(stem_cell_ids),
+            "n_subcells": len(progenitor_cell_ids),
             # cell ids that carry an SBML+Boolean subcell (the wired Absorptive
             # progenitor pool); the demo keys its gates on these + the threshold.
-            "subcell_ids": list(stem_cell_ids),
+            "subcell_ids": list(progenitor_cell_ids),
             "stemness_threshold": STEMNESS_THRESHOLD}
     meta["initial_counts"] = {
         "stem": sum(1 for t in probe_types[1:] if t == stem),
