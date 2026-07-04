@@ -20,5 +20,12 @@ def load_world(spec):
     for c, cid in zip(spec.get("cells", []), ids):
         x0, y0, z0, x1, y1, z1 = c["seed_block"]
         world.seed_block(cid, x0, y0, z0, x1, y1, z1)
+    for fi, f in enumerate(spec.get("fields", [])):
+        idx = world.add_field(f["name"], float(f["d"]), float(f["decay"]))
+        # idx equals fi by construction; keep them in sync
+        for s in f.get("secretion", []):
+            world.set_secretion(idx, int(s["type"]), float(s["rate"]))
+        for c in f.get("chemotaxis", []):
+            world.set_chemotaxis(idx, int(c["type"]), float(c["lambda"]))
     world.finalize(int(p["seed"]))
     return world
