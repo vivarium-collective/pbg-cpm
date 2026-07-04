@@ -18,6 +18,6 @@ def test_process_update_returns_readback():
     core = pb.allocate_core()
     proc = CPMProcess({"spec": SPEC, "mcs_per_update": 5}, core=core)
     out = proc.update({}, 1.0)
-    assert "cell_volumes" in out
-    assert len(out["cell_volumes"]) == 2   # medium + 1 cell
-    assert out["cell_volumes"][1] > 0
+    assert "volumes" in out
+    assert len(out["volumes"]) == 2
+    assert out["volumes"][1] > 0
