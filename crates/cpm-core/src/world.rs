@@ -75,6 +75,17 @@ impl World {
         self.lattice.set_owner(idx, c);
     }
 
+    /// Relabel a live cell's type. Type affects only contact energy, never the
+    /// volume/surface/COM trackers, so this is a pure O(1) label write.
+    pub fn set_cell_type(&mut self, cell_id: CellId, new_type: u16) {
+        self.cells[cell_id as usize].cell_type = new_type;
+    }
+
+    /// Set a cell's target volume (per-cell growth control).
+    pub fn set_target_volume(&mut self, cell_id: CellId, v: f64) {
+        self.cells[cell_id as usize].target_volume = v;
+    }
+
     pub fn recompute_trackers(&mut self) {
         for cell in self.cells.iter_mut() {
             cell.volume = 0;

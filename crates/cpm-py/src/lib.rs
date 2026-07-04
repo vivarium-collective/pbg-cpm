@@ -147,6 +147,14 @@ impl World {
         self.world_mut().grow(cell_type, rate);
     }
 
+    fn set_cell_type(&mut self, cell_id: u32, new_type: u16) {
+        self.world_mut().set_cell_type(cell_id, new_type);
+    }
+
+    fn set_target_volume(&mut self, cell_id: u32, v: f64) {
+        self.world_mut().set_target_volume(cell_id, v);
+    }
+
     fn divide_cells(&mut self, threshold: f64, reset_target: f64) -> Vec<u32> {
         self.world_mut().divide_cells(threshold, reset_target)
     }
