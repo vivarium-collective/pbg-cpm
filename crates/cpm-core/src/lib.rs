@@ -7,6 +7,7 @@ pub mod energy;
 pub mod field;
 pub mod sweep;
 pub mod mitosis;
+pub mod init;
 
 #[cfg(test)]
 mod tests {

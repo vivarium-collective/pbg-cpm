@@ -3,6 +3,7 @@ use ::cpm_core::lattice::{Boundary, Lattice, Neighborhood};
 use ::cpm_core::sweep::Cpm;
 use ::cpm_core::world::World as CoreWorld;
 use pyo3::prelude::*;
+use std::collections::HashMap;
 
 #[pyclass]
 struct World {
@@ -61,6 +62,22 @@ impl World {
             }
         }
         Ok(())
+    }
+
+    fn seed_from_labels(
+        &mut self,
+        labels: Vec<u32>,
+        types: HashMap<u32, u16>,
+        default_type: u16,
+        target_volume: f64,
+        lambda_volume: f64,
+    ) -> PyResult<HashMap<u32, u32>> {
+        self.max_type = self.max_type.max(default_type);
+        for t in types.values() {
+            self.max_type = self.max_type.max(*t);
+        }
+        let core = self.core.as_mut().ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("seed after finalize"))?;
+        Ok(core.seed_from_labels(&labels, &types, default_type, target_volume, lambda_volume))
     }
 
     fn finalize(&mut self, seed: u64) -> PyResult<()> {
