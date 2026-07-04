@@ -8,6 +8,7 @@ pub mod field;
 pub mod sweep;
 pub mod mitosis;
 pub mod init;
+pub mod connectivity;
 
 #[cfg(test)]
 mod tests {
