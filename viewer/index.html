@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pbg-cpm · CPM viewer</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --edge: #2b3340; --fg: #e6edf3;
+    --muted: #9aa7b4; --accent: #4aa3ff; --accent2: #ffb454;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  #app { display: flex; height: 100vh; overflow: hidden; }
+  #sidebar { width: 300px; flex: 0 0 300px; background: var(--panel);
+    border-right: 1px solid var(--edge); display: flex; flex-direction: column; }
+  #sidebar header { padding: 18px 18px 12px; border-bottom: 1px solid var(--edge); }
+  #sidebar header h1 { margin: 0; font-size: 16px; letter-spacing: .3px; }
+  #sidebar header .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  #models { list-style: none; margin: 0; padding: 10px; overflow-y: auto; flex: 1; }
+  #models li { padding: 11px 12px; border-radius: 8px; cursor: pointer;
+    border: 1px solid transparent; margin-bottom: 6px; transition: background .12s; }
+  #models li:hover { background: #1d2530; }
+  #models li.active { background: #1b2b42; border-color: var(--accent); }
+  #models li .mname { font-weight: 600; }
+  #models li .mmeta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  #main { flex: 1; position: relative; display: flex; flex-direction: column; }
+  #canvas-wrap { flex: 1; position: relative; min-height: 0; }
+  canvas { display: block; }
+  #info { position: absolute; top: 14px; left: 14px; max-width: 46%;
+    background: rgba(13,17,23,.72); backdrop-filter: blur(6px);
+    border: 1px solid var(--edge); border-radius: 10px; padding: 12px 14px; }
+  #info h2 { margin: 0 0 4px; font-size: 15px; }
+  #info p { margin: 0; color: var(--muted); font-size: 12.5px; }
+  #controls { flex: 0 0 auto; display: flex; align-items: center; gap: 14px;
+    padding: 12px 18px; background: var(--panel); border-top: 1px solid var(--edge); }
+  #controls button { background: #202a36; color: var(--fg); border: 1px solid var(--edge);
+    border-radius: 8px; padding: 7px 14px; cursor: pointer; font-size: 13px; }
+  #controls button:hover { background: #2a3644; }
+  #scrub { flex: 1; accent-color: var(--accent); }
+  #framelabel { color: var(--muted); font-variant-numeric: tabular-nums;
+    min-width: 128px; text-align: right; font-size: 12.5px; }
+  #hint { color: var(--muted); font-size: 11.5px; padding: 0 18px 10px;
+    background: var(--panel); }
+  #loading { position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; color: var(--muted); font-size: 14px; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <header>
+      <h1>pbg-cpm</h1>
+      <div class="sub">Cellular Potts · model viewer</div>
+    </header>
+    <ul id="models"></ul>
+  </aside>
+  <div id="main">
+    <div id="canvas-wrap">
+      <div id="info"><h2>Select a model</h2><p>Choose a simulation on the left.</p></div>
+      <div id="loading">loading…</div>
+    </div>
+    <div id="controls">
+      <button id="play">▶ Play</button>
+      <input id="scrub" type="range" min="0" max="0" value="0">
+      <span id="framelabel">—</span>
+    </div>
+    <div id="hint">2D: top-down cell field · 3D: drag to orbit, scroll to zoom · colored by cell type, shaded per cell.</div>
+  </div>
+</div>
+<script type="module" src="./viewer.js"></script>
+</body>
+</html>
