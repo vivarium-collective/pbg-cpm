@@ -112,9 +112,18 @@ impl World {
     pub fn surface_deltas(&self, site: usize, new_owner: CellId) -> Vec<(CellId, i64)> {
         let a = self.lattice.owner(site);
         let b = new_owner;
-        let mut acc: std::collections::HashMap<CellId, i64> = std::collections::HashMap::new();
         if a == b {
             return Vec::new();
+        }
+        let mut acc: Vec<(CellId, i64)> = Vec::new();
+        fn entry(acc: &mut Vec<(CellId, i64)>, c: CellId) -> &mut i64 {
+            if let Some(pos) = acc.iter().position(|&(k, _)| k == c) {
+                &mut acc[pos].1
+            } else {
+                acc.push((c, 0));
+                let last = acc.len() - 1;
+                &mut acc[last].1
+            }
         }
         let neighbors = self.lattice.neighbors(site);
         // Site term
@@ -125,15 +134,16 @@ impl World {
             if c != a { unlike_a += 1; }
             if c != b { unlike_b += 1; }
         }
-        *acc.entry(a).or_insert(0) -= unlike_a;
-        *acc.entry(b).or_insert(0) += unlike_b;
+        *entry(&mut acc, a) -= unlike_a;
+        *entry(&mut acc, b) += unlike_b;
         // Neighbor term
         for &q in &neighbors {
             let c = self.lattice.owner(q);
             let delta = (if b != c { 1 } else { 0 }) - (if a != c { 1 } else { 0 });
-            *acc.entry(c).or_insert(0) += delta;
+            *entry(&mut acc, c) += delta;
         }
-        acc.into_iter().collect()
+        acc.sort_by_key(|&(c, _)| c);
+        acc
     }
 
     pub fn apply_flip(&mut self, site: usize, new_owner: CellId) {
