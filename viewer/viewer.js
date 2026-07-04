@@ -81,6 +81,9 @@ function cellRGB(id, out) {
   } else if (colorMode === "volume" && c.volNorm) {
     const h = heat(c.volNorm[id] || 0);
     out[0] = h[0]; out[1] = h[1]; out[2] = h[2];
+  } else if (colorMode === "state" && c.frameState) {
+    const h = heat((c.frameState[id] || 0) / (c.stateMax || 1));
+    out[0]=h[0]; out[1]=h[1]; out[2]=h[2];
   } else {
     out[0] = c.pal.flat[id*3]; out[1] = c.pal.flat[id*3+1]; out[2] = c.pal.flat[id*3+2];
   }
@@ -152,11 +155,17 @@ function setup2D(model) {
   if (!fieldMax && model.frames[0].field) {
     for (const f of model.frames) for (const v of f.field) if (v > fieldMax) fieldMax = v;
   }
+  let stateMax = 0;
+  if (model.frames[0].state) {
+    for (const f of model.frames) for (const v of f.state) if (v > stateMax) stateMax = v;
+  }
   current = {
     model, kind: "2d", tex, nx, ny, plane, hasField: !!model.frames[0].field, fieldMax,
+    stateMax, frameState: null,
     pal: buildPalettes(model.cell_types), volCache: {}, volNorm: null,
     render(fi) {
       if (colorMode === "volume") computeVolNorm(fi);
+      this.frameState = model.frames[fi].state || null;
       const frame = model.frames[fi];
       const labels = frame.labels, field = frame.field;
       const data = tex.image.data;
@@ -226,12 +235,18 @@ function setup3D(model) {
   controls = new OrbitControls(cam, renderer.domElement);
   controls.target.set(nx/2, ny/2, nz/2); controls.enableDamping = true; controls.update();
 
+  let stateMax = 0;
+  if (model.frames[0].state) {
+    for (const f of model.frames) for (const v of f.state) if (v > stateMax) stateMax = v;
+  }
   const tmp = new THREE.Object3D(), col = new THREE.Color();
   current = {
     model, kind: "3d", mesh, hasField: false, fieldMax: 0,
+    stateMax, frameState: null,
     pal: buildPalettes(model.cell_types), volCache: {}, volNorm: null,
     render(fi) {
       if (colorMode === "volume") computeVolNorm(fi);
+      this.frameState = model.frames[fi].state || null;
       const vox = model.frames[fi].voxels;
       let n = 0; const rgb = [0,0,0];
       for (let i = 0; i < vox.length; i++) {
@@ -361,6 +376,9 @@ const BLURB = {
     "colonic-crypt FTU (hubmapconsortium ccf-2d-reference-object-library). Every cell polygon " +
     "in the atlas Crosswalk layer is rasterized and placed with its Cell-Ontology type, then " +
     "relaxed as a Cellular Potts tissue.",
+  subcell: "Per-cell subcellular models run as a process-bigraph Composite: each " +
+    "stem cell carries an SBML stemness ODE (pbg-tellurium) and a Boolean fate switch. " +
+    "Basal Wnt keeps cells stem; in low-Wnt regions they differentiate (colour = stemness).",
 };
 
 async function loadModel(entry) {
@@ -375,6 +393,8 @@ async function loadModel(entry) {
 
   // volume color mode is meaningful only for 2D (exact areas)
   colormodeEl.querySelector('option[value="volume"]').disabled = model.is3d;
+  // stemness color mode only applies to subcellular models that carry per-frame state
+  colormodeEl.querySelector('option[value="state"]').disabled = !model.frames[0].state;
 
   fieldControls.style.display = current.hasField ? "" : "none";
   frameIdx = 0;
@@ -458,8 +478,10 @@ wrap.addEventListener("mousemove", (e) => {
   const tname = names && names[t] ? names[t] : `type ${t}`;
   const vol = volsForFrame(frameIdx)[id] | 0;
   const volLabel = current.kind === "2d" ? `${vol} px` : `${vol} surface vox`;
+  const state = current.model.frames[frameIdx].state;
+  const stateLabel = state ? ` · stemness ${state[id].toFixed(2)}` : "";
   tip.innerHTML = `<span class="sw" style="background:${typeSwatch(t)}"></span>` +
-    `<b>cell ${id}</b> · ${tname}<br>volume ${volLabel}`;
+    `<b>cell ${id}</b> · ${tname}<br>volume ${volLabel}${stateLabel}`;
   tip.style.display = "block";
   const wr = wrap.getBoundingClientRect();
   let lx = e.clientX - wr.left + 14, ly = e.clientY - wr.top + 14;
