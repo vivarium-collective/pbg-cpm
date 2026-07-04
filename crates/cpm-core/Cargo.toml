@@ -1,0 +1,11 @@
+[package]
+name = "cpm-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "cpm_core"
+
+[dependencies]
+rand = { workspace = true }

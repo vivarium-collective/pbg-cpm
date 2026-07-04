@@ -1,0 +1,7 @@
+[package]
+name = "cpm-py"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "cpm_py_placeholder"
+path = "src/lib.rs"
