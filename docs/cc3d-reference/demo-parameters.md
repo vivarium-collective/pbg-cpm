@@ -39,7 +39,12 @@ Canonical differential-adhesion cell sorting (Steinberg differential adhesion hy
 
 - Lattice: 100×100×1 (2D); 3D uses a comparable cube. Temperature **10.0**. NeighborOrder **2**.
 - Cell types: **Medium, Condensing, NonCondensing**.
-- Volume plugin: TargetVolume **25**, LambdaVolume **2.0** (both types).
+- Volume plugin: TargetVolume **25**, LambdaVolume **2.0** (both types). **3D note:** CC3D's
+  LambdaVolume 2.0 is a 2D value; in 3D's higher coordination the contact energies (up to 16)
+  overwhelm λ=2 and squeeze the less-cohesive NonCondensing cells to zero volume (a CPM
+  volume-constraint artifact). The 3D demo uses **LambdaVolume 6.0** so both types survive and
+  sort correctly (Condensing engulfed) — verified: with λ=2 all NonCondensing cells vanish; with
+  λ=6 both types keep volume ~20–23.
 - Contact energy matrix (J):
 
   | pair | J |

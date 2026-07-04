@@ -35,6 +35,23 @@ function cellColor(cellId, cellType, out) {
   return out;
 }
 
+// viridis-ish ramp for scalar fields (t in 0..1) -> [r,g,b] bytes
+function heat(t) {
+  t = Math.max(0, Math.min(1, t));
+  const stops = [
+    [13, 17, 23], [40, 40, 110], [40, 100, 140],
+    [30, 150, 130], [120, 195, 70], [250, 232, 60],
+  ];
+  const f = t * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(f));
+  const a = f - i, s0 = stops[i], s1 = stops[i + 1];
+  return [
+    (s0[0] + (s1[0] - s0[0]) * a) | 0,
+    (s0[1] + (s1[1] - s0[1]) * a) | 0,
+    (s0[2] + (s1[2] - s0[2]) * a) | 0,
+  ];
+}
+
 function buildPalette(cellTypes) {
   // rgba bytes per cell id; medium (0) -> transparent
   const n = cellTypes.length;
@@ -93,10 +110,13 @@ function setup2D(model) {
   controls?.dispose?.();
   controls = null;
 
+  const fieldMax = model.field_max || 0;
   current = {
     model, kind: "2d", tex, pal, nx, ny, plane,
     render(fi) {
-      const labels = model.frames[fi].labels;
+      const frame = model.frames[fi];
+      const labels = frame.labels;
+      const field = frame.field;   // optional scalar field (chemotaxis demo)
       const data = tex.image.data;
       for (let i = 0; i < labels.length; i++) {
         const id = labels[i];
@@ -104,8 +124,12 @@ function setup2D(model) {
         // flip Y so origin is bottom-left visually
         const x = i % nx, y = ny - 1 - ((i / nx) | 0);
         const d = (y * nx + x) * 4;
-        if (id === 0) { data[d] = 13; data[d+1] = 17; data[d+2] = 23; data[d+3] = 255; }
-        else { data[d] = pal[s]; data[d+1] = pal[s+1]; data[d+2] = pal[s+2]; data[d+3] = 255; }
+        if (id === 0) {
+          if (field && fieldMax > 0) {
+            const c = heat(field[i] / fieldMax);
+            data[d] = c[0]; data[d+1] = c[1]; data[d+2] = c[2]; data[d+3] = 255;
+          } else { data[d] = 13; data[d+1] = 17; data[d+2] = 23; data[d+3] = 255; }
+        } else { data[d] = pal[s]; data[d+1] = pal[s+1]; data[d+2] = pal[s+2]; data[d+3] = 255; }
       }
       tex.needsUpdate = true;
     },
@@ -194,9 +218,24 @@ async function loadModel(entry) {
   scrub.value = "0";
   current.render(0);
   updateFrameLabel();
-  infoEl.innerHTML = `<h2>${model.name}</h2><p>${model.description}</p>` +
+  const blurb = {
+    cellsort: "CC3D cellsort — differential-adhesion sorting (Steinberg). Condensing cells " +
+      "(cohesive) segregate into a cluster engulfed by NonCondensing.",
+    chemotaxis: "CC3D bacterium_macrophage — the Bacterium secretes a diffusing attractant " +
+      "(ATTR, shown as the heatmap); the Macrophage chemotaxes up the gradient and hunts it.",
+    growth: "CC3D cell growth & division — cells grow (target volume ↑) and divide at ~2× " +
+      "via mitosis, forming a proliferating colony.",
+  }[entry.kind] || "";
+  const checks = (entry.checks || []).map((c) =>
+    `<div style="font-size:12px;margin-top:3px;color:${c.pass ? '#5ad17f' : '#ff6b6b'}">` +
+    `${c.pass ? '✓' : '✗'} ${c.text}</div>`).join("");
+  const badge = entry.validated
+    ? `<span style="color:#5ad17f">✓ matches CC3D expected behavior</span>`
+    : `<span style="color:#ff6b6b">✗ validation failed</span>`;
+  infoEl.innerHTML = `<h2>${model.name}</h2><p>${blurb}</p>` +
     `<p style="margin-top:6px;color:#6f7d8c">${model.n_cells} cells · ` +
-    `${model.dims.join("×")} lattice · ${model.frames.length} frames</p>`;
+    `${model.dims.join("×")} lattice · ${model.frames.length} frames</p>` +
+    `<div style="margin-top:8px;font-size:12.5px;font-weight:600">${badge}</div>${checks}`;
   loadingEl.style.display = "none";
   onResize();
 }
@@ -253,7 +292,9 @@ requestAnimationFrame(animate);
   ul.innerHTML = "";
   models.forEach((m, i) => {
     const li = document.createElement("li");
-    li.innerHTML = `<div class="mname">${m.name}</div>` +
+    const vbadge = m.validated === undefined ? "" :
+      `<span style="color:${m.validated ? '#5ad17f' : '#ff6b6b'}">${m.validated ? '✓' : '✗'}</span> `;
+    li.innerHTML = `<div class="mname">${vbadge}${m.name}</div>` +
       `<div class="mmeta">${m.is3d ? "3D" : "2D"} · ${m.n_cells} cells · ${m.dims.join("×")}</div>`;
     li.addEventListener("click", () => {
       [...ul.children].forEach((c) => c.classList.remove("active"));
