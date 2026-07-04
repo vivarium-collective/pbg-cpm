@@ -98,6 +98,62 @@ impl World {
         let v = cell.volume as f64;
         [cell.com_sum[0] / v, cell.com_sum[1] / v, cell.com_sum[2] / v]
     }
+
+    pub fn surface_deltas(&self, site: usize, new_owner: CellId) -> Vec<(CellId, i64)> {
+        let a = self.lattice.owner(site);
+        let b = new_owner;
+        let mut acc: std::collections::HashMap<CellId, i64> = std::collections::HashMap::new();
+        if a == b {
+            return Vec::new();
+        }
+        let neighbors = self.lattice.neighbors(site);
+        // Site term
+        let mut unlike_a = 0i64;
+        let mut unlike_b = 0i64;
+        for &q in &neighbors {
+            let c = self.lattice.owner(q);
+            if c != a { unlike_a += 1; }
+            if c != b { unlike_b += 1; }
+        }
+        *acc.entry(a).or_insert(0) -= unlike_a;
+        *acc.entry(b).or_insert(0) += unlike_b;
+        // Neighbor term
+        for &q in &neighbors {
+            let c = self.lattice.owner(q);
+            let delta = (if b != c { 1 } else { 0 }) - (if a != c { 1 } else { 0 });
+            *acc.entry(c).or_insert(0) += delta;
+        }
+        acc.into_iter().collect()
+    }
+
+    pub fn apply_flip(&mut self, site: usize, new_owner: CellId) {
+        let a = self.lattice.owner(site);
+        let b = new_owner;
+        if a == b {
+            return;
+        }
+        let deltas = self.surface_deltas(site, b);
+        for (c, d) in deltas {
+            self.cells[c as usize].surface += d;
+        }
+        let [x, y, z] = self.lattice.coords(site);
+        // volume + com
+        {
+            let ca = &mut self.cells[a as usize];
+            ca.volume -= 1;
+            ca.com_sum[0] -= x as f64;
+            ca.com_sum[1] -= y as f64;
+            ca.com_sum[2] -= z as f64;
+        }
+        {
+            let cb = &mut self.cells[b as usize];
+            cb.volume += 1;
+            cb.com_sum[0] += x as f64;
+            cb.com_sum[1] += y as f64;
+            cb.com_sum[2] += z as f64;
+        }
+        self.lattice.set_owner(site, b);
+    }
 }
 
 #[cfg(test)]
@@ -143,5 +199,42 @@ mod tests {
         }
         w.recompute_trackers();
         assert_eq!(w.cells[a as usize].surface, 32);
+    }
+
+    #[test]
+    fn apply_flip_matches_full_recompute() {
+        use crate::lattice::{Boundary, Lattice, Neighborhood};
+        let lat = Lattice::new([6, 6, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let mut w = World::new(lat, 10.0);
+        let a = w.add_cell(1, 9.0, 1.0, 12.0, 1.0);
+        let b = w.add_cell(2, 9.0, 1.0, 12.0, 1.0);
+        for y in 1..4 { for x in 1..4 { let i = w.lattice.index(x, y, 0); w.paint(i, a); } }
+        for y in 1..4 { for x in 3..5 { let i = w.lattice.index(x, y, 0); w.paint(i, b); } }
+        // fix overlap: column x=3 belongs to b above; repaint cleanly
+        for y in 1..4 { let i = w.lattice.index(3, y, 0); w.paint(i, b); }
+        w.recompute_trackers();
+
+        // flip site (2,2) from a to b, then compare to a fresh full recompute
+        let site = w.lattice.index(2, 2, 0);
+        w.apply_flip(site, b);
+
+        let mut ref_w = World::new(
+            Lattice::new([6, 6, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2)),
+            10.0,
+        );
+        ref_w.add_cell(1, 9.0, 1.0, 12.0, 1.0);
+        ref_w.add_cell(2, 9.0, 1.0, 12.0, 1.0);
+        for idx in 0..w.lattice.n_sites() {
+            ref_w.paint(idx, w.lattice.owner(idx));
+        }
+        ref_w.recompute_trackers();
+
+        for c in 0..w.cells.len() {
+            assert_eq!(w.cells[c].volume, ref_w.cells[c].volume, "volume cell {c}");
+            assert_eq!(w.cells[c].surface, ref_w.cells[c].surface, "surface cell {c}");
+            for k in 0..3 {
+                assert!((w.cells[c].com_sum[k] - ref_w.cells[c].com_sum[k]).abs() < 1e-9);
+            }
+        }
     }
 }
