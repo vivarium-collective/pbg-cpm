@@ -165,6 +165,7 @@ impl World {
     }
 
     fn set_membrane_anchored(&mut self, cell_type: u16, on: bool) {
+        self.max_type = self.max_type.max(cell_type);
         self.world_mut().set_membrane_anchored(cell_type, on);
     }
 

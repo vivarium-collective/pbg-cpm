@@ -77,6 +77,14 @@ impl World {
     }
 
     pub fn set_membrane(&mut self, anchors: &[usize], k: f64, band: f64) {
+        // Empty anchors => no membrane. Otherwise build_distance_field would
+        // return an all-INFINITY field, and delta_membrane on an anchored cell
+        // would then see cost(inf) = +inf, freezing anchored cells solid — a
+        // silent foot-gun. Treat "no anchors" as "membrane unset" instead.
+        if anchors.is_empty() {
+            self.membrane_dist = Vec::new();
+            return;
+        }
         let dims = [self.lattice.dims_x(), self.lattice.dims_y(), self.lattice.dims_z()];
         self.membrane_dist = crate::membrane::build_distance_field(dims, anchors);
         self.membrane_k = k;

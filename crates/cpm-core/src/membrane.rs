@@ -102,4 +102,18 @@ mod tests {
         w2.set_membrane_anchored(1, false);
         assert!(!w2.any_membrane());
     }
+
+    #[test]
+    fn empty_anchors_is_membrane_unset_not_infinite_freeze() {
+        // set_membrane with no anchors must clear the field (not build an
+        // all-INFINITY one that would make anchored cells see cost(inf)).
+        let lat = Lattice::new([4, 1, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+        let mut w = World::new(lat, 10.0);
+        let a = w.add_cell(1, 4.0, 1.0, 0.0, 0.0);
+        w.paint(0, a);
+        w.set_membrane(&[], 5.0, 1.0);
+        w.set_membrane_anchored(1, true);
+        assert!(!w.any_membrane(), "empty anchors must leave the membrane unset");
+        assert_eq!(w.delta_membrane(3, a), 0.0, "no membrane -> zero energy, not inf");
+    }
 }
