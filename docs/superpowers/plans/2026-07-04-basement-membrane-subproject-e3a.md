@@ -384,7 +384,7 @@ git commit -m "feat(membrane): sum delta_membrane into the sweep + anchor proper
 Create `tests/test_membrane.py`:
 
 ```python
-import cpm_core
+from cpm import cpm_core
 from cpm.schema import load_world
 from cpm.metrics import membrane_distance_field, mean_membrane_distance, interior_medium_pockets
 
@@ -569,7 +569,7 @@ import json
 import os
 import sys
 
-import cpm_core
+from cpm import cpm_core
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from cpm.crypt3d import build_crypt3d
