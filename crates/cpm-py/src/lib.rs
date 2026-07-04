@@ -160,6 +160,14 @@ impl World {
         self.world_mut().set_connectivity_medium(on);
     }
 
+    fn set_membrane(&mut self, anchors: Vec<usize>, k: f64, band: f64) {
+        self.world_mut().set_membrane(&anchors, k, band);
+    }
+
+    fn set_membrane_anchored(&mut self, cell_type: u16, on: bool) {
+        self.world_mut().set_membrane_anchored(cell_type, on);
+    }
+
     fn set_target_volume(&mut self, cell_id: u32, v: f64) {
         self.world_mut().set_target_volume(cell_id, v);
     }

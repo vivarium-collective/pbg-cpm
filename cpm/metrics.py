@@ -143,3 +143,48 @@ def radial_thickness(world, cx=None, cy=None, n_theta=24):
     if not counts:
         return 0.0, 0
     return sum(counts) / len(counts), max(counts)
+
+
+def membrane_distance_field(dims, anchors):
+    """Multi-source BFS (6-neighbour graph distance) from anchor voxels to every
+    voxel. Mirrors cpm_core::membrane::build_distance_field for tests/demos."""
+    from collections import deque
+    nx, ny, nz = dims
+    n = nx * ny * nz
+    dist = [float("inf")] * n
+    q = deque()
+    for a in anchors:
+        if 0 <= a < n and dist[a] != 0.0:
+            dist[a] = 0.0
+            q.append(a)
+    while q:
+        v = q.popleft()
+        d = dist[v] + 1.0
+        z, rem = divmod(v, nx * ny)
+        y, x = divmod(rem, nx)
+        nb = []
+        if x + 1 < nx: nb.append(v + 1)
+        if x >= 1: nb.append(v - 1)
+        if y + 1 < ny: nb.append(v + nx)
+        if y >= 1: nb.append(v - nx)
+        if z + 1 < nz: nb.append(v + nx * ny)
+        if z >= 1: nb.append(v - nx * ny)
+        for w in nb:
+            if d < dist[w]:
+                dist[w] = d
+                q.append(w)
+    return dist
+
+
+def mean_membrane_distance(world, dist_field, anchored_types):
+    """Mean membrane distance over the voxels of cells whose type is in
+    `anchored_types` (a set of type ids). ~<= band when the anchor holds."""
+    nx, ny, nz = world.dims()
+    labels = world.snapshot()
+    types = world.cell_types()
+    total, count = 0.0, 0
+    for i, c in enumerate(labels):
+        if c != 0 and types[c] in anchored_types:
+            total += dist_field[i]
+            count += 1
+    return total / count if count else 0.0

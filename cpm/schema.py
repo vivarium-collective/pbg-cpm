@@ -46,5 +46,10 @@ def load_world(spec):
             world.set_connectivity(int(t), True)
         if conn.get("medium", False):
             world.set_connectivity_medium(True)
+    mem = spec.get("membrane")
+    if mem:
+        world.set_membrane(list(mem["anchors"]), float(mem["k"]), float(mem["band"]))
+        for t in mem.get("types", []):
+            world.set_membrane_anchored(int(t), True)
     world.finalize(int(p["seed"]))
     return world
