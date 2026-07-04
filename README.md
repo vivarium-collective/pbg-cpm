@@ -2,6 +2,11 @@
 
 A [process-bigraph](https://github.com/vivarium-collective/process-bigraph) **Cellular Potts Model** framework — a fast Rust CPM engine (2D/3D, thousands of cells) with a Python layer for pluggable subcellular models, structural constraints, schema-driven world construction, and analysis metrics. A modern, composable remake of CompuCell3D built to do better in 3D.
 
+## ▶ Live viewer — [**vivarium-collective.github.io/pbg-cpm**](https://vivarium-collective.github.io/pbg-cpm/)
+
+**[Explore the demos interactively in your browser →](https://vivarium-collective.github.io/pbg-cpm/)**
+A living 3D colonic crypt (stem cells dividing at the base, differentiating, and sloughing at the mouth), 3D cell sorting, chemotaxis, growth & division, the structural-integrity constraints, and real tissue initialized from Human Reference Atlas / MIBI-TOF imaging — each rotatable, scrubbable, and cell-inspectable.
+
 ## Install
 
 ```bash
