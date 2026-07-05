@@ -1,5 +1,6 @@
 use crate::lattice::Lattice;
 use crate::{CellId, MEDIUM};
+use smallvec::SmallVec;
 
 #[derive(Clone, Debug)]
 pub struct Cell {
@@ -34,6 +35,9 @@ pub struct World {
     pub length_target: Vec<f64>,
     pub length_lambda: Vec<f64>,
     pub ext_potential: Vec<[f64; 3]>,
+    // true iff any cell has a nonzero surface stiffness — lets the hot loop skip
+    // the surface-energy term (and its neighbour scan) entirely when it is unused.
+    pub surface_active: bool,
 }
 
 impl World {
@@ -67,7 +71,12 @@ impl World {
             length_target: Vec::new(),
             length_lambda: Vec::new(),
             ext_potential: Vec::new(),
+            surface_active: false,
         }
+    }
+
+    pub fn any_surface(&self) -> bool {
+        self.surface_active
     }
 
     pub fn set_contact_matrix(&mut self, m: crate::energy::ContactMatrix) {
@@ -283,6 +292,9 @@ impl World {
             target_surface,
             lambda_surface,
         });
+        if lambda_surface != 0.0 {
+            self.surface_active = true;
+        }
         id
     }
 
@@ -326,6 +338,7 @@ impl World {
     }
 
     pub fn recompute_trackers(&mut self) {
+        self.surface_active = self.cells.iter().any(|c| c.lambda_surface != 0.0);
         for cell in self.cells.iter_mut() {
             cell.volume = 0;
             cell.surface = 0;
@@ -369,14 +382,14 @@ impl World {
         [cell.com_sum[0] / v, cell.com_sum[1] / v, cell.com_sum[2] / v]
     }
 
-    pub fn surface_deltas(&self, site: usize, new_owner: CellId) -> Vec<(CellId, i64)> {
+    pub fn surface_deltas(&self, site: usize, new_owner: CellId) -> SmallVec<[(CellId, i64); 8]> {
         let a = self.lattice.owner(site);
         let b = new_owner;
         if a == b {
-            return Vec::new();
+            return SmallVec::new();
         }
-        let mut acc: Vec<(CellId, i64)> = Vec::new();
-        fn entry(acc: &mut Vec<(CellId, i64)>, c: CellId) -> &mut i64 {
+        let mut acc: SmallVec<[(CellId, i64); 8]> = SmallVec::new();
+        fn entry(acc: &mut SmallVec<[(CellId, i64); 8]>, c: CellId) -> &mut i64 {
             if let Some(pos) = acc.iter().position(|&(k, _)| k == c) {
                 &mut acc[pos].1
             } else {

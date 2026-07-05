@@ -55,16 +55,18 @@ impl World {
             d += cell.lambda_volume
                 * ((after - cell.target_volume).powi(2) - (before - cell.target_volume).powi(2));
         }
-        // Surface
-        for (c, ds) in self.surface_deltas(site, b) {
-            if c == crate::MEDIUM {
-                continue;
+        // Surface — skip the neighbour scan entirely when no cell uses it
+        if self.any_surface() {
+            for (c, ds) in self.surface_deltas(site, b) {
+                if c == crate::MEDIUM {
+                    continue;
+                }
+                let cell = &self.cells[c as usize];
+                let before = cell.surface as f64;
+                let after = (cell.surface + ds) as f64;
+                d += cell.lambda_surface
+                    * ((after - cell.target_surface).powi(2) - (before - cell.target_surface).powi(2));
             }
-            let cell = &self.cells[c as usize];
-            let before = cell.surface as f64;
-            let after = (cell.surface + ds) as f64;
-            d += cell.lambda_surface
-                * ((after - cell.target_surface).powi(2) - (before - cell.target_surface).powi(2));
         }
         // Contact
         let ta = self.cells[a as usize].cell_type;
