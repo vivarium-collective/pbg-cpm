@@ -1,4 +1,5 @@
 use crate::CellId;
+use smallvec::SmallVec;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Boundary {
@@ -100,9 +101,11 @@ impl Lattice {
         }
     }
 
-    pub fn neighbors(&self, idx: usize) -> Vec<usize> {
+    // Neighbour lists are tiny (<=18 for order-2 3D) and fetched on every flip
+    // attempt, so return an inline SmallVec: no heap allocation in the hot loop.
+    pub fn neighbors(&self, idx: usize) -> SmallVec<[usize; 18]> {
         let [x, y, z] = self.coords(idx);
-        let mut out = Vec::with_capacity(self.nbr.offsets().len());
+        let mut out = SmallVec::new();
         for off in self.nbr.offsets() {
             let nx = match self.wrap(x, off[0], self.dims[0], 0) { Some(v) => v, None => continue };
             let ny = match self.wrap(y, off[1], self.dims[1], 1) { Some(v) => v, None => continue };
@@ -116,10 +119,10 @@ impl Lattice {
     /// in use (2D: up to 4; 3D: up to 6), honoring per-axis boundary (NoFlux
     /// drops out-of-range, Periodic wraps). Independent of the CPM
     /// neighborhood order used for `neighbors` — diffusion always uses faces.
-    pub fn face_neighbors(&self, idx: usize) -> Vec<usize> {
+    pub fn face_neighbors(&self, idx: usize) -> SmallVec<[usize; 6]> {
         let [x, y, z] = self.coords(idx);
         let ndim = if self.dims[2] > 1 { 3 } else { 2 };
-        let mut out = Vec::with_capacity(2 * ndim);
+        let mut out = SmallVec::new();
         let coords = [x, y, z];
         for axis in 0..ndim {
             for off in [-1i64, 1i64] {
