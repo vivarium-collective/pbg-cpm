@@ -217,11 +217,13 @@ mod tests {
     fn chemotaxis_climbs_the_gradient() {
         // 2D world with a fixed linear gradient (D=0, decay=0, no secretion so
         // the imposed gradient persists), one motile cell starting at the
-        // LOW-concentration end, large positive lambda -> should move up-gradient (+x).
+        // LOW-concentration end, positive lambda -> should move up-gradient (+x).
+        // (A physical lambda: an extreme one lets chemotaxis overwhelm the volume
+        // constraint and dissolve the cell, which tests nothing about direction.)
         let dims = [20usize, 10usize, 1usize];
         let lat = Lattice::new(dims, [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
         let mut w = World::new(lat, 10.0);
-        let a = w.add_cell(1, 9.0, 2.0, 0.0, 0.0);
+        let a = w.add_cell(1, 9.0, 4.0, 0.0, 0.0);
         // seed a 3x3 block near the low-x end
         for y in 4..7 {
             for x in 2..5 {
@@ -239,7 +241,7 @@ mod tests {
             let [x, _, _] = w.lattice.coords(idx);
             w.fields[fi].conc[idx] = x as f32; // linear gradient in +x
         }
-        w.set_chemotaxis(fi, 1, 1e3);
+        w.set_chemotaxis(fi, 1, 30.0);
 
         let com_before = w.com(a);
         let mut cpm = Cpm::new(w, 123);

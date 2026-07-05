@@ -12,10 +12,19 @@ impl Cpm {
         Cpm { world, rng: SmallRng::seed_from_u64(seed) }
     }
 
+    /// Draw a fresh u64 from the driver RNG (used to seed per-block RNGs in the
+    /// parallel sweep, so a run's block seeds advance with the driver).
+    pub fn next_seed(&mut self) -> u64 {
+        self.rng.gen()
+    }
+
     pub fn step(&mut self, mcs: u64) {
         let n = self.world.lattice.n_sites();
         let t = self.world.temperature;
         for _ in 0..mcs {
+            // One MCS = n_sites copy attempts (the CC3D convention). Interior
+            // attempts (a same-owner neighbour pick) are rejected in a couple of
+            // instructions below, so they cost almost nothing.
             for _ in 0..n {
                 let s = self.rng.gen_range(0..n);
                 let neighbors = self.world.lattice.neighbors(s);

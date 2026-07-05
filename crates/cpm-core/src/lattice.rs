@@ -1,5 +1,6 @@
 use crate::CellId;
 use smallvec::SmallVec;
+use std::sync::atomic::{AtomicU32, Ordering};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Boundary {
@@ -42,14 +43,18 @@ impl Neighborhood {
 pub struct Lattice {
     pub dims: [usize; 3],
     pub boundary: [Boundary; 3],
-    site: Vec<CellId>,
+    // Owner of each site. AtomicU32 gives interior mutability so the parallel
+    // checkerboard sweep can write owners from `&Lattice` across threads; relaxed
+    // load/store compile to plain moves, so the sequential path pays nothing.
+    site: Vec<AtomicU32>,
     pub nbr: Neighborhood,
 }
 
 impl Lattice {
     pub fn new(dims: [usize; 3], boundary: [Boundary; 3], nbr: Neighborhood) -> Lattice {
         let n = dims[0] * dims[1] * dims[2];
-        Lattice { dims, boundary, site: vec![crate::MEDIUM; n], nbr }
+        let site = (0..n).map(|_| AtomicU32::new(crate::MEDIUM)).collect();
+        Lattice { dims, boundary, site, nbr }
     }
 
     pub fn n_sites(&self) -> usize {
@@ -76,12 +81,16 @@ impl Lattice {
 
     #[inline]
     pub fn owner(&self, idx: usize) -> CellId {
-        self.site[idx]
+        self.site[idx].load(Ordering::Relaxed)
     }
 
+    // `&self` (not `&mut`): interior mutability via the atomic. The parallel sweep
+    // writes owners across threads through a shared `&Lattice`; colour-phasing
+    // guarantees no two concurrently-processed sites are neighbours, so these
+    // relaxed stores never conflict on the same or adjacent cells' owner reads.
     #[inline]
-    pub fn set_owner(&mut self, idx: usize, c: CellId) {
-        self.site[idx] = c;
+    pub fn set_owner(&self, idx: usize, c: CellId) {
+        self.site[idx].store(c, Ordering::Relaxed);
     }
 
     /// Resolve one axis coordinate + offset under this axis' boundary.
