@@ -494,7 +494,7 @@ async function loadModel(entry) {
   updateFrameLabel(); updateStats();
 
   infoEl.innerHTML = `<h2>${model.name}</h2>` +
-    `<div class="desc">${BLURB[entry.kind] || ""}</div>` +
+    `<div class="desc">${model.blurb || BLURB[entry.kind] || ""}</div>` +
     `<div class="meta">${model.n_cells.toLocaleString()} cells · ${model.dims.join("×")} ` +
     `lattice · ${model.frames.length} frames</div>`;
 
@@ -567,7 +567,8 @@ wrap.addEventListener("mousemove", (e) => {
   const vol = volsForFrame(frameIdx)[id] | 0;
   const volLabel = current.kind === "2d" ? `${vol} px` : `${vol} surface vox`;
   const state = current.model.frames[frameIdx].state;
-  const stateLabel = state ? ` · stemness ${state[id].toFixed(2)}` : "";
+  const sName = current.model.state_label || "stemness";
+  const stateLabel = state ? ` · ${sName} ${state[id].toFixed(2)}` : "";
   tip.innerHTML = `<span class="sw" style="background:${typeSwatch(t)}"></span>` +
     `<b>cell ${id}</b> · ${tname}<br>volume ${volLabel}${stateLabel}`;
   tip.style.display = "block";
