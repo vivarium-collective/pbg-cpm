@@ -120,60 +120,6 @@
       ]
     },
     {
-      "file": "length_rods.json",
-      "name": "Length Constraint \u2014 Round Cells vs Rods",
-      "is3d": false,
-      "n_cells": 2,
-      "dims": [
-        93,
-        45,
-        1
-      ],
-      "kind": "integrity",
-      "validated": true,
-      "checks": [
-        {
-          "text": "unconstrained cells stay compact/round (mean length 5.4 < 7.2)",
-          "pass": true
-        },
-        {
-          "text": "length constraint elongates cells into rods (mean length 11.2 >= 9.6, near target 12)",
-          "pass": true
-        },
-        {
-          "text": "rods are far longer than the round controls (11.2 > 1.7x 5.4)",
-          "pass": true
-        }
-      ]
-    },
-    {
-      "file": "sediment_sorting.json",
-      "name": "External Potential \u2014 Sedimentation & Density Sorting",
-      "is3d": false,
-      "n_cells": 24,
-      "dims": [
-        40,
-        48,
-        1
-      ],
-      "kind": "cellsort",
-      "validated": true,
-      "checks": [
-        {
-          "text": "both populations start at the same height (heavy start 14.0 \u2248 light start 14.0)",
-          "pass": true
-        },
-        {
-          "text": "heavy cells sediment toward the floor (mean depth 21.3 > start 14.0 + 4)",
-          "pass": true
-        },
-        {
-          "text": "heavy settles BELOW light \u2014 density sorting (heavy 21.3 > light 15.7 + 4)",
-          "pass": true
-        }
-      ]
-    },
-    {
       "file": "scale_2d.json",
       "name": "Scale Test \u2014 10,000 cells",
       "is3d": false,
@@ -191,7 +137,7 @@
           "pass": true
         },
         {
-          "text": "throughput 4.4 MCS/s (1.1M copy-attempts/s), single-thread",
+          "text": "throughput 55.1 MCS/s (13.8M copy-attempts/s), single-thread",
           "pass": true
         }
       ]
@@ -305,6 +251,122 @@
       ]
     },
     {
+      "file": "hra_mibitof.json",
+      "name": "HRA / MIBI-TOF Colon (from imaging)",
+      "is3d": false,
+      "n_cells": 1016,
+      "dims": [
+        256,
+        256,
+        1
+      ],
+      "kind": "imaging",
+      "validated": true,
+      "checks": [
+        {
+          "text": "seeded 1016 cells with exact placement from the real segmentation (8 cell types)",
+          "pass": true
+        },
+        {
+          "text": "cell-type composition preserved (max fraction drift 0.000 < 0.03)",
+          "pass": true
+        },
+        {
+          "text": "cells stay near their imaged positions (mean COM drift 3.2px < 4)",
+          "pass": true
+        },
+        {
+          "text": "structural integrity: no cell fragments (0 of 1016 cells split into pieces)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "hra_ftu.json",
+      "name": "HRA FTU \u2014 Colonic Crypt (converted)",
+      "is3d": false,
+      "n_cells": 118,
+      "dims": [
+        64,
+        512,
+        1
+      ],
+      "kind": "ftu",
+      "validated": true,
+      "checks": [
+        {
+          "text": "converted 118 cells with exact placement from the HRA FTU illustration (5 atlas cell types)",
+          "pass": true
+        },
+        {
+          "text": "cell-type composition preserved (max fraction drift 0.000 < 0.05)",
+          "pass": true
+        },
+        {
+          "text": "cells stay near their illustrated positions (mean COM drift 1.5px < 6)",
+          "pass": true
+        },
+        {
+          "text": "structural integrity: no cell fragments (0 of 118 cells split into pieces)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "length_rods.json",
+      "name": "Length Constraint \u2014 Round Cells vs Rods",
+      "is3d": false,
+      "n_cells": 2,
+      "dims": [
+        93,
+        45,
+        1
+      ],
+      "kind": "integrity",
+      "validated": true,
+      "checks": [
+        {
+          "text": "unconstrained cells stay compact/round (mean length 5.4 < 7.2)",
+          "pass": true
+        },
+        {
+          "text": "length constraint elongates cells into rods (mean length 11.2 >= 9.6, near target 12)",
+          "pass": true
+        },
+        {
+          "text": "rods are far longer than the round controls (11.2 > 1.7x 5.4)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "sediment_sorting.json",
+      "name": "External Potential \u2014 Sedimentation & Density Sorting",
+      "is3d": false,
+      "n_cells": 24,
+      "dims": [
+        40,
+        48,
+        1
+      ],
+      "kind": "cellsort",
+      "validated": true,
+      "checks": [
+        {
+          "text": "both populations start at the same height (heavy start 14.0 \u2248 light start 14.0)",
+          "pass": true
+        },
+        {
+          "text": "heavy cells sediment toward the floor (mean depth 21.3 > start 14.0 + 4)",
+          "pass": true
+        },
+        {
+          "text": "heavy settles BELOW light \u2014 density sorting (heavy 21.3 > light 15.7 + 4)",
+          "pass": true
+        }
+      ]
+    },
+    {
       "file": "crypt_dynamics.json",
       "name": "Living Crypt (life-cycle)",
       "is3d": true,
@@ -370,68 +432,6 @@
         },
         {
           "text": "integrity: no cell fragments (0 of 160); lumen stays open (min depth 66 >= 21)",
-          "pass": true
-        }
-      ]
-    },
-    {
-      "file": "hra_mibitof.json",
-      "name": "HRA / MIBI-TOF Colon (from imaging)",
-      "is3d": false,
-      "n_cells": 1016,
-      "dims": [
-        256,
-        256,
-        1
-      ],
-      "kind": "imaging",
-      "validated": true,
-      "checks": [
-        {
-          "text": "seeded 1016 cells with exact placement from the real segmentation (8 cell types)",
-          "pass": true
-        },
-        {
-          "text": "cell-type composition preserved (max fraction drift 0.000 < 0.03)",
-          "pass": true
-        },
-        {
-          "text": "cells stay near their imaged positions (mean COM drift 3.2px < 4)",
-          "pass": true
-        },
-        {
-          "text": "structural integrity: no cell fragments (0 of 1016 cells split into pieces)",
-          "pass": true
-        }
-      ]
-    },
-    {
-      "file": "hra_ftu.json",
-      "name": "HRA FTU \u2014 Colonic Crypt (converted)",
-      "is3d": false,
-      "n_cells": 118,
-      "dims": [
-        64,
-        512,
-        1
-      ],
-      "kind": "ftu",
-      "validated": true,
-      "checks": [
-        {
-          "text": "converted 118 cells with exact placement from the HRA FTU illustration (5 atlas cell types)",
-          "pass": true
-        },
-        {
-          "text": "cell-type composition preserved (max fraction drift 0.000 < 0.05)",
-          "pass": true
-        },
-        {
-          "text": "cells stay near their illustrated positions (mean COM drift 1.5px < 6)",
-          "pass": true
-        },
-        {
-          "text": "structural integrity: no cell fragments (0 of 118 cells split into pieces)",
           "pass": true
         }
       ]
