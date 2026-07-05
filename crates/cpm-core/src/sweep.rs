@@ -43,6 +43,11 @@ impl Cpm {
                         self.world.delta_length(s, source_owner)
                     } else {
                         0.0
+                    }
+                    + if self.world.any_external() {
+                        self.world.delta_external(s, source_owner)
+                    } else {
+                        0.0
                     };
                 let accept = dh <= 0.0 || self.rng.gen::<f64>() < (-dh / t).exp();
                 if accept {

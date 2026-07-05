@@ -33,6 +33,7 @@ pub struct World {
     pub lambda_junction: f64,
     pub length_target: Vec<f64>,
     pub length_lambda: Vec<f64>,
+    pub ext_potential: Vec<[f64; 3]>,
 }
 
 impl World {
@@ -65,6 +66,7 @@ impl World {
             lambda_junction: 0.0,
             length_target: Vec::new(),
             length_lambda: Vec::new(),
+            ext_potential: Vec::new(),
         }
     }
 

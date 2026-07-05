@@ -204,6 +204,11 @@ impl World {
         (0..w.cells.len() as u32).map(|c| w.cell_length(c)).collect()
     }
 
+    fn set_external_potential(&mut self, cell_type: u16, fx: f64, fy: f64, fz: f64) {
+        self.max_type = self.max_type.max(cell_type);
+        self.world_mut().set_external_potential(cell_type, fx, fy, fz);
+    }
+
     fn set_target_volume(&mut self, cell_id: u32, v: f64) {
         self.world_mut().set_target_volume(cell_id, v);
     }

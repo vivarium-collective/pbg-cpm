@@ -12,6 +12,7 @@ pub mod connectivity;
 pub mod membrane;
 pub mod junction;
 pub mod length;
+pub mod external;
 
 #[cfg(test)]
 mod tests {
