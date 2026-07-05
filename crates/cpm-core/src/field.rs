@@ -53,6 +53,15 @@ impl World {
         self.fields.len() - 1
     }
 
+    /// Control the PDE solver for a field: `dt` (forward-Euler step; must keep
+    /// `dt*d*2*ndim < 1` for stability) and `substeps` diffusion sub-steps per MCS
+    /// (more sub-steps = faster equilibration / larger effective diffusion length).
+    pub fn set_field_dynamics(&mut self, field_idx: usize, dt: f64, substeps: u32) {
+        let f = &mut self.fields[field_idx];
+        f.dt = dt;
+        f.substeps = substeps.max(1);
+    }
+
     pub fn set_secretion(&mut self, field_idx: usize, cell_type: u16, rate: f64) {
         let t = cell_type as usize;
         let field = &mut self.fields[field_idx];
@@ -183,6 +192,25 @@ mod tests {
         let idx = w.lattice.index(2, 2, 0);
         let conc = w.fields[fi].conc[idx];
         assert!((conc as f64 - 100.0).abs() < 1e-6, "expected ~100 secretion, got {conc}");
+    }
+
+    #[test]
+    fn field_dynamics_substeps_accelerate_spread() {
+        // set_field_dynamics(dt, substeps): one advance_fields() runs `substeps`
+        // diffusion sub-steps, so more sub-steps spread a point source further in
+        // the same MCS. Compare 1 sub-step vs 8 sub-steps from an identical source.
+        fn spread(substeps: u32) -> f32 {
+            let lat = Lattice::new([11, 11, 1], [Boundary::NoFlux; 3], Neighborhood::new(false, 2));
+            let mut w = World::new(lat, 10.0);
+            let fi = w.add_field("m", 0.15, 0.0);
+            w.set_field_dynamics(fi, 0.2, substeps);
+            let c = w.lattice.index(5, 5, 0);
+            w.fields[fi].conc[c] = 100.0;
+            w.advance_fields();
+            let edge = w.lattice.index(5, 8, 0);
+            w.fields[fi].conc[edge]
+        }
+        assert!(spread(8) > spread(1), "more sub-steps should spread further");
     }
 
     #[test]

@@ -131,6 +131,18 @@ impl World {
         self.world_mut().set_secretion(field_idx, cell_type, rate);
     }
 
+    fn set_field_dynamics(&mut self, field_idx: usize, dt: f64, substeps: u32) {
+        self.world_mut().set_field_dynamics(field_idx, dt, substeps);
+    }
+
+    // Advance every field `n` MCS (diffusion sub-steps + secretion) WITHOUT running
+    // CPM flips — used to pre-equilibrate a morphogen gradient before the dynamics.
+    fn advance_fields(&mut self, n: u32) {
+        for _ in 0..n {
+            self.world_mut().advance_fields();
+        }
+    }
+
     fn set_chemotaxis(&mut self, field_idx: usize, cell_type: u16, lambda_val: f64) {
         self.world_mut().set_chemotaxis(field_idx, cell_type, lambda_val);
     }
