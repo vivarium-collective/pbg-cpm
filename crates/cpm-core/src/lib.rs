@@ -11,6 +11,7 @@ pub mod init;
 pub mod connectivity;
 pub mod membrane;
 pub mod junction;
+pub mod length;
 
 #[cfg(test)]
 mod tests {

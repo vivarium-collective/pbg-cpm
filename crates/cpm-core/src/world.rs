@@ -8,6 +8,9 @@ pub struct Cell {
     pub volume: i64,
     pub surface: i64,
     pub com_sum: [f64; 3],
+    // second moments Σ[x², y², z², xy, xz, yz] — the gyration tensor, for the
+    // length (elongation) constraint. Maintained incrementally like com_sum.
+    pub moment_sum: [f64; 6],
     pub target_volume: f64,
     pub lambda_volume: f64,
     pub target_surface: f64,
@@ -28,6 +31,8 @@ pub struct World {
     pub membrane_types: Vec<bool>,
     pub junction_types: Vec<bool>,
     pub lambda_junction: f64,
+    pub length_target: Vec<f64>,
+    pub length_lambda: Vec<f64>,
 }
 
 impl World {
@@ -38,6 +43,7 @@ impl World {
             volume: 0,
             surface: 0,
             com_sum: [0.0; 3],
+            moment_sum: [0.0; 6],
             target_volume: 0.0,
             lambda_volume: 0.0,
             target_surface: 0.0,
@@ -57,6 +63,8 @@ impl World {
             membrane_types: Vec::new(),
             junction_types: Vec::new(),
             lambda_junction: 0.0,
+            length_target: Vec::new(),
+            length_lambda: Vec::new(),
         }
     }
 
@@ -267,6 +275,7 @@ impl World {
             volume: 0,
             surface: 0,
             com_sum: [0.0; 3],
+            moment_sum: [0.0; 6],
             target_volume,
             lambda_volume,
             target_surface,
@@ -319,17 +328,25 @@ impl World {
             cell.volume = 0;
             cell.surface = 0;
             cell.com_sum = [0.0; 3];
+            cell.moment_sum = [0.0; 6];
         }
         let n = self.lattice.n_sites();
         for idx in 0..n {
             let owner = self.lattice.owner(idx);
             let [x, y, z] = self.lattice.coords(idx);
+            let (xf, yf, zf) = (x as f64, y as f64, z as f64);
             {
                 let cell = &mut self.cells[owner as usize];
                 cell.volume += 1;
-                cell.com_sum[0] += x as f64;
-                cell.com_sum[1] += y as f64;
-                cell.com_sum[2] += z as f64;
+                cell.com_sum[0] += xf;
+                cell.com_sum[1] += yf;
+                cell.com_sum[2] += zf;
+                cell.moment_sum[0] += xf * xf;
+                cell.moment_sum[1] += yf * yf;
+                cell.moment_sum[2] += zf * zf;
+                cell.moment_sum[3] += xf * yf;
+                cell.moment_sum[4] += xf * zf;
+                cell.moment_sum[5] += yf * zf;
             }
             let mut unlike = 0i64;
             for nidx in self.lattice.neighbors(idx) {
@@ -398,20 +415,24 @@ impl World {
             self.cells[c as usize].surface += d;
         }
         let [x, y, z] = self.lattice.coords(site);
-        // volume + com
+        let (xf, yf, zf) = (x as f64, y as f64, z as f64);
+        let m = [xf * xf, yf * yf, zf * zf, xf * yf, xf * zf, yf * zf];
+        // volume + com + moments
         {
             let ca = &mut self.cells[a as usize];
             ca.volume -= 1;
-            ca.com_sum[0] -= x as f64;
-            ca.com_sum[1] -= y as f64;
-            ca.com_sum[2] -= z as f64;
+            ca.com_sum[0] -= xf;
+            ca.com_sum[1] -= yf;
+            ca.com_sum[2] -= zf;
+            for k in 0..6 { ca.moment_sum[k] -= m[k]; }
         }
         {
             let cb = &mut self.cells[b as usize];
             cb.volume += 1;
-            cb.com_sum[0] += x as f64;
-            cb.com_sum[1] += y as f64;
-            cb.com_sum[2] += z as f64;
+            cb.com_sum[0] += xf;
+            cb.com_sum[1] += yf;
+            cb.com_sum[2] += zf;
+            for k in 0..6 { cb.moment_sum[k] += m[k]; }
         }
         self.lattice.set_owner(site, b);
     }
@@ -495,6 +516,10 @@ mod tests {
             assert_eq!(w.cells[c].surface, ref_w.cells[c].surface, "surface cell {c}");
             for k in 0..3 {
                 assert!((w.cells[c].com_sum[k] - ref_w.cells[c].com_sum[k]).abs() < 1e-9);
+            }
+            for k in 0..6 {
+                assert!((w.cells[c].moment_sum[k] - ref_w.cells[c].moment_sum[k]).abs() < 1e-9,
+                    "moment {k} cell {c}");
             }
         }
     }
