@@ -120,6 +120,60 @@
       ]
     },
     {
+      "file": "length_rods.json",
+      "name": "Length Constraint \u2014 Round Cells vs Rods",
+      "is3d": false,
+      "n_cells": 2,
+      "dims": [
+        93,
+        45,
+        1
+      ],
+      "kind": "integrity",
+      "validated": true,
+      "checks": [
+        {
+          "text": "unconstrained cells stay compact/round (mean length 5.4 < 7.2)",
+          "pass": true
+        },
+        {
+          "text": "length constraint elongates cells into rods (mean length 11.2 >= 9.6, near target 12)",
+          "pass": true
+        },
+        {
+          "text": "rods are far longer than the round controls (11.2 > 1.7x 5.4)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "sediment_sorting.json",
+      "name": "External Potential \u2014 Sedimentation & Density Sorting",
+      "is3d": false,
+      "n_cells": 24,
+      "dims": [
+        40,
+        48,
+        1
+      ],
+      "kind": "cellsort",
+      "validated": true,
+      "checks": [
+        {
+          "text": "both populations start at the same height (heavy start 14.0 \u2248 light start 14.0)",
+          "pass": true
+        },
+        {
+          "text": "heavy cells sediment toward the floor (mean depth 21.3 > start 14.0 + 4)",
+          "pass": true
+        },
+        {
+          "text": "heavy settles BELOW light \u2014 density sorting (heavy 21.3 > light 15.7 + 4)",
+          "pass": true
+        }
+      ]
+    },
+    {
       "file": "scale_2d.json",
       "name": "Scale Test \u2014 10,000 cells",
       "is3d": false,
@@ -281,6 +335,41 @@
         },
         {
           "text": "lumen stays open throughout (min axial depth 64 >= 21)",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "file": "crypt_morphogen.json",
+      "name": "Living Crypt \u2014 Wnt-driven (morphogen)",
+      "is3d": true,
+      "n_cells": 191,
+      "dims": [
+        26,
+        26,
+        71
+      ],
+      "kind": "cryptlife",
+      "validated": true,
+      "checks": [
+        {
+          "text": "a Wnt morphogen gradient forms from the basal niche: base 1.64 >> mouth 0.14 (>= 3x)",
+          "pass": true
+        },
+        {
+          "text": "fate is DRIVEN by local Wnt (not height): mean Wnt at stem 1.36 > transit-amplifying 0.71 > differentiated 0.26",
+          "pass": true
+        },
+        {
+          "text": "the crypt axis EMERGES from the gradient: stem basal 0.14 < differentiated apical 0.62",
+          "pass": true
+        },
+        {
+          "text": "conveyor + turnover: 43 births at the base (h 0.00) balanced by 32 sloughs at the mouth (h 0.89); steady population",
+          "pass": true
+        },
+        {
+          "text": "integrity: no cell fragments (0 of 160); lumen stays open (min depth 66 >= 21)",
           "pass": true
         }
       ]
