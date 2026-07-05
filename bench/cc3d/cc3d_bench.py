@@ -11,8 +11,9 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-PIF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blocks.piff")
-DIM = 50
+HERE = os.path.dirname(os.path.abspath(__file__))
+PIF = os.path.join(HERE, os.environ.get("CC3D_PIF", "blocks.piff"))
+DIM = int(os.environ.get("CC3D_DIM", "50"))
 TEMP = 10.0
 MCS = int(sys.argv[1]) if len(sys.argv) > 1 else 20
 

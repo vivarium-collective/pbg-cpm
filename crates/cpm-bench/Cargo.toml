@@ -9,3 +9,4 @@ path = "src/main.rs"
 
 [dependencies]
 cpm-core = { workspace = true }
+rayon = "1"

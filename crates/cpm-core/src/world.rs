@@ -140,6 +140,25 @@ impl World {
         }
     }
 
+    /// Public full rebuild of the boundary set — used by the parallel sweep after
+    /// a batch of concurrent flips (which don't maintain the set incrementally).
+    pub fn refresh_boundary_full(&mut self) {
+        self.rebuild_boundary();
+    }
+
+    /// Incrementally refresh the boundary set around a batch of flipped sites
+    /// (each site + its neighbours), instead of an O(n_sites) full rebuild. Used
+    /// by the parallel sweep at the phase barrier.
+    pub fn refresh_boundary_around(&mut self, sites: &[usize]) {
+        for &s in sites {
+            self.boundary_refresh(s);
+            let nbrs: SmallVec<[usize; 18]> = self.lattice.neighbors(s);
+            for q in nbrs {
+                self.boundary_refresh(q);
+            }
+        }
+    }
+
     fn rebuild_boundary(&mut self) {
         let n = self.lattice.n_sites();
         self.boundary_pos = vec![NOT_BOUNDARY; n];

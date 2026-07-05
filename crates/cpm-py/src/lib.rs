@@ -98,6 +98,16 @@ impl World {
         Ok(())
     }
 
+    /// Parallel checkerboard sweep across CPU cores (opt-in; approximate but
+    /// validated to track the sequential dynamics). `block` is the tile side
+    /// (>=2). Set RAYON_NUM_THREADS to cap threads. Not for length-constraint models.
+    #[pyo3(signature = (mcs, block=16))]
+    fn step_parallel(&mut self, mcs: u64, block: usize) -> PyResult<()> {
+        let cpm = self.cpm.as_mut().ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("call finalize() first"))?;
+        cpm.step_parallel(mcs, block);
+        Ok(())
+    }
+
     fn cell_volumes(&self) -> Vec<i64> {
         self.world_ref().cells.iter().map(|c| c.volume).collect()
     }

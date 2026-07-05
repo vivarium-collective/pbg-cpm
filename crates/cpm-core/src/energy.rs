@@ -68,9 +68,19 @@ impl World {
                     * ((after - cell.target_surface).powi(2) - (before - cell.target_surface).powi(2));
             }
         }
-        // Contact
+        d + self.delta_contact(site, b)
+    }
+
+    /// Contact (adhesion) energy change for reassigning `site` to `new_owner`.
+    /// Reads only owners (atomic) + cell types, no per-cell trackers — so the
+    /// parallel sweep reuses it unchanged.
+    #[inline]
+    pub fn delta_contact(&self, site: usize, new_owner: CellId) -> f64 {
+        let a = self.lattice.owner(site);
+        let b = new_owner;
         let ta = self.cells[a as usize].cell_type;
         let tb = self.cells[b as usize].cell_type;
+        let mut d = 0.0;
         for q in self.lattice.neighbors(site) {
             let c = self.lattice.owner(q);
             let tc = self.cells[c as usize].cell_type;

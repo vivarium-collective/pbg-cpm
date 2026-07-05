@@ -12,6 +12,12 @@ impl Cpm {
         Cpm { world, rng: SmallRng::seed_from_u64(seed) }
     }
 
+    /// Draw a fresh u64 from the driver RNG (used to seed per-block RNGs in the
+    /// parallel sweep, so a run's block seeds advance with the driver).
+    pub fn next_seed(&mut self) -> u64 {
+        self.rng.gen()
+    }
+
     pub fn step(&mut self, mcs: u64) {
         let t = self.world.temperature;
         for _ in 0..mcs {

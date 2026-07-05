@@ -31,6 +31,29 @@ when λ_surface = 0. CC3D loads no surface plugin here, so it never paid it.
 Guarding the term (`World::any_surface`) + dropping the allocation (`SmallVec`)
 closed the 1.24× gap — pbg-cpm is now at **parity** with CC3D's mature C++ core.
 
+## Parallel: beating CC3D
+
+`step_parallel` runs a checkerboard-coloured sweep across CPU cores (opt-in;
+default `step` stays sequential + bit-exact). Same physics (validated: cell
+trackers stay exact, aggregate statistics track the sequential engine).
+
+Direct head-to-head on an identical **dense 96³ / 1728-cell** model
+(`gen_pif.py 96 8 blocks_96.piff`), Apple M4 Max:
+
+| Engine | MCS/s | vs CC3D |
+|--------|-------|---------|
+| CompuCell3D 4.10 (single-thread) | 9.1 | 1× |
+| pbg-cpm `step_parallel`, 12 cores | 52.0 | **5.7×** |
+| pbg-cpm `step_parallel`, 16 cores | 57.3 | **6.3×** |
+
+Pure parallel efficiency (128³, self-relative): 1→4→8→12 threads = 1× → 3.5× →
+6.3× → **7.9×** (≈66% efficiency on the 12 performance cores).
+
+Reproduce:
+
+    CC3D_DIM=96 CC3D_PIF=blocks_96.piff micromamba run -n cc3d python bench/cc3d/cc3d_bench.py 10
+    RAYON_NUM_THREADS=12 cargo run --release -p cpm-bench -- par 96 16
+
 ## Reproduce
 
 pbg-cpm side:
