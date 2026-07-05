@@ -9,3 +9,4 @@ name = "cpm_core"
 
 [dependencies]
 rand = { workspace = true, features = ["small_rng"] }
+smallvec = "1"
