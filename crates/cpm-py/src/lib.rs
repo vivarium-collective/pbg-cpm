@@ -190,6 +190,25 @@ impl World {
         self.world_mut().set_junction_lambda(lambda);
     }
 
+    fn set_length_constraint(&mut self, cell_type: u16, target_length: f64, lambda: f64) {
+        self.max_type = self.max_type.max(cell_type);
+        self.world_mut().set_length_constraint(cell_type, target_length, lambda);
+    }
+
+    fn cell_length(&self, cell_id: u32) -> f64 {
+        self.world_ref().cell_length(cell_id)
+    }
+
+    fn cell_lengths(&self) -> Vec<f64> {
+        let w = self.world_ref();
+        (0..w.cells.len() as u32).map(|c| w.cell_length(c)).collect()
+    }
+
+    fn set_external_potential(&mut self, cell_type: u16, fx: f64, fy: f64, fz: f64) {
+        self.max_type = self.max_type.max(cell_type);
+        self.world_mut().set_external_potential(cell_type, fx, fy, fz);
+    }
+
     fn set_target_volume(&mut self, cell_id: u32, v: f64) {
         self.world_mut().set_target_volume(cell_id, v);
     }

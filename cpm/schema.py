@@ -1,3 +1,28 @@
+"""Declarative CPM spec → Rust `World`.
+
+A spec is a plain dict describing a Cellular Potts model. `load_world` builds and
+finalizes a `World` from it. Sections (all optional unless noted):
+
+  potts (required): {dims:[x,y,z], boundary:"noflux"|"periodic",
+                     neighbor_order:int, temperature:float, seed:int}
+  cells:    [{type, target_volume, lambda_volume, target_surface,
+              lambda_surface, seed_block:[x0,y0,z0,x1,y1,z1]}]  # explicit placement
+  seed_labels: {labels:[...], types:{id:type}, default_type, target_volume,
+              lambda_volume}                                     # from a segmentation
+              (cells and seed_labels are mutually exclusive)
+  contact:  [{a, b, j}]                                          # adhesion matrix
+  fields:   [{name, d, decay, secretion:[{type,rate}],
+              chemotaxis:[{type,lambda}],
+              dynamics:{dt, substeps}}]                          # reaction–diffusion PDE
+  connectivity: {types:[...], medium:bool}                       # anti-fragmentation (E1)
+  membrane: {anchors:[...], k, band, types:[...]}                # basement membrane (E3a)
+  junctions: {types:[...], lambda}                               # anti-gap (E3b)
+  length:   [{type, target_length, lambda}]                      # elongation constraint
+  external: [{type, fx?, fy?, fz?}]                              # constant force (gravity/taxis)
+
+Energy terms compose additively in the Metropolis Hamiltonian; each `*_type`
+list opts specific cell types into a term, so tissues can mix behaviours.
+"""
 from cpm import cpm_core
 
 
@@ -40,6 +65,11 @@ def load_world(spec):
             world.set_secretion(idx, int(s["type"]), float(s["rate"]))
         for c in f.get("chemotaxis", []):
             world.set_chemotaxis(idx, int(c["type"]), float(c["lambda"]))
+        # optional PDE solver settings (forward-Euler dt + diffusion sub-steps per
+        # MCS); keep dt*d*2*ndim < 1 for stability. Absent => engine defaults 1/1.
+        dyn = f.get("dynamics")
+        if dyn is not None:
+            world.set_field_dynamics(idx, float(dyn["dt"]), int(dyn["substeps"]))
     conn = spec.get("connectivity")
     if conn is not None:
         for t in conn.get("types", []):
@@ -56,5 +86,13 @@ def load_world(spec):
         for t in jn.get("types", []):
             world.set_junction(int(t), True)
         world.set_junction_lambda(float(jn.get("lambda", 0.0)))
+    # length (elongation) constraint: per-type target major-axis length + spring
+    for lc in spec.get("length", []):
+        world.set_length_constraint(int(lc["type"]), float(lc["target_length"]), float(lc["lambda"]))
+    # external potential: per-type constant force vector (gravity / taxis / bias)
+    for ep in spec.get("external", []):
+        world.set_external_potential(
+            int(ep["type"]), float(ep.get("fx", 0.0)),
+            float(ep.get("fy", 0.0)), float(ep.get("fz", 0.0)))
     world.finalize(int(p["seed"]))
     return world
