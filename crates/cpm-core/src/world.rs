@@ -38,15 +38,7 @@ pub struct World {
     // true iff any cell has a nonzero surface stiffness — lets the hot loop skip
     // the surface-energy term (and its neighbour scan) entirely when it is unused.
     pub surface_active: bool,
-    // Boundary-site set: every site with >=1 unlike neighbour (the only sites where
-    // a copy can succeed — interior attempts are provably no-ops). The sweep samples
-    // only from here. `boundary_pos[site]` is the site's index in `boundary_sites`,
-    // or NOT_BOUNDARY. A sparse set: O(1) sample / insert / remove / membership.
-    pub boundary_sites: Vec<usize>,
-    pub boundary_pos: Vec<u32>,
 }
-
-pub const NOT_BOUNDARY: u32 = u32::MAX;
 
 impl World {
     pub fn new(lattice: Lattice, temperature: f64) -> World {
@@ -80,95 +72,11 @@ impl World {
             length_lambda: Vec::new(),
             ext_potential: Vec::new(),
             surface_active: false,
-            boundary_sites: Vec::new(),
-            boundary_pos: Vec::new(),
         }
     }
 
     pub fn any_surface(&self) -> bool {
         self.surface_active
-    }
-
-    // --- boundary-site set -------------------------------------------------
-
-    /// A site is on a boundary if any of its (flip-neighbourhood) neighbours has a
-    /// different owner. Only these sites can ever accept a copy; interior sites
-    /// (all neighbours same owner) are guaranteed no-ops.
-    #[inline]
-    pub fn site_is_boundary(&self, site: usize) -> bool {
-        let o = self.lattice.owner(site);
-        self.lattice.neighbors(site).into_iter().any(|n| self.lattice.owner(n) != o)
-    }
-
-    #[inline]
-    pub fn boundary_len(&self) -> usize {
-        self.boundary_sites.len()
-    }
-
-    #[inline]
-    pub fn boundary_site(&self, idx: usize) -> usize {
-        self.boundary_sites[idx]
-    }
-
-    #[inline]
-    fn boundary_insert(&mut self, site: usize) {
-        if self.boundary_pos[site] == NOT_BOUNDARY {
-            self.boundary_pos[site] = self.boundary_sites.len() as u32;
-            self.boundary_sites.push(site);
-        }
-    }
-
-    #[inline]
-    fn boundary_remove(&mut self, site: usize) {
-        let p = self.boundary_pos[site];
-        if p != NOT_BOUNDARY {
-            let last = self.boundary_sites.len() - 1;
-            let moved = self.boundary_sites[last];
-            self.boundary_sites.swap_remove(p as usize);
-            self.boundary_pos[moved] = p;
-            self.boundary_pos[site] = NOT_BOUNDARY;
-        }
-    }
-
-    /// Recompute the boundary set for `site` and refresh membership.
-    #[inline]
-    fn boundary_refresh(&mut self, site: usize) {
-        if self.site_is_boundary(site) {
-            self.boundary_insert(site);
-        } else {
-            self.boundary_remove(site);
-        }
-    }
-
-    /// Public full rebuild of the boundary set — used by the parallel sweep after
-    /// a batch of concurrent flips (which don't maintain the set incrementally).
-    pub fn refresh_boundary_full(&mut self) {
-        self.rebuild_boundary();
-    }
-
-    /// Incrementally refresh the boundary set around a batch of flipped sites
-    /// (each site + its neighbours), instead of an O(n_sites) full rebuild. Used
-    /// by the parallel sweep at the phase barrier.
-    pub fn refresh_boundary_around(&mut self, sites: &[usize]) {
-        for &s in sites {
-            self.boundary_refresh(s);
-            let nbrs: SmallVec<[usize; 18]> = self.lattice.neighbors(s);
-            for q in nbrs {
-                self.boundary_refresh(q);
-            }
-        }
-    }
-
-    fn rebuild_boundary(&mut self) {
-        let n = self.lattice.n_sites();
-        self.boundary_pos = vec![NOT_BOUNDARY; n];
-        self.boundary_sites.clear();
-        for i in 0..n {
-            if self.site_is_boundary(i) {
-                self.boundary_pos[i] = self.boundary_sites.len() as u32;
-                self.boundary_sites.push(i);
-            }
-        }
     }
 
     pub fn set_contact_matrix(&mut self, m: crate::energy::ContactMatrix) {
@@ -463,7 +371,6 @@ impl World {
             }
             self.cells[owner as usize].surface += unlike;
         }
-        self.rebuild_boundary();
     }
 
     pub fn com(&self, c: CellId) -> [f64; 3] {
@@ -543,15 +450,6 @@ impl World {
             for k in 0..6 { cb.moment_sum[k] += m[k]; }
         }
         self.lattice.set_owner(site, b);
-        // The owner of `site` changed, so `site` and its neighbours may enter or
-        // leave the boundary set. Refresh exactly those (O(neighbourhood)).
-        if !self.boundary_pos.is_empty() {
-            self.boundary_refresh(site);
-            let nbrs: SmallVec<[usize; 18]> = self.lattice.neighbors(site);
-            for q in nbrs {
-                self.boundary_refresh(q);
-            }
-        }
     }
 }
 
@@ -639,33 +537,5 @@ mod tests {
                     "moment {k} cell {c}");
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod boundary_tests {
-    use super::*;
-    use crate::energy::ContactMatrix;
-    use crate::lattice::{Boundary, Lattice, Neighborhood};
-    use crate::sweep::Cpm;
-
-    #[test]
-    fn boundary_set_stays_consistent_after_stepping() {
-        let lat = Lattice::new([20, 20, 1], [Boundary::Periodic; 3], Neighborhood::new(false, 2));
-        let mut w = World::new(lat, 12.0);
-        let a = w.add_cell(1, 25.0, 2.0, 0.0, 0.0);
-        for y in 5..10 { for x in 5..10 { let i = w.lattice.index(x,y,0); w.paint(i,a); } }
-        let mut m = ContactMatrix::new(2); m.set(0,1,16.0);
-        w.set_contact_matrix(m);
-        w.recompute_trackers();
-        let mut cpm = Cpm::new(w, 7);
-        cpm.step(10);
-        // incremental set must equal a fresh scan
-        let w = &cpm.world;
-        let n = w.lattice.n_sites();
-        let mut fresh: Vec<usize> = (0..n).filter(|&i| w.site_is_boundary(i)).collect();
-        let mut inc = w.boundary_sites.clone();
-        fresh.sort(); inc.sort();
-        assert_eq!(inc, fresh, "incremental boundary set diverged from fresh scan");
     }
 }

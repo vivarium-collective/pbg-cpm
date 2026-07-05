@@ -281,8 +281,5 @@ impl crate::sweep::Cpm {
 
             self.world.advance_fields();
         }
-        // Boundary set was not maintained during the parallel sweep; restore it so a
-        // subsequent sequential step() is correct.
-        self.world.refresh_boundary_full();
     }
 }
