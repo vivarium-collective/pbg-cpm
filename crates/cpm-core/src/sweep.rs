@@ -13,11 +13,18 @@ impl Cpm {
     }
 
     pub fn step(&mut self, mcs: u64) {
-        let n = self.world.lattice.n_sites();
         let t = self.world.temperature;
         for _ in 0..mcs {
-            for _ in 0..n {
-                let s = self.rng.gen_range(0..n);
+            // One MCS = |B| attempts, where |B| is the boundary-site count at the
+            // start of the sweep. Sampling only boundary sites is exactly the full
+            // sweep minus its guaranteed-no-op interior attempts (see world.rs).
+            let m = self.world.boundary_len();
+            for _ in 0..m {
+                let blen = self.world.boundary_len();
+                if blen == 0 {
+                    break;
+                }
+                let s = self.world.boundary_site(self.rng.gen_range(0..blen));
                 let neighbors = self.world.lattice.neighbors(s);
                 if neighbors.is_empty() {
                     continue;
