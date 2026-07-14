@@ -16,6 +16,7 @@ import textwrap
 
 import matplotlib
 matplotlib.use("Agg")
+matplotlib.rcParams["svg.fonttype"] = "none"  # selectable text in the SVG
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 
@@ -77,7 +78,7 @@ def render_card_png(slug, r, title):
 
     import io
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", facecolor=_CARD)
+    fig.savefig(buf, format="svg", facecolor=_CARD)
     plt.close(fig)
     return buf.getvalue()
 
@@ -99,9 +100,9 @@ def write_cards(results=None):
     for slug, r in results.items():
         charts = os.path.join(STU_DIR, slug, "charts")
         os.makedirs(charts, exist_ok=True)
-        png = render_card_png(slug, r, _study_title(slug))
-        with open(os.path.join(charts, "00_report_card.png"), "wb") as f:
-            f.write(png)
+        svg = render_card_png(slug, r, _study_title(slug))
+        with open(os.path.join(charts, "00_report_card.svg"), "wb") as f:
+            f.write(svg)
         with open(os.path.join(charts, "00_report_card.meta.json"), "w") as f:
             json.dump({
                 "title": ("✓ Validation PASS" if r["passed"] else "✕ Validation FAIL")

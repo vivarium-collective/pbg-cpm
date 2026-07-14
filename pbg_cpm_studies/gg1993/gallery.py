@@ -91,8 +91,9 @@ def _b64(path):
 
 
 def _fig_order(slug):
-    """Ordered list of figure PNGs for a study (paper order)."""
-    files = sorted(glob.glob(os.path.join(FIG_ROOT, slug, "*.png")))
+    """Ordered list of figure files (PNG patterns + SVG plots/tables), paper order."""
+    files = (glob.glob(os.path.join(FIG_ROOT, slug, "*.png"))
+             + glob.glob(os.path.join(FIG_ROOT, slug, "*.svg")))
     # sort by figure number embedded in filename
     def key(p):
         base = os.path.basename(p)
@@ -100,6 +101,13 @@ def _fig_order(slug):
         m = re.search(r"(fig|table)(\d+)", base)
         return (0 if base.startswith("fig") else 1, int(m.group(2)) if m else 99, base)
     return sorted(files, key=key)
+
+
+def _img_src(path):
+    """Self-contained <img> src for a figure file (base64 PNG or data-URI SVG)."""
+    if path.endswith(".svg"):
+        return "data:image/svg+xml;base64," + _b64(path)
+    return "data:image/png;base64," + _b64(path)
 
 
 def _params_block(slug):
@@ -131,7 +139,7 @@ def _study_section(slug, embed=True):
     for f in figs:
         name = os.path.splitext(os.path.basename(f))[0]
         cap = _CAPTIONS.get(name, name)
-        src = ("data:image/png;base64," + _b64(f)) if embed else os.path.relpath(f, os.path.dirname(f))
+        src = _img_src(f) if embed else os.path.relpath(f, os.path.dirname(f))
         parts.append(f'<div class="fig"><img src="{src}"><div class="cap">{cap}</div></div>')
     return title, "\n".join(parts)
 
@@ -195,7 +203,8 @@ def sync_study_charts(slug):
         # index 00 is reserved for the validation report card (report_card.py),
         # so figures start at 01 and the card always sorts/renders first.
         key = f"{i + 1:02d}_{name}"
-        with open(f, "rb") as src, open(os.path.join(charts, key + ".png"), "wb") as dst:
+        ext = os.path.splitext(f)[1]  # preserve .png (patterns) / .svg (plots, tables)
+        with open(f, "rb") as src, open(os.path.join(charts, key + ext), "wb") as dst:
             dst.write(src.read())
         with open(os.path.join(charts, key + ".meta.json"), "w") as mf:
             json.dump({

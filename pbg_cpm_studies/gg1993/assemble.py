@@ -55,7 +55,10 @@ def build(slug, fig_dir):
     made = []
 
     def out(name):
-        p = os.path.join(fig_dir, f"{name}.png")
+        # Pattern-image grids stay raster (high-DPI PNG); line plots + moment
+        # tables are vector SVG so they're crisp at any browser zoom.
+        ext = "png" if ("pattern" in name or "wall" in name) else "svg"
+        p = os.path.join(fig_dir, f"{name}.{ext}")
         made.append(p)
         return p
 
