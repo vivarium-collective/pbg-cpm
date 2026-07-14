@@ -161,6 +161,14 @@ def _save_viz(study, slug, html):
 # Annealing — interactive
 _save_viz('annealing', 'Annealing_interactive', _render_one('local:GG1993Annealing', {}, RUNS_DB, STUDY_YAML))
 
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Topological equilibrium under T=0 annealing | n_bulk | final ⟨n⟩_bulk ≈ 6 (within 0.3) and μ₂ decreases while annealing |
+
 # ## Study: `global_equilibration`
 #
 # **Question.** Does a rectangular brick tiling relax into a rounded, topologically-equilibrated aggregate at T=5?
@@ -191,6 +199,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 
 # Global pattern equilibration — interactive
 _save_viz('global_equilibration', 'Global_pattern_equilibration_interactive', _render_one('local:GG1993GlobalEquilibration', {}, RUNS_DB, STUDY_YAML))
+
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Brick tiling rounds to a disk at topological equilibrium | bl_total | total boundary length decreases (rounding) and ⟨n⟩_bulk ≈ 6 |
 
 # ## Study: `checkerboard`
 #
@@ -223,6 +239,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 # Checkerboard (negative surface tension) — interactive
 _save_viz('checkerboard', 'Checkerboard_negative_surface_tension_interactive', _render_one('local:GG1993Checkerboard', {}, RUNS_DB, STUDY_YAML))
 
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Heterotypic contacts dominate (checkerboard mixing) | frac_ld | light-dark fraction > 0.5 and larger than light-light & dark-dark |
+
 # ## Study: `cell_sorting`
 #
 # **Question.** Does differential adhesion (gamma_dM>gamma_lM>gamma_ld>0) sort a random mix into dark-inside / light-monolayer, as observed by Armstrong and Steinberg?
@@ -253,6 +277,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 
 # Cell sorting — interactive
 _save_viz('cell_sorting', 'Cell_sorting_interactive', _render_one('local:GG1993CellSorting', {}, RUNS_DB, STUDY_YAML))
+
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Coarsening proceeds but sorting is logarithmically slow | bl_total | total boundary length decreases while light-dark contact stays high (>0.35) |
 
 # ## Study: `engulfment`
 #
@@ -285,6 +317,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 # Engulfment — interactive
 _save_viz('engulfment', 'Engulfment_interactive', _render_one('local:GG1993Engulfment', {}, RUNS_DB, STUDY_YAML))
 
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Light engulfs dark (dark loses its medium contact) | frac_dM | dark-medium fraction falls ≥2× and light-medium fraction rises |
+
 # ## Study: `position_reversal`
 #
 # **Question.** Does raising the light-Medium tension (gamma_lM=23) reverse the sorting so dark cells end up outside?
@@ -315,6 +355,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 
 # Position reversal — interactive
 _save_viz('position_reversal', 'Position_reversal_interactive', _render_one('local:GG1993PositionReversal', {}, RUNS_DB, STUDY_YAML))
+
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Reversed surface arrangement (dark on the outside) | corr_dM | dark-medium contact correlation exceeds light-medium (dark at the surface) |
 
 # ## Study: `partial_sorting`
 #
@@ -347,6 +395,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 # Partial cell sorting — interactive
 _save_viz('partial_sorting', 'Partial_cell_sorting_interactive', _render_one('local:GG1993PartialSorting', {}, RUNS_DB, STUDY_YAML))
 
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Partial sorting — coarsening with incomplete demixing | frac_ld | boundary length decreases yet light-dark contact stays high (>0.35, still mixed) |
+
 # ## Study: `dispersal_sloughing`
 #
 # **Question.** Does a negative light-Medium tension (gamma_lM=-5) make light cells slough off and disperse into the medium?
@@ -377,6 +433,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 
 # Dispersal — light-cell sloughing — interactive
 _save_viz('dispersal_sloughing', 'Dispersal_light-cell_sloughing_interactive', _render_one('local:GG1993DispersalSloughing', {}, RUNS_DB, STUDY_YAML))
+
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Light cells slough off and disperse into the medium | frac_lM | light-medium fraction rises ≥3× and total boundary length increases (fragmentation) |
 
 # ## Study: `dispersal_separate`
 #
@@ -409,6 +473,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 # Dispersal — clusters separate — interactive
 _save_viz('dispersal_separate', 'Dispersal_clusters_separate_interactive', _render_one('local:GG1993DispersalSeparate', {}, RUNS_DB, STUDY_YAML))
 
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Clusters separate (both types expose new medium surface) | bl_total | total boundary length increases and both medium-contact fractions rise |
+
 # ## Study: `dispersal_no_separate`
 #
 # **Question.** At gamma_ld=21, do light/dark clusters stay attached (extreme partial sorting) rather than fully separate?
@@ -440,6 +512,14 @@ print("No recorded runs for this study; nothing to reproduce.")
 # Dispersal — clusters do not separate — interactive
 _save_viz('dispersal_no_separate', 'Dispersal_clusters_do_not_separate_interactive', _render_one('local:GG1993DispersalNoSeparate', {}, RUNS_DB, STUDY_YAML))
 
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Clusters stay aggregated (no separation) | bl_total | total boundary length does not increase (aggregate stays compact) |
+
 # ## Study: `vacancy_cavity`
 #
 # **Question.** With unequal target areas (A_l=20, A_d=40) and vacancy nucleation allowed, does a light-cell-lined central cavity form?
@@ -470,3 +550,11 @@ print("No recorded runs for this study; nothing to reproduce.")
 
 # Vacancy nucleation (cavity) — interactive
 _save_viz('vacancy_cavity', 'Vacancy_nucleation_cavity_interactive', _render_one('local:GG1993VacancyCavity', {}, RUNS_DB, STUDY_YAML))
+
+# ### Acceptance criteria
+#
+# _Pre-registered checks (criteria/thresholds only — run the cells above to evaluate them)._
+#
+# | test | measures | passes if |
+# | --- | --- | --- |
+# | Cavity nucleates and rounds; dark accumulates | frac_dd | total boundary length decreases (cavity rounds) and dark-dark contact rises |

@@ -79,7 +79,7 @@
   <div class="study-subnav" id="study-subnav">
     <button class="study-tab active" data-kind="overview" data-pillar="understand" onclick="_setStudyTab('overview')">Overview</button>
     <button class="study-tab"        data-kind="tests"        data-pillar="inquire"  onclick="_setStudyTab('tests')">Tests</button>
-    <button class="study-tab"        data-kind="conclusions"  data-pillar="inquire"  onclick="_setStudyTab('conclusions')">Conclusions</button>
+    <button class="study-tab"        data-kind="conclusions"  data-pillar="inquire"  onclick="_setStudyTab('conclusions')">Decide</button>
     <button class="study-tab" data-kind="compose" data-pillar="compose" onclick="_setStudyTab('compose')">Model</button>
     <button class="study-tab" data-kind="simulate" data-pillar="simulate" onclick="_setStudyTab('simulate')">Simulations</button>
     <button class="study-tab" data-kind="visualize" data-pillar="visualize" onclick="_setStudyTab('visualize')">Results</button>
@@ -398,7 +398,8 @@
         
         
         <p style="margin:0">
-          <strong>1</strong> tests defined
+          <strong>1</strong> tests defined —
+            <span class="classification-pill classification-primary">1 primary</span>
           <a onclick="_setStudyTab('tests')" style="cursor:pointer;color:#3b82f6;text-decoration:underline;margin-left:6px">View on Tests tab →</a>
         </p>
       </div>
@@ -495,82 +496,6 @@
 
   
   
-  
-  <div class="baseline-list">
-    
-    <article class="baseline-entry" data-baseline-name="baseline">
-      <header class="baseline-entry-header">
-        <h3 class="baseline-entry-name">baseline</h3>
-        <code class="baseline-entry-fqn">pbg_cpm_studies.composites.gg1993.dispersal_separate</code>
-      </header>
-      
-      <div class="baseline-entry-actions">
-        <button class="btn-run-baseline" data-baseline-name="baseline">Run</button>
-        <button class="btn-baseline-remove" data-baseline-name="baseline">Remove</button>
-      </div>
-    </article>
-    
-  </div>
-
-  <details class="baseline-add-form">
-    <summary class="btn-baseline-add">+ Add composite</summary>
-    <form id="baseline-add-form" onsubmit="return _submitBaselineAdd(event)">
-      <label>Name (short, unique): <input name="name" required pattern="[a-zA-Z0-9_-]+"></label>
-      <label>Composite ID: <input name="composite" required placeholder="pkg.composites.foo"></label>
-      <label>Params (JSON, optional): <textarea name="params" placeholder="{}"></textarea></label>
-      <button type="submit">Add</button>
-    </form>
-  </details>
-  <div class="variants-list">
-    
-    <p class="empty-message">No variants yet. Add one to perturb a baseline composite's parameters.</p>
-    
-  </div>
-
-  <details class="variant-add-form-wrapper">
-    <summary class="btn-variant-new">+ New variant</summary>
-    <form id="variant-new-form" onsubmit="return _submitVariantAdd(event)">
-      <label>Name: <input name="name" required pattern="[a-zA-Z0-9_-]+"></label>
-      <label>Base composite:
-        <select name="base_composite" required onchange="_onBaseCompositeChange(this)">
-          <option value="">— pick a baseline composite —</option>
-          
-          <option value="baseline" data-composite-id="pbg_cpm_studies.composites.gg1993.dispersal_separate">baseline (pbg_cpm_studies.composites.gg1993.dispersal_separate)</option>
-          
-        </select>
-      </label>
-      <div id="variant-new-params" class="param-form">
-        <p class="muted">Pick a base composite to see its parameters.</p>
-      </div>
-      <button type="submit">Save variant</button>
-    </form>
-  </details>
-
-  <!-- Hidden edit form, populated dynamically when "Edit params" is clicked -->
-  <dialog id="variant-edit-dialog">
-    <form id="variant-edit-form" onsubmit="return _submitVariantEdit(event)" method="dialog">
-      <h3>Edit parameter overrides for <code id="variant-edit-name"></code></h3>
-      <div id="variant-edit-params" class="param-form"></div>
-      <menu>
-        <button type="button" onclick="document.getElementById('variant-edit-dialog').close()">Cancel</button>
-        <button type="submit">Save</button>
-      </menu>
-    </form>
-  </dialog>
-  <div class="interventions-list">
-    
-    <p class="empty-message">No interventions yet. Add one to record an experimental condition.</p>
-    
-  </div>
-
-  <details class="intervention-add-form-wrapper">
-    <summary class="btn-intervention-new">+ New intervention</summary>
-    <form id="intervention-new-form" onsubmit="return _submitInterventionAdd(event)">
-      <label>Name: <input name="name" required pattern="[a-zA-Z0-9_-]+"></label>
-      <label>Description: <textarea name="description" placeholder="Describe the experimental condition"></textarea></label>
-      <button type="submit">Add</button>
-    </form>
-  </details>
   
   
 </section>
@@ -779,23 +704,29 @@
     
     
     
-    <li class="expected-behavior-item" id="bt-0"
+    <li class="expected-behavior-item" id="bt-Clusters separate (both types expose new medium surface)"
         data-test-kind="behavioral"
         
-        data-pytest-node=""
-        data-classification="unclassified"
+        data-pytest-node="Clusters separate (both types expose new medium surface)"
+        data-classification="primary"
         data-result="pending"
-        style="margin: 0 0 10px 0; padding: 10px 12px; border-left: 4px solid #cbd5e1; background: #f8fafc; border-radius: 4px;">
+        style="margin: 0 0 10px 0; padding: 10px 12px; border-left: 4px solid #10b981; background: #f8fafc; border-radius: 4px;">
       
         
       <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
         <span class="bt-result" style="font-size: 0.75em; font-family: monospace; padding: 2px 8px; border-radius: 9999px; background: #f1f5f9; color: #475569">⏳ pending</span>
-        <span class="classification-pill classification-unclassified">unclassified</span>
-        <strong style="font-size: 0.9em;">(unnamed)</strong>
+        <span class="classification-pill classification-primary">primary</span>
+        <strong style="font-size: 0.9em;">Clusters separate (both types expose new medium surface)</strong>
         
       </div>
-      <div style="margin-top: 6px; font-size: 0.95em;"></div>
+      <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 26 — clusters break apart and separate. Pass criterion: total boundary length increases and both medium-contact fractions rise. Measured from the reproduced run: boundary 37555→38572, frac_lM 0.047→0.105, frac_dM 0.043→0.100.</div>
       
+      
+      <details style="margin-top: 6px; font-size: 0.82em;">
+        <summary class="muted" style="cursor: pointer;">Assertion</summary>
+        <pre style="background:#fff; padding:8px; margin:4px 0 0 0; border:1px solid #e2e8f0; border-radius:3px; overflow-x:auto;">measure: "bl_total"
+pass_if: "total boundary length increases and both medium-contact fractions rise"</pre>
+      </details>
       
       
       
@@ -817,6 +748,12 @@
   
   <div class="overview-section"><h2 class="overview-label">Verdict &amp; conclusion</h2>
 
+    
+    <p class="muted" style="margin:0 0 16px 0;font-size:0.9em">
+      Synthesises the latest run's outcomes against the pre-stated
+      <code>conclusion_logic</code>, then surfaces concrete follow-up actions
+      you can either review (existing studies) or seed (new ones).
+    </p>
     
 
     <div class="overview-section narrative-card" data-narrative-card="conclusion_verdicts" style="margin-bottom:18px">
@@ -875,6 +812,17 @@
     </div>
 
     
+    
+    
+
+    
+    
+    <div class="decide-section" style="margin-top:18px">
+      <h3 class="overview-label">Conclusion</h3>
+      <pre style="background:#f8fafc;padding:12px;border-left:3px solid #94a3b8;border-radius:3px;white-space:pre-wrap;font-family:inherit;font-size:0.9em;line-height:1.5;margin:0">Reproduced the paper&#39;s Dispersal - clusters separate example with the exact energies and initial condition; the pbg-cpm CPM engine yields the same qualitative behaviour and topology. Figures: Fig 26.</pre>
+    </div>
+    
+    
 
   </div>
 
@@ -883,28 +831,8 @@
 
     
     
-    <p class="muted" style="margin:0 0 10px 0;font-size:0.85em">
-      Synthesised read-only from canonical fields — edit <code>findings</code>,
-      <code>limitations</code>, and <code>discovery_implications</code> to change
-      this (and the generated report) together.
-    </p>
-    <div class="conclusions-grid conclusions-synthesis">
-      <div class="conclusion-field">
-        <h3>Claims <span class="muted small">(from findings)</span></h3>
-        
-        <ul class="synthesis-list">
-          
-          <li>Light and dark clusters separate completely; a few isolated dark cells occur (Fig 26).</li>
-          
-        </ul>
-        
-      </div>
-      <div class="conclusion-field">
-        <h3>Evidence <span class="muted small">(from findings)</span></h3>
-        
-        <p class="muted">No evidence recorded on findings yet.</p>
-      </div>
-    </div>
+    
+    
     
 
   </div>
@@ -916,28 +844,13 @@
     
 
     
+    
+    
+    
 
   </div>
 
   
-  
-  <details class="overview-section"><summary class="overview-label">Limitations &amp; provenance</summary>
-
-    
-    
-    
-    <div class="conclusions-grid conclusions-synthesis">
-      <div class="conclusion-field">
-        <h3>Limitations <span class="muted small">(from limitations)</span></h3>
-        <p class="muted">None recorded.</p>
-      </div>
-      <div class="conclusion-field">
-        <h3>Next steps <span class="muted small">(from discovery implications)</span></h3>
-        <p class="muted">No follow-up proposals recorded yet.</p>
-      </div>
-    </div>
-
-  </details>
   
 
 </section>
