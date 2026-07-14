@@ -1,0 +1,6 @@
+{
+  "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
+  "caption": "Clusters stay aggregated (no separation)",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. total boundary length does not increase (aggregate stays compact)",
+  "interpretation": "Measured: boundary 37138\u219236364 (ratio 0.979)"
+}

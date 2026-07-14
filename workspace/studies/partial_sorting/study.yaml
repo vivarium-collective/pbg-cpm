@@ -74,3 +74,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Partial sorting — coarsening with incomplete demixing
+  classification: primary
+  description: 'Paper: Fig 22-24 — weaker γ gives partial, not complete, sorting. Pass criterion: boundary length decreases yet light-dark contact stays high (>0.35, still mixed). Measured from the reproduced run: boundary 37097→36265, frac_ld=0.419.'
+  measure: frac_ld
+  pass_if: boundary length decreases yet light-dark contact stays high (>0.35, still mixed)
+  status: passed
+  result: PASS
+  paper_reference: Fig 22-24 — weaker γ gives partial, not complete, sorting

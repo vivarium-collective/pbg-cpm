@@ -1,0 +1,6 @@
+{
+  "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
+  "caption": "Topological equilibrium under T=0 annealing",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. final \u27e8n\u27e9_bulk \u2248 6 (within 0.3) and \u03bc\u2082 decreases while annealing",
+  "interpretation": "Measured: \u27e8n\u27e9_bulk 6.23\u21926.00, \u03bc\u2082 0.748\u21920.463"
+}

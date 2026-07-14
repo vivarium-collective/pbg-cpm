@@ -73,3 +73,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Cavity nucleates and rounds; dark accumulates
+  classification: primary
+  description: 'Paper: Fig 28 — vacancy/cavity nucleation with dark accumulation. Pass criterion: total boundary length decreases (cavity rounds) and dark-dark contact rises. Measured from the reproduced run: boundary 36116→29650, frac_dd 0.351→0.442.'
+  measure: frac_dd
+  pass_if: total boundary length decreases (cavity rounds) and dark-dark contact rises
+  status: passed
+  result: PASS
+  paper_reference: Fig 28 — vacancy/cavity nucleation with dark accumulation

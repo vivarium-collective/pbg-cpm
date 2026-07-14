@@ -72,3 +72,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Brick tiling rounds to a disk at topological equilibrium
+  classification: primary
+  description: 'Paper: Fig 4-5 — rectangular tiling rounds; bulk ⟨n⟩≈6. Pass criterion: total boundary length decreases (rounding) and ⟨n⟩_bulk ≈ 6. Measured from the reproduced run: boundary 37838→36781, ⟨n⟩_bulk 6.00→6.01.'
+  measure: bl_total
+  pass_if: total boundary length decreases (rounding) and ⟨n⟩_bulk ≈ 6
+  status: passed
+  result: PASS
+  paper_reference: Fig 4-5 — rectangular tiling rounds; bulk ⟨n⟩≈6

@@ -73,3 +73,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Clusters separate (both types expose new medium surface)
+  classification: primary
+  description: 'Paper: Fig 26 — clusters break apart and separate. Pass criterion: total boundary length increases and both medium-contact fractions rise. Measured from the reproduced run: boundary 37555→38572, frac_lM 0.047→0.105, frac_dM 0.043→0.100.'
+  measure: bl_total
+  pass_if: total boundary length increases and both medium-contact fractions rise
+  status: passed
+  result: PASS
+  paper_reference: Fig 26 — clusters break apart and separate

@@ -192,7 +192,9 @@ def sync_study_charts(slug):
         name = os.path.splitext(os.path.basename(f))[0]
         cap = _CAPTIONS.get(name, name)
         title, _, rest = cap.partition(" — ")
-        key = f"{i:02d}_{name}"
+        # index 00 is reserved for the validation report card (report_card.py),
+        # so figures start at 01 and the card always sorts/renders first.
+        key = f"{i + 1:02d}_{name}"
         with open(f, "rb") as src, open(os.path.join(charts, key + ".png"), "wb") as dst:
             dst.write(src.read())
         with open(os.path.join(charts, key + ".meta.json"), "w") as mf:
@@ -209,10 +211,14 @@ def sync_study_charts(slug):
 def build_all():
     pages = [build_study_page(s) for s in ORDER]
     chart_counts = {s: len(sync_study_charts(s)) for s in ORDER}
+    # Validation report card (00_report_card) per study — rendered AFTER the
+    # figure sync (which clears charts/) so it lands on top and sorts first.
+    from . import report_card
+    n_cards = report_card.write_cards()
     report = build_investigation_report()
     total = sum(chart_counts.values())
-    print(f"{len(pages)} study pages + {total} charts synced to studies/*/charts/ "
-          f"+ investigation report -> {report}")
+    print(f"{len(pages)} study pages + {total} charts + {n_cards} validation "
+          f"report cards synced to studies/*/charts/ + report -> {report}")
     return report
 
 

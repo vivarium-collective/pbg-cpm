@@ -74,3 +74,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Reversed surface arrangement (dark on the outside)
+  classification: primary
+  description: 'Paper: Fig 20-21 — arrangement reverses vs the sorted state. Pass criterion: dark-medium contact correlation exceeds light-medium (dark at the surface). Measured from the reproduced run: corr_dM=0.515 vs corr_lM=0.485.'
+  measure: corr_dM
+  pass_if: dark-medium contact correlation exceeds light-medium (dark at the surface)
+  status: passed
+  result: PASS
+  paper_reference: Fig 20-21 — arrangement reverses vs the sorted state
