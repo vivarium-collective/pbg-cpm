@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="619.2pt" height="252pt" viewBox="0 0 619.2 252" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-14T21:22:49.287126</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.0, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 252 
+L 619.2 252 
+L 619.2 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 16.0992 245.952 
+L 603.1008 245.952 
+Q 615.4848 245.952 615.4848 240.912 
+L 615.4848 11.088 
+Q 615.4848 6.048 603.1008 6.048 
+L 16.0992 6.048 
+Q 3.7152 6.048 3.7152 11.088 
+L 3.7152 240.912 
+Q 3.7152 245.952 16.0992 245.952 
+z
+" clip-path="url(#p4df171fe51)" style="fill: #ffffff; stroke: #e5e7eb; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 7.4304 244.44 
+L 14.8608 244.44 
+L 14.8608 7.56 
+L 7.4304 7.56 
+z
+" clip-path="url(#p4df171fe51)" style="fill: #0d9488; stroke: #0d9488; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="30.96" y="39.17707" transform="rotate(-0 30.96 39.17707)">Dispersal - clusters do not separate</text>
+   </g>
+   <g id="patch_4">
+    <path d="M 511.4592 51.408 
+L 575.2368 51.408 
+Q 593.8128 51.408 593.8128 43.848 
+L 593.8128 26.712 
+Q 593.8128 19.152 575.2368 19.152 
+L 511.4592 19.152 
+Q 492.8832 19.152 492.8832 26.712 
+L 492.8832 43.848 
+Q 492.8832 51.408 511.4592 51.408 
+z
+" clip-path="url(#p4df171fe51)" style="fill: #0d9488"/>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="87.858516" transform="rotate(-0 30.96 87.858516)">Paper behaviour</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="87.858516" transform="rotate(-0 204.336 87.858516)">Fig 27 — same setup but clusters do NOT separate</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="126.917773" transform="rotate(-0 30.96 126.917773)">Acceptance test</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="126.918516" transform="rotate(-0 204.336 126.918516)">Clusters stay aggregated (no separation)</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="165.978516" transform="rotate(-0 30.96 165.978516)">Criterion</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2937" transform="translate(204.336 166.929443)">total boundary length does not increase (aggregate stays</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2937" transform="translate(204.336 178.331299)">compact)</text>
+   </g>
+   <g id="text_8">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="205.038516" transform="rotate(-0 30.96 205.038516)">Measured (reproduced run)</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="205.038516" transform="rotate(-0 204.336 205.038516)">boundary 37138→36364 (ratio 0.979)</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 7.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="240.088535" transform="rotate(-0 30.96 240.088535)">Validated against Glazier &amp; Graner, Phys. Rev. E 47, 2128 (1993) · pbg-cpm reproduction — every value computed from our own simulation run</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle; fill: #ffffff" x="543.348" y="38.656953" transform="rotate(-0 543.348 38.656953)">✓ PASS</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p4df171fe51">
+   <rect x="0" y="0" width="619.2" height="252"/>
+  </clipPath>
+ </defs>
+</svg>
