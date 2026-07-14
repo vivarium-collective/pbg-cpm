@@ -1,0 +1,101 @@
+{
+  "annealing": {
+    "name": "Topological equilibrium under T=0 annealing",
+    "paper_ref": "Fig 2 / Sec. II D 2 \u2014 bulk \u27e8n\u27e9\u21926, moments settle",
+    "expected": "final \u27e8n\u27e9_bulk \u2248 6 (within 0.3) and \u03bc\u2082 decreases while annealing",
+    "measured": "\u27e8n\u27e9_bulk 6.23\u21926.00, \u03bc\u2082 0.748\u21920.463",
+    "value": 5.998,
+    "passed": true,
+    "slug": "annealing"
+  },
+  "global_equilibration": {
+    "name": "Brick tiling rounds to a disk at topological equilibrium",
+    "paper_ref": "Fig 4-5 \u2014 rectangular tiling rounds; bulk \u27e8n\u27e9\u22486",
+    "expected": "total boundary length decreases (rounding) and \u27e8n\u27e9_bulk \u2248 6",
+    "measured": "boundary 37838\u219236781, \u27e8n\u27e9_bulk 6.00\u21926.01",
+    "value": 6.007,
+    "passed": true,
+    "slug": "global_equilibration"
+  },
+  "checkerboard": {
+    "name": "Heterotypic contacts dominate (checkerboard mixing)",
+    "paper_ref": "Fig 7-8 \u2014 negative \u03b3_ld drives a light/dark checkerboard",
+    "expected": "light-dark fraction > 0.5 and larger than light-light & dark-dark",
+    "measured": "frac_ld=0.590 vs frac_ll=0.167, frac_dd=0.183",
+    "value": 0.59,
+    "passed": true,
+    "slug": "checkerboard"
+  },
+  "cell_sorting": {
+    "name": "Coarsening proceeds but sorting is logarithmically slow",
+    "paper_ref": "Fig 12-13 \u2014 random-IC sort is very slow; only partial demixing",
+    "expected": "total boundary length decreases while light-dark contact stays high (>0.35)",
+    "measured": "boundary 37304\u219236674, frac_ld\u2208[0.441,0.467]",
+    "value": 0.9831,
+    "passed": true,
+    "slug": "cell_sorting"
+  },
+  "engulfment": {
+    "name": "Light engulfs dark (dark loses its medium contact)",
+    "paper_ref": "Fig 18-19 \u2014 light forms the outer layer; dark-medium \u2192 ~0",
+    "expected": "dark-medium fraction falls \u22652\u00d7 and light-medium fraction rises",
+    "measured": "frac_dM 0.0304\u21920.0065 (4.7\u00d7 drop), frac_lM 0.0297\u21920.0538",
+    "value": 4.71,
+    "passed": true,
+    "slug": "engulfment"
+  },
+  "position_reversal": {
+    "name": "Reversed surface arrangement (dark on the outside)",
+    "paper_ref": "Fig 20-21 \u2014 arrangement reverses vs the sorted state",
+    "expected": "dark-medium contact correlation exceeds light-medium (dark at the surface)",
+    "measured": "corr_dM=0.515 vs corr_lM=0.485",
+    "value": 0.031,
+    "passed": true,
+    "slug": "position_reversal"
+  },
+  "partial_sorting": {
+    "name": "Partial sorting \u2014 coarsening with incomplete demixing",
+    "paper_ref": "Fig 22-24 \u2014 weaker \u03b3 gives partial, not complete, sorting",
+    "expected": "boundary length decreases yet light-dark contact stays high (>0.35, still mixed)",
+    "measured": "boundary 37097\u219236265, frac_ld=0.419",
+    "value": 0.419,
+    "passed": true,
+    "slug": "partial_sorting"
+  },
+  "dispersal_sloughing": {
+    "name": "Light cells slough off and disperse into the medium",
+    "paper_ref": "Fig 25 \u2014 light dissociates; light-medium interface surges",
+    "expected": "light-medium fraction rises \u22653\u00d7 and total boundary length increases (fragmentation)",
+    "measured": "frac_lM 0.073\u21920.513 (7.0\u00d7), boundary 39617\u219251795",
+    "value": 7.04,
+    "passed": true,
+    "slug": "dispersal_sloughing"
+  },
+  "dispersal_separate": {
+    "name": "Clusters separate (both types expose new medium surface)",
+    "paper_ref": "Fig 26 \u2014 clusters break apart and separate",
+    "expected": "total boundary length increases and both medium-contact fractions rise",
+    "measured": "boundary 37555\u219238572, frac_lM 0.047\u21920.105, frac_dM 0.043\u21920.100",
+    "value": 1.0271,
+    "passed": true,
+    "slug": "dispersal_separate"
+  },
+  "dispersal_no_separate": {
+    "name": "Clusters stay aggregated (no separation)",
+    "paper_ref": "Fig 27 \u2014 same setup but clusters do NOT separate",
+    "expected": "total boundary length does not increase (aggregate stays compact)",
+    "measured": "boundary 37138\u219236364 (ratio 0.979)",
+    "value": 0.9792,
+    "passed": true,
+    "slug": "dispersal_no_separate"
+  },
+  "vacancy_cavity": {
+    "name": "Cavity nucleates and rounds; dark accumulates",
+    "paper_ref": "Fig 28 \u2014 vacancy/cavity nucleation with dark accumulation",
+    "expected": "total boundary length decreases (cavity rounds) and dark-dark contact rises",
+    "measured": "boundary 36116\u219229650, frac_dd 0.351\u21920.442",
+    "value": 0.442,
+    "passed": true,
+    "slug": "vacancy_cavity"
+  }
+}

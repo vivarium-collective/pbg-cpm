@@ -22,5 +22,9 @@ workspace/reports/assets/*
 !workspace/reports/assets/.keep
 .superpowers/brainstorm/
 
-# GG1993 raw sim results + logs (regenerable via gg1993.driver)
-workspace/gg1993_data/
+# GG1993 sim artifacts: keep the small metric SERIES + validation.json under
+# version control so study conclusions are reproducible (and re-derivable in CI);
+# ignore only the large binaries (canonical IC + per-frame pattern snapshots).
+workspace/gg1993_data/canonical_ic.npz
+workspace/gg1993_data/results/*/*_frames.npz
+workspace/gg1993_data/*.log

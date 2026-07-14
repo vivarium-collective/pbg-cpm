@@ -7,8 +7,13 @@ against the saved metric time series (``workspace/gg1993_data/results/<slug>/
 condition, and PASS/FAIL — no hand-set verdicts, so a regression in the engine
 flips the card to FAIL.
 
-Run: ``python -m pbg_cpm_studies.gg1993.validate`` (prints a table + writes
-``workspace/gg1993_data/validation.json``).
+Run: ``python -m pbg_cpm_studies.gg1993.validate`` — evaluates every study,
+prints a table, writes ``workspace/gg1993_data/validation.json``, AND calls
+``apply_conclusions()`` to write the derived tests / run outcomes / gate verdict
+back into each ``study.yaml``. So the report's conclusions are never hand-set:
+re-run the sims (``driver.py``) then re-run this (or the full pipeline,
+``python -m pbg_cpm_studies.gg1993.gallery``, which calls it) and every study's
+"Ran · Tests · Verdict" strip updates automatically from the current data.
 """
 
 from __future__ import annotations
@@ -16,10 +21,24 @@ from __future__ import annotations
 import json
 import os
 
-from . import run as runmod
+# Path-only — deliberately does NOT import .run (which pulls the Rust engine),
+# so conclusions can be re-derived from the committed series JSON in a light CI
+# step (no build) as well as locally.
+_PKG_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # pbg_cpm_studies/
+WS_ROOT = os.path.dirname(_PKG_DIR)
+DATA_DIR = os.path.join(WS_ROOT, "workspace", "gg1993_data")
+RESULTS_DIR = os.path.join(DATA_DIR, "results")
+OUT_PATH = os.path.join(DATA_DIR, "validation.json")
+STU_DIR = os.path.join(WS_ROOT, "workspace", "studies")
 
-RESULTS_DIR = os.path.join(runmod.DATA_DIR, "results")
-OUT_PATH = os.path.join(runmod.DATA_DIR, "validation.json")
+# readout key each study's acceptance test keys off (the `measure` field)
+MEASURE = {
+    "annealing": "n_bulk", "global_equilibration": "bl_total", "checkerboard": "frac_ld",
+    "cell_sorting": "bl_total", "engulfment": "frac_dM", "position_reversal": "corr_dM",
+    "partial_sorting": "frac_ld", "dispersal_sloughing": "frac_lM",
+    "dispersal_separate": "bl_total", "dispersal_no_separate": "bl_total",
+    "vacancy_cavity": "frac_dd",
+}
 
 
 def _series(slug):
@@ -207,10 +226,68 @@ def validate_all():
     return out
 
 
+def apply_conclusions(results=None):
+    """Re-derive and write every study's conclusions from the CURRENT run data,
+    so the report is never stale: the acceptance ``behavior_tests``, a completed
+    ``runs`` entry whose ``outcomes`` carry the PASS/FAIL result, and the
+    ``gate_status`` verdict. Idempotent — safe to run on every regeneration.
+
+    This is the single source of truth for the studies' verdicts: change the
+    engine or re-run the sims, re-run this, and the report's tests/verdicts (and
+    the "Ran · Tests · Verdict" strip derived from them) update automatically.
+    """
+    from ruamel.yaml import YAML
+    from ruamel.yaml.comments import CommentedMap
+    yaml = YAML(); yaml.preserve_quotes = True; yaml.width = 4096
+    if results is None:
+        results = validate_all()
+    for slug, r in results.items():
+        p = os.path.join(STU_DIR, slug, "study.yaml")
+        if not os.path.exists(p):
+            continue
+        with open(p) as f:
+            doc = yaml.load(f)
+        passed = r["passed"]
+        tname = r["name"]
+        doc["behavior_tests"] = [CommentedMap([
+            ("name", tname),
+            ("classification", "primary"),
+            ("description", f"Paper: {r['paper_ref']}. Pass criterion: {r['expected']}. "
+                            f"Measured from the reproduced run: {r['measured']}."),
+            ("measure", MEASURE.get(slug, "")),
+            ("pass_if", r["expected"]),
+            ("status", "passed" if passed else "failed"),
+            ("result", "PASS" if passed else "FAIL"),
+            ("paper_reference", r["paper_ref"]),
+        ])]
+        outcome = CommentedMap()
+        outcome[tname] = CommentedMap([
+            ("result", "PASS" if passed else "FAIL"),
+            ("measured_value", r["value"]),
+            ("notes", r["measured"]),
+            ("evaluated_by", "pbg_cpm_studies.gg1993.validate"),
+        ])
+        doc["runs"] = [CommentedMap([
+            ("run_id", f"{slug}-reproduction"),
+            ("name", f"{slug} reproduction (seed 17)"),
+            ("status", "completed"),
+            ("canonical", True),
+            ("timestamp", "2026-07-14"),
+            ("seeds", [17]),
+            ("emitter", "gg1993_data/results series-json"),
+            ("outcomes", outcome),
+        ])]
+        doc["gate_status"] = "passed" if passed else "failed"
+        with open(p, "w") as f:
+            yaml.dump(doc, f)
+    return results
+
+
 def main():
     results = validate_all()
     with open(OUT_PATH, "w") as f:
         json.dump(results, f, indent=2)
+    apply_conclusions(results)  # keep study.yaml verdicts in sync with the data
     npass = sum(1 for r in results.values() if r["passed"])
     print(f"Glazier & Graner (1993) reproduction validation — "
           f"{npass}/{len(results)} studies PASS\n")
