@@ -4,26 +4,19 @@ status: complete
 phase: Decide
 title: Engulfment
 confidence: Accepted
-question: 'Does an initially half-light/half-dark aggregate engulf to the same sorted configuration as
-  the random-IC sort?
+question: 'Does an initially half-light/half-dark aggregate engulf to the same sorted configuration as the random-IC sort?
 
   '
-hypothesis: 'Global energy minimization drives light to engulf dark independent of initial condition;
-  engulfment is slow (~10^4 MCS).
+hypothesis: 'Global energy minimization drives light to engulf dark independent of initial condition; engulfment is slow (~10^4 MCS).
 
   '
-objective: 'Simulate the sorting energies from a top-light/bottom-dark IC to 10000 MCS and measure homotypic
-  and heterotypic fractional lengths to observe engulfment.
+objective: 'Simulate the sorting energies from a top-light/bottom-dark IC to 10000 MCS and measure homotypic and heterotypic fractional lengths to observe engulfment.
 
   '
-description: 'Reproduction of the Fig 18+ example from Glazier & Graner (Phys. Rev. E 47, 2128, 1993).
-  Exact parameters: J_ll=14, J_dd=2, J_ld=11, J_lM=16, J_dM=16 (gamma_ld=+3, gamma_lM=+9, gamma_dM=+15);
-  T=10.0, lambda=1.0, target A_l=40.0, A_d=40.0. Initial condition: half_split. Figures reproduced: Fig
-  18, Fig 19.
+description: 'Reproduction of the Fig 18+ example from Glazier & Graner (Phys. Rev. E 47, 2128, 1993). Exact parameters: J_ll=14, J_dd=2, J_ld=11, J_lM=16, J_dM=16 (gamma_ld=+3, gamma_lM=+9, gamma_dM=+15); T=10.0, lambda=1.0, target A_l=40.0, A_d=40.0. Initial condition: half_split. Figures reproduced: Fig 18, Fig 19.
 
   '
-claim: Light cells engulf the dark mass and the final state matches the random-IC sort, confirming initial-condition
-  independence (Figs 18-19).
+claim: Light cells engulf the dark mass and the final state matches the random-IC sort, confirming initial-condition independence (Figs 18-19).
 investigation: glazier-graner-1993
 baseline:
 - name: baseline
@@ -46,10 +39,8 @@ findings:
 - id: F-01
   kind: computational
   status: confirms
-  statement: Light cells engulf the dark mass and the final state matches the random-IC sort, confirming
-    initial-condition independence (Figs 18-19).
-conclusion: 'Reproduced the paper''s Engulfment example with the exact energies and initial condition;
-  the pbg-cpm CPM engine yields the same qualitative behaviour and topology. Figures: Fig 18, Fig 19.'
+  statement: Light cells engulf the dark mass and the final state matches the random-IC sort, confirming initial-condition independence (Figs 18-19).
+conclusion: 'Reproduced the paper''s Engulfment example with the exact energies and initial condition; the pbg-cpm CPM engine yields the same qualitative behaviour and topology. Figures: Fig 18, Fig 19.'
 key_assumptions:
 - Second-nearest-neighbour (Moore-8) square lattice, order 2.
 - 1 paper-MCS = 16 lattice-site sweeps (paper convention).
@@ -57,3 +48,29 @@ key_assumptions:
 parent_studies:
 - study: global_equilibration
   condition: tests-passed
+readouts:
+- name: Total boundary length
+  identifier: bl_total
+  units: mismatched Moore-8 bonds
+  status: measured
+  description: Total owner-mismatched lattice bonds — the aggregate interfacial length (paper Sec. II D 1).
+- name: Fractional boundary lengths
+  identifier: frac_ll, frac_dd, frac_ld, frac_lM, frac_dM
+  units: fraction of total
+  status: measured
+  description: 'Per type-pair share of the boundary: light-light, dark-dark, light-dark, light-medium, dark-medium.'
+- name: Mean number of sides
+  identifier: n_bulk
+  units: sides per cell
+  status: measured
+  description: Mean cell degree in the bulk cell-adjacency graph (the paper's number-of-sides langle n rangle).
+- name: Topological moments
+  identifier: mu2, mu3, mu4
+  units: dimensionless
+  status: measured
+  description: Second/third/fourth central moments of the number-of-sides distribution (Eq. 6).
+- name: Type correlations
+  identifier: corr_ll, corr_dd, corr_ld, corr_lM, corr_dM
+  units: fraction
+  status: measured
+  description: Type-type adjacency-edge and medium-contact correlations.

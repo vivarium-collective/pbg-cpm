@@ -4,26 +4,19 @@ status: complete
 phase: Decide
 title: Position reversal
 confidence: Accepted
-question: 'Does raising the light-Medium tension (gamma_lM=23) reverse the sorting so dark cells end up
-  outside?
+question: 'Does raising the light-Medium tension (gamma_lM=23) reverse the sorting so dark cells end up outside?
 
   '
-hypothesis: 'With gamma_lM >> gamma_dM the dark cells present the lower medium tension and form the outer
-  layer, giving a reversed pattern.
+hypothesis: 'With gamma_lM >> gamma_dM the dark cells present the lower medium tension and form the outer layer, giving a reversed pattern.
 
   '
-objective: 'Simulate with gamma_lM=23 from a random IC and measure medium type-correlations to detect
-  position reversal.
+objective: 'Simulate with gamma_lM=23 from a random IC and measure medium type-correlations to detect position reversal.
 
   '
-description: 'Reproduction of the Fig 20+ example from Glazier & Graner (Phys. Rev. E 47, 2128, 1993).
-  Exact parameters: J_ll=14, J_dd=2, J_ld=11, J_lM=30, J_dM=16 (gamma_ld=+3, gamma_lM=+23, gamma_dM=+15);
-  T=10.0, lambda=1.0, target A_l=40.0, A_d=40.0. Initial condition: equilibrated_random. Figures reproduced:
-  Fig 20, Fig 21.
+description: 'Reproduction of the Fig 20+ example from Glazier & Graner (Phys. Rev. E 47, 2128, 1993). Exact parameters: J_ll=14, J_dd=2, J_ld=11, J_lM=30, J_dM=16 (gamma_ld=+3, gamma_lM=+23, gamma_dM=+15); T=10.0, lambda=1.0, target A_l=40.0, A_d=40.0. Initial condition: equilibrated_random. Figures reproduced: Fig 20, Fig 21.
 
   '
-claim: Dark cells sort OUTWARD, surrounding the light cells, the reversed pattern predicted for gamma_lM>gamma_dM
-  (Figs 20-21).
+claim: Dark cells sort OUTWARD, surrounding the light cells, the reversed pattern predicted for gamma_lM>gamma_dM (Figs 20-21).
 investigation: glazier-graner-1993
 baseline:
 - name: baseline
@@ -46,10 +39,8 @@ findings:
 - id: F-01
   kind: computational
   status: confirms
-  statement: Dark cells sort OUTWARD, surrounding the light cells, the reversed pattern predicted for
-    gamma_lM>gamma_dM (Figs 20-21).
-conclusion: 'Reproduced the paper''s Position reversal example with the exact energies and initial condition;
-  the pbg-cpm CPM engine yields the same qualitative behaviour and topology. Figures: Fig 20, Fig 21.'
+  statement: Dark cells sort OUTWARD, surrounding the light cells, the reversed pattern predicted for gamma_lM>gamma_dM (Figs 20-21).
+conclusion: 'Reproduced the paper''s Position reversal example with the exact energies and initial condition; the pbg-cpm CPM engine yields the same qualitative behaviour and topology. Figures: Fig 20, Fig 21.'
 key_assumptions:
 - Second-nearest-neighbour (Moore-8) square lattice, order 2.
 - 1 paper-MCS = 16 lattice-site sweeps (paper convention).
@@ -57,3 +48,29 @@ key_assumptions:
 parent_studies:
 - study: global_equilibration
   condition: tests-passed
+readouts:
+- name: Total boundary length
+  identifier: bl_total
+  units: mismatched Moore-8 bonds
+  status: measured
+  description: Total owner-mismatched lattice bonds — the aggregate interfacial length (paper Sec. II D 1).
+- name: Fractional boundary lengths
+  identifier: frac_ll, frac_dd, frac_ld, frac_lM, frac_dM
+  units: fraction of total
+  status: measured
+  description: 'Per type-pair share of the boundary: light-light, dark-dark, light-dark, light-medium, dark-medium.'
+- name: Mean number of sides
+  identifier: n_bulk
+  units: sides per cell
+  status: measured
+  description: Mean cell degree in the bulk cell-adjacency graph (the paper's number-of-sides langle n rangle).
+- name: Topological moments
+  identifier: mu2, mu3, mu4
+  units: dimensionless
+  status: measured
+  description: Second/third/fourth central moments of the number-of-sides distribution (Eq. 6).
+- name: Type correlations
+  identifier: corr_ll, corr_dd, corr_ld, corr_lM, corr_dM
+  units: fraction
+  status: measured
+  description: Type-type adjacency-edge and medium-contact correlations.
