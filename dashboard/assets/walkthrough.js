@@ -8592,7 +8592,7 @@
                +   sweepChart
                +   refBlock
                +   (f.next_action ? '<div class="finding-next"><strong>→ Next:</strong> ' + _multiline(f.next_action) + '</div>' : '')
-               +   (f.seeded_study ? '<div class="finding-seeded"><strong>→ seeded study:</strong> <a href="/studies/' + encodeURIComponent(f.seeded_study) + '">' + _h(f.seeded_study) + '</a></div>' : '')
+               +   (f.seeded_study ? '<div class="finding-seeded"><strong>→ seeded study:</strong> <a href="' + _studyHref(f.seeded_study) + '">' + _h(f.seeded_study) + '</a></div>' : '')
                +   techDisclosure
                + '</div>';
         }
@@ -8640,7 +8640,9 @@
         var isSnap = cfg.mode === 'snapshot';
         var origin = (typeof location !== 'undefined' && location.origin
                       && /^https?:/.test(location.origin)) ? location.origin : '';
-        var base = origin + (isSnap ? (cfg.basePath || '') : '');
+        // basePath applies in both snapshot and live-under-a-prefix (/workbench);
+        // empty in normal local serving.
+        var base = origin + (cfg.basePath || '');
         var stateUrl = isSnap
           ? base + '/api/composite-state/' + encodeURIComponent(composite) + '.json'
           : base + '/api/composite-state?ref=' + encodeURIComponent(composite);
