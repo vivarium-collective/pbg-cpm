@@ -148,7 +148,7 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 2**
+# **Annealing — interactive**
 
 def _save_viz(study, slug, html):
     d = REPO / 'reports/notebooks/figures' / study
@@ -158,13 +158,8 @@ def _save_viz(study, slug, html):
     print('  wrote', out)
 
 
-# Fig 2
-_save_viz('annealing', 'Fig_2', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 3**
-
-# Fig 3
-_save_viz('annealing', 'Fig_3', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Annealing — interactive
+_save_viz('annealing', 'Annealing_interactive', _render_one('local:GG1993Annealing', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `global_equilibration`
 #
@@ -192,15 +187,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 4**
+# **Global pattern equilibration — interactive**
 
-# Fig 4
-_save_viz('global_equilibration', 'Fig_4', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 5**
-
-# Fig 5
-_save_viz('global_equilibration', 'Fig_5', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Global pattern equilibration — interactive
+_save_viz('global_equilibration', 'Global_pattern_equilibration_interactive', _render_one('local:GG1993GlobalEquilibration', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `checkerboard`
 #
@@ -228,25 +218,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 7**
+# **Checkerboard (negative surface tension) — interactive**
 
-# Fig 7
-_save_viz('checkerboard', 'Fig_7', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 8**
-
-# Fig 8
-_save_viz('checkerboard', 'Fig_8', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 9**
-
-# Fig 9
-_save_viz('checkerboard', 'Fig_9', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Table I**
-
-# Table I
-_save_viz('checkerboard', 'Table_I', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Checkerboard (negative surface tension) — interactive
+_save_viz('checkerboard', 'Checkerboard_negative_surface_tension_interactive', _render_one('local:GG1993Checkerboard', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `cell_sorting`
 #
@@ -274,40 +249,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 12**
+# **Cell sorting — interactive**
 
-# Fig 12
-_save_viz('cell_sorting', 'Fig_12', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 13**
-
-# Fig 13
-_save_viz('cell_sorting', 'Fig_13', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 14**
-
-# Fig 14
-_save_viz('cell_sorting', 'Fig_14', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 15**
-
-# Fig 15
-_save_viz('cell_sorting', 'Fig_15', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 16**
-
-# Fig 16
-_save_viz('cell_sorting', 'Fig_16', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Table II**
-
-# Table II
-_save_viz('cell_sorting', 'Table_II', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Table III**
-
-# Table III
-_save_viz('cell_sorting', 'Table_III', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Cell sorting — interactive
+_save_viz('cell_sorting', 'Cell_sorting_interactive', _render_one('local:GG1993CellSorting', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `engulfment`
 #
@@ -335,15 +280,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 18**
+# **Engulfment — interactive**
 
-# Fig 18
-_save_viz('engulfment', 'Fig_18', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 19**
-
-# Fig 19
-_save_viz('engulfment', 'Fig_19', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Engulfment — interactive
+_save_viz('engulfment', 'Engulfment_interactive', _render_one('local:GG1993Engulfment', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `position_reversal`
 #
@@ -371,15 +311,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 20**
+# **Position reversal — interactive**
 
-# Fig 20
-_save_viz('position_reversal', 'Fig_20', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 21**
-
-# Fig 21
-_save_viz('position_reversal', 'Fig_21', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Position reversal — interactive
+_save_viz('position_reversal', 'Position_reversal_interactive', _render_one('local:GG1993PositionReversal', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `partial_sorting`
 #
@@ -407,20 +342,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 22**
+# **Partial cell sorting — interactive**
 
-# Fig 22
-_save_viz('partial_sorting', 'Fig_22', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 23**
-
-# Fig 23
-_save_viz('partial_sorting', 'Fig_23', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
-
-# **Fig 24**
-
-# Fig 24
-_save_viz('partial_sorting', 'Fig_24', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Partial cell sorting — interactive
+_save_viz('partial_sorting', 'Partial_cell_sorting_interactive', _render_one('local:GG1993PartialSorting', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `dispersal_sloughing`
 #
@@ -448,10 +373,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 25**
+# **Dispersal — light-cell sloughing — interactive**
 
-# Fig 25
-_save_viz('dispersal_sloughing', 'Fig_25', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Dispersal — light-cell sloughing — interactive
+_save_viz('dispersal_sloughing', 'Dispersal_light-cell_sloughing_interactive', _render_one('local:GG1993DispersalSloughing', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `dispersal_separate`
 #
@@ -479,10 +404,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 26**
+# **Dispersal — clusters separate — interactive**
 
-# Fig 26
-_save_viz('dispersal_separate', 'Fig_26', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Dispersal — clusters separate — interactive
+_save_viz('dispersal_separate', 'Dispersal_clusters_separate_interactive', _render_one('local:GG1993DispersalSeparate', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `dispersal_no_separate`
 #
@@ -510,10 +435,10 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 27**
+# **Dispersal — clusters do not separate — interactive**
 
-# Fig 27
-_save_viz('dispersal_no_separate', 'Fig_27', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Dispersal — clusters do not separate — interactive
+_save_viz('dispersal_no_separate', 'Dispersal_clusters_do_not_separate_interactive', _render_one('local:GG1993DispersalNoSeparate', {}, RUNS_DB, STUDY_YAML))
 
 # ## Study: `vacancy_cavity`
 #
@@ -541,7 +466,7 @@ print("No recorded runs for this study; nothing to reproduce.")
 #
 # _Results are shown by the figures below, produced by the run above._
 
-# **Fig 28**
+# **Vacancy nucleation (cavity) — interactive**
 
-# Fig 28
-_save_viz('vacancy_cavity', 'Fig_28', _render_one('', {'gallery': 'viz/figures.html'}, RUNS_DB, STUDY_YAML))
+# Vacancy nucleation (cavity) — interactive
+_save_viz('vacancy_cavity', 'Vacancy_nucleation_cavity_interactive', _render_one('local:GG1993VacancyCavity', {}, RUNS_DB, STUDY_YAML))
