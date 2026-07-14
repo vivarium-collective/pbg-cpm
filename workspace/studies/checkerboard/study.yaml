@@ -4,26 +4,19 @@ status: complete
 phase: Decide
 title: Checkerboard (negative surface tension)
 confidence: Accepted
-question: 'Does a negative light-dark surface tension (gamma_ld=-3) drive intermixing into a checkerboard
-  instead of sorting?
+question: 'Does a negative light-dark surface tension (gamma_ld=-3) drive intermixing into a checkerboard instead of sorting?
 
   '
-hypothesis: 'Cells maximize heterotypic contact, so the light-dark fractional interface dominates and
-  remains high; defects persist by thermal activation.
+hypothesis: 'Cells maximize heterotypic contact, so the light-dark fractional interface dominates and remains high; defects persist by thermal activation.
 
   '
-objective: 'Simulate gamma_ld<0 from a random IC and measure fractional interface lengths, <n>, moments
-  vs T (0-40) to characterize the checkerboard and its phase transitions.
+objective: 'Simulate gamma_ld<0 from a random IC and measure fractional interface lengths, <n>, moments vs T (0-40) to characterize the checkerboard and its phase transitions.
 
   '
-description: 'Reproduction of the Fig 7+ example from Glazier & Graner (Phys. Rev. E 47, 2128, 1993).
-  Exact parameters: J_ll=10, J_dd=8, J_ld=6, J_lM=12, J_dM=12 (gamma_ld=-3, gamma_lM=+7, gamma_dM=+8);
-  T=10.0, lambda=1.0, target A_l=40.0, A_d=40.0. Initial condition: equilibrated_random. Figures reproduced:
-  Fig 7, Fig 8, Fig 9, Table I.
+description: 'Reproduction of the Fig 7+ example from Glazier & Graner (Phys. Rev. E 47, 2128, 1993). Exact parameters: J_ll=10, J_dd=8, J_ld=6, J_lM=12, J_dM=12 (gamma_ld=-3, gamma_lM=+7, gamma_dM=+8); T=10.0, lambda=1.0, target A_l=40.0, A_d=40.0. Initial condition: equilibrated_random. Figures reproduced: Fig 7, Fig 8, Fig 9, Table I.
 
   '
-claim: gamma_ld<0 yields a defect-ridden checkerboard with dominant light-dark contact and two transitions
-  (~T=0 freeze, ~T=15 mixing), matching Figs 7-9 and Table I.
+claim: gamma_ld<0 yields a defect-ridden checkerboard with dominant light-dark contact and two transitions (~T=0 freeze, ~T=15 mixing), matching Figs 7-9 and Table I.
 investigation: glazier-graner-1993
 baseline:
 - name: baseline
@@ -46,11 +39,8 @@ findings:
 - id: F-01
   kind: computational
   status: confirms
-  statement: gamma_ld<0 yields a defect-ridden checkerboard with dominant light-dark contact and two transitions
-    (~T=0 freeze, ~T=15 mixing), matching Figs 7-9 and Table I.
-conclusion: 'Reproduced the paper''s Checkerboard (negative surface tension) example with the exact energies
-  and initial condition; the pbg-cpm CPM engine yields the same qualitative behaviour and topology. Figures:
-  Fig 7, Fig 8, Fig 9, Table I.'
+  statement: gamma_ld<0 yields a defect-ridden checkerboard with dominant light-dark contact and two transitions (~T=0 freeze, ~T=15 mixing), matching Figs 7-9 and Table I.
+conclusion: 'Reproduced the paper''s Checkerboard (negative surface tension) example with the exact energies and initial condition; the pbg-cpm CPM engine yields the same qualitative behaviour and topology. Figures: Fig 7, Fig 8, Fig 9, Table I.'
 key_assumptions:
 - Second-nearest-neighbour (Moore-8) square lattice, order 2.
 - 1 paper-MCS = 16 lattice-site sweeps (paper convention).
@@ -58,3 +48,29 @@ key_assumptions:
 parent_studies:
 - study: global_equilibration
   condition: tests-passed
+readouts:
+- name: Total boundary length
+  identifier: bl_total
+  units: mismatched Moore-8 bonds
+  status: measured
+  description: Total owner-mismatched lattice bonds — the aggregate interfacial length (paper Sec. II D 1).
+- name: Fractional boundary lengths
+  identifier: frac_ll, frac_dd, frac_ld, frac_lM, frac_dM
+  units: fraction of total
+  status: measured
+  description: 'Per type-pair share of the boundary: light-light, dark-dark, light-dark, light-medium, dark-medium.'
+- name: Mean number of sides
+  identifier: n_bulk
+  units: sides per cell
+  status: measured
+  description: Mean cell degree in the bulk cell-adjacency graph (the paper's number-of-sides langle n rangle).
+- name: Topological moments
+  identifier: mu2, mu3, mu4
+  units: dimensionless
+  status: measured
+  description: Second/third/fourth central moments of the number-of-sides distribution (Eq. 6).
+- name: Type correlations
+  identifier: corr_ll, corr_dd, corr_ld, corr_lM, corr_dM
+  units: fraction
+  status: measured
+  description: Type-type adjacency-edge and medium-contact correlations.
