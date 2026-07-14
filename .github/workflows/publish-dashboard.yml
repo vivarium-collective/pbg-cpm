@@ -22,6 +22,8 @@ on:
       - 'workspace/**'
       - 'scripts/publish_dashboard.sh'
       - '.github/workflows/publish-dashboard.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
   workflow_dispatch:
 
 concurrency:
@@ -52,7 +54,7 @@ jobs:
       - name: Ensure the publish CLI is present (latest dashboard main)
         # uv.lock may pin a vivarium-workbench commit predating the publish CLI;
         # force current main so `vivarium-workbench-publish` exists.
-        run: uv pip install --reinstall-package vivarium-workbench "vivarium-workbench @ git+https://github.com/vivarium-collective/vivarium-dashboard.git@main"
+        run: uv pip install --reinstall-package vivarium-workbench "vivarium-workbench @ git+https://github.com/vivarium-collective/vivarium-workbench.git@main"
 
       - name: Build dashboard snapshot
         # Run inside the activated venv, NOT `uv run` — `uv run` re-syncs to
