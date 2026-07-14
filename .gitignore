@@ -21,3 +21,6 @@ investigations/*/.run.lock
 workspace/reports/assets/*
 !workspace/reports/assets/.keep
 .superpowers/brainstorm/
+
+# GG1993 raw sim results + logs (regenerable via gg1993.driver)
+workspace/gg1993_data/
