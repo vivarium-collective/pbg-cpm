@@ -73,3 +73,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Clusters stay aggregated (no separation)
+  classification: primary
+  description: 'Paper: Fig 27 — same setup but clusters do NOT separate. Pass criterion: total boundary length does not increase (aggregate stays compact). Measured from the reproduced run: boundary 37138→36364 (ratio 0.979).'
+  measure: bl_total
+  pass_if: total boundary length does not increase (aggregate stays compact)
+  status: passed
+  result: PASS
+  paper_reference: Fig 27 — same setup but clusters do NOT separate

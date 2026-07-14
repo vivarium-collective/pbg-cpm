@@ -71,3 +71,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Topological equilibrium under T=0 annealing
+  classification: primary
+  description: 'Paper: Fig 2 / Sec. II D 2 — bulk ⟨n⟩→6, moments settle. Pass criterion: final ⟨n⟩_bulk ≈ 6 (within 0.3) and μ₂ decreases while annealing. Measured from the reproduced run: ⟨n⟩_bulk 6.23→6.00, μ₂ 0.748→0.463.'
+  measure: n_bulk
+  pass_if: final ⟨n⟩_bulk ≈ 6 (within 0.3) and μ₂ decreases while annealing
+  status: passed
+  result: PASS
+  paper_reference: Fig 2 / Sec. II D 2 — bulk ⟨n⟩→6, moments settle

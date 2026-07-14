@@ -1,0 +1,6 @@
+{
+  "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
+  "caption": "Cavity nucleates and rounds; dark accumulates",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. total boundary length decreases (cavity rounds) and dark-dark contact rises",
+  "interpretation": "Measured: boundary 36116\u219229650, frac_dd 0.351\u21920.442"
+}

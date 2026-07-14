@@ -74,3 +74,12 @@ readouts:
   units: fraction
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
+behavior_tests:
+- name: Coarsening proceeds but sorting is logarithmically slow
+  classification: primary
+  description: 'Paper: Fig 12-13 — random-IC sort is very slow; only partial demixing. Pass criterion: total boundary length decreases while light-dark contact stays high (>0.35). Measured from the reproduced run: boundary 37304→36674, frac_ld∈[0.441,0.467].'
+  measure: bl_total
+  pass_if: total boundary length decreases while light-dark contact stays high (>0.35)
+  status: passed
+  result: PASS
+  paper_reference: Fig 12-13 — random-IC sort is very slow; only partial demixing

@@ -1,0 +1,6 @@
+{
+  "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
+  "caption": "Reversed surface arrangement (dark on the outside)",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. dark-medium contact correlation exceeds light-medium (dark at the surface)",
+  "interpretation": "Measured: corr_dM=0.515 vs corr_lM=0.485"
+}

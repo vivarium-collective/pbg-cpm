@@ -1,0 +1,6 @@
+{
+  "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
+  "caption": "Coarsening proceeds but sorting is logarithmically slow",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. total boundary length decreases while light-dark contact stays high (>0.35)",
+  "interpretation": "Measured: boundary 37304\u219236674, frac_ld\u2208[0.441,0.467]"
+}

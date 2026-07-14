@@ -1,0 +1,6 @@
+{
+  "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
+  "caption": "Light cells slough off and disperse into the medium",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. light-medium fraction rises \u22653\u00d7 and total boundary length increases (fragmentation)",
+  "interpretation": "Measured: frac_lM 0.073\u21920.513 (7.0\u00d7), boundary 39617\u219251795"
+}
