@@ -15,7 +15,7 @@
     
     
     
-    <span class="status-pill status-complete" title="Headline status derived from the highest-precedence multi-axis field (or legacy `status` as fallback).">complete</span>
+    <span class="status-pill gate-status gate-status-passed" title="Pipeline gate verdict (Pass A multi-axis status). Drives downstream unblocking.">gate: passed</span>
     
     
     
@@ -45,6 +45,42 @@
 
 
 
+
+<style>
+.status-detail-panel{margin:8px 0 14px 0;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:0.88em}
+.status-detail-panel h2{margin:0 0 6px 0;font-size:0.82em;text-transform:uppercase;letter-spacing:0.05em;color:#475569;font-weight:600}
+.status-detail-row{display:flex;align-items:center;gap:8px;padding:3px 0}
+.status-detail-axis{min-width:140px;color:#475569;font-size:0.9em}
+.status-chip{display:inline-block;font-size:0.78em;padding:2px 10px;border-radius:9999px;background:#e2e8f0;color:#334155;font-family:ui-monospace,monospace}
+/* gate_status colors per Pass A spec: blocked=gray, needs_calibration=amber, passed=green, failed=red, stale=purple */
+.gate-status-blocked          { background:#e5e7eb; color:#374151 }
+.gate-status-needs_calibration{ background:#fef3c7; color:#92400e }
+.gate-status-passed           { background:#d1fae5; color:#065f46 }
+.gate-status-failed           { background:#fee2e2; color:#991b1b }
+.gate-status-stale            { background:#ede9fe; color:#5b21b6 }
+.status-pill.gate-status{font-weight:500}
+</style>
+<details class="status-detail-panel" aria-label="Multi-axis status detail" open>
+  <summary class="study-fold-summary">Status detail (Pass A multi-axis)</summary>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <div class="status-detail-row">
+    <span class="status-detail-axis">Gate</span>
+    <span class="status-chip gate-status-passed">passed</span>
+  </div>
+  
+  
+  
+  
+</details>
 
 
 
@@ -201,7 +237,7 @@
           <span class="narrative-label">Verdict</span>
           <span class="narrative-input verdict-badge-computed"
                 title="Computed from the gate evaluator (read-only)"
-                style="display:inline-block;padding:2px 12px;border-radius:9999px;font-weight:700;font-size:0.85em;background:#f1f5f9;color:#475569">not_started</span>
+                style="display:inline-block;padding:2px 12px;border-radius:9999px;font-weight:700;font-size:0.85em;background:#f1f5f9;color:#475569">passed</span>
           <span class="muted small" style="margin-left:6px">computed from gate evaluator</span>
         </label>
         <label class="narrative-row">
@@ -446,7 +482,7 @@
           <span class="count-label">requirements</span>
         </div>
         <div class="count-cell">
-          <strong>0</strong>
+          <strong>1</strong>
           <span class="count-label">runs</span>
         </div>
       </div>
@@ -524,14 +560,14 @@
           <td style="vertical-align:top"><strong>baseline</strong></td>
           <td style="vertical-align:top"><button type="button" class="action-btn" style="font-size:0.82em" onclick="_openCompositeLoom('pbg_cpm_studies.composites.gg1993.dispersal_separate')">🧬 gg1993.dispersal_separate ↗</button></td>
           <td style="vertical-align:top"><span class="muted">default parameters</span></td>
-          <td style="vertical-align:top" class="muted small">—</td>
-          <td style="vertical-align:top"><span class="muted">not run</span></td>
+          <td style="vertical-align:top" class="muted small">1 run(s)</td>
+          <td style="vertical-align:top"><span class="sim-status-pill sim-status-ran">completed</span></td>
         </tr>
       
       </tbody>
     </table>
     
-    
+    <p class="muted small" style="margin-top:6px">1 recorded run(s): <code>dispersal_separate reproduction (seed 17)</code> (completed)</p>
   </div>
   
 
@@ -575,7 +611,55 @@
       </thead>
       <tbody>
         
-        <tr><td colspan="9" class="empty-message">No runs yet.</td></tr>
+        
+        
+        <tr id="run-dispersal_separate-reproduction"
+            data-run-id="dispersal_separate-reproduction"
+            data-spec-id=""
+            data-store-path=""
+            data-started-at="">
+          <td>
+            baseline
+            
+          </td>
+          <td>
+            <code style="font-size:0.82em">—</code>
+            
+          </td>
+          <td></td>
+          <td style="font-size:0.85em;white-space:nowrap"></td>
+          <td style="font-size:0.85em;white-space:nowrap"></td>
+          <td>
+            <span class="run-status run-status-completed">completed</span>
+            
+          </td>
+          
+          <td class="run-test-results" style="font-size:0.82em;white-space:nowrap">
+            
+            
+            
+            
+              
+              
+                
+                
+              
+              <span class="ok" title="authored pass">✓ 1</span>
+              
+              
+              <span class="muted" style="font-size:0.85em"> (authored)</span>
+            
+          </td>
+          <td>
+            
+            <span class="muted" style="font-size:0.82em">—</span>
+            
+          </td>
+          <td>
+            <button class="btn-view-run" data-run-id="dispersal_separate-reproduction">View</button>
+            <button class="btn-delete-run" data-run-id="dispersal_separate-reproduction">Delete</button>
+          </td>
+        </tr>
         
       </tbody>
     </table>
@@ -694,6 +778,13 @@
   
   
   
+    
+      
+        
+        
+      
+    
+  
   
   <ul class="expected-behavior-list" id="tests-list" style="list-style:none; padding-left:0; margin-top: 12px;">
     
@@ -709,17 +800,28 @@
         
         data-pytest-node="Clusters separate (both types expose new medium surface)"
         data-classification="primary"
-        data-result="pending"
+        data-result="PASS"
         style="margin: 0 0 10px 0; padding: 10px 12px; border-left: 4px solid #10b981; background: #f8fafc; border-radius: 4px;">
       
         
       <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
-        <span class="bt-result" style="font-size: 0.75em; font-family: monospace; padding: 2px 8px; border-radius: 9999px; background: #f1f5f9; color: #475569">⏳ pending</span>
+        <span class="bt-result" style="font-size: 0.75em; font-family: monospace; padding: 2px 8px; border-radius: 9999px; background: #d1fae5; color: #065f46">✓ PASS</span>
         <span class="classification-pill classification-primary">primary</span>
         <strong style="font-size: 0.9em;">Clusters separate (both types expose new medium surface)</strong>
         
       </div>
       <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 26 — clusters break apart and separate. Pass criterion: total boundary length increases and both medium-contact fractions rise. Measured from the reproduced run: boundary 37555→38572, frac_lM 0.047→0.105, frac_dM 0.043→0.100.</div>
+      
+      <div style="margin-top:6px;font-size:0.85em;padding:6px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:3px">
+        <strong>Latest result:</strong>
+        
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">measured_value: 1.0271</code>
+        
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">notes: boundary 37555→38572, frac_lM 0.047→0.105, frac_dM 0.043→0.100</code>
+        
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">evaluated_by: pbg_cpm_studies.gg1993.validate</code>
+        
+      </div>
       
       
       <details style="margin-top: 6px; font-size: 0.82em;">
@@ -832,6 +934,28 @@ pass_if: "total boundary length increases and both medium-contact fractions rise
     
     
     
+    
+    <div class="decide-section">
+      <h3 class="overview-label">Latest run outcomes</h3>
+      <div style="font-size:0.88em;color:#64748b;margin-bottom:8px">
+        baseline · seed ? ·
+        ?s simulated ·
+        ? history rows ·
+        started ?
+      </div>
+      
+      
+      
+      
+      <p class="muted" style="margin:0;font-size:0.9em">
+        <strong>1</strong> test outcome
+        — <span style="color:#065f46;font-weight:600">1 PASS</span> ·
+        <span style="color:#991b1b;font-weight:600">0 FAIL</span>.
+        Per-test outcomes (measured value · evaluator · band) are canonical on the
+        <a onclick="_setStudyTab('tests')" style="cursor:pointer;color:#3b82f6;text-decoration:underline">Tests tab →</a>.
+      </p>
+      
+    </div>
     
     
 
