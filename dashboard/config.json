@@ -1,0 +1,7 @@
+{
+  "mode": "snapshot",
+  "smsApiBase": "",
+  "repo": "https://github.com/vivarium-collective/pbg-cpm.git",
+  "commit": "3778e7c991f21f6ba96bc07e0bf43f6e622aef28",
+  "generated_from_ref": "gg1993-reproduction"
+}
