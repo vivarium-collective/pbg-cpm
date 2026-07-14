@@ -33,15 +33,14 @@ expected_behavior:
 - Dark-medium correlation rises above light-medium (outer dark layer)
 - Light cells become internalized relative to dark
 visualizations:
-- name: Fig 20
-  config:
-    gallery: viz/figures.html
-- name: Fig 21
-  config:
-    gallery: viz/figures.html
+- name: Position reversal — interactive
+  address: local:GG1993PositionReversal
 embed_visualizations:
-- name: Reproduced figures
-  title: Position reversal — reproduced figures
+- name: Interactive figure
+  title: Position reversal — interactive
+  url: /workspace/studies/position_reversal/viz/interactive.html
+- name: All paper figures
+  title: Position reversal — full figure set
   url: /workspace/studies/position_reversal/viz/figures.html
 findings:
 - id: F-01

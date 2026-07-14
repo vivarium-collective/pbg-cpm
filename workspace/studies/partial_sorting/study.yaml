@@ -33,18 +33,14 @@ expected_behavior:
 - No complete light monolayer forms by 2000 MCS
 - Light-dark interface plateaus above the normal-sorting curve (Fig 24)
 visualizations:
-- name: Fig 22
-  config:
-    gallery: viz/figures.html
-- name: Fig 23
-  config:
-    gallery: viz/figures.html
-- name: Fig 24
-  config:
-    gallery: viz/figures.html
+- name: Partial cell sorting — interactive
+  address: local:GG1993PartialSorting
 embed_visualizations:
-- name: Reproduced figures
-  title: Partial cell sorting — reproduced figures
+- name: Interactive figure
+  title: Partial cell sorting — interactive
+  url: /workspace/studies/partial_sorting/viz/interactive.html
+- name: All paper figures
+  title: Partial cell sorting — full figure set
   url: /workspace/studies/partial_sorting/viz/figures.html
 findings:
 - id: F-01

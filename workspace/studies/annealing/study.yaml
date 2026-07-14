@@ -33,15 +33,14 @@ expected_behavior:
 - Bulk <n> reaches within 0.5% of its plateau by 2 MCS of T=0 annealing
 - Total <n> stays below bulk <n> at all times (Fig 2a ordering)
 visualizations:
-- name: Fig 2
-  config:
-    gallery: viz/figures.html
-- name: Fig 3
-  config:
-    gallery: viz/figures.html
+- name: Annealing — interactive
+  address: local:GG1993Annealing
 embed_visualizations:
-- name: Reproduced figures
-  title: Annealing convergence — reproduced figures
+- name: Interactive figure
+  title: Annealing — interactive
+  url: /workspace/studies/annealing/viz/interactive.html
+- name: All paper figures
+  title: Annealing — full figure set
   url: /workspace/studies/annealing/viz/figures.html
 findings:
 - id: F-01

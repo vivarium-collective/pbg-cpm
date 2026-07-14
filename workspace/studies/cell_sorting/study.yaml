@@ -33,30 +33,14 @@ expected_behavior:
 - Light-dark heterotypic interface decreases toward zero over the run (Fig 13c)
 - Light-medium contact fraction rises while dark-medium falls (sorting/engulfment signature)
 visualizations:
-- name: Fig 12
-  config:
-    gallery: viz/figures.html
-- name: Fig 13
-  config:
-    gallery: viz/figures.html
-- name: Fig 14
-  config:
-    gallery: viz/figures.html
-- name: Fig 15
-  config:
-    gallery: viz/figures.html
-- name: Fig 16
-  config:
-    gallery: viz/figures.html
-- name: Table II
-  config:
-    gallery: viz/figures.html
-- name: Table III
-  config:
-    gallery: viz/figures.html
+- name: Cell sorting — interactive
+  address: local:GG1993CellSorting
 embed_visualizations:
-- name: Reproduced figures
-  title: Cell sorting — reproduced figures
+- name: Interactive figure
+  title: Cell sorting — interactive
+  url: /workspace/studies/cell_sorting/viz/interactive.html
+- name: All paper figures
+  title: Cell sorting — full figure set
   url: /workspace/studies/cell_sorting/viz/figures.html
 findings:
 - id: F-01

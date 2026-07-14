@@ -30,12 +30,14 @@ baseline:
 expected_behavior:
 - Light and dark form disjoint clusters by 2000 MCS
 visualizations:
-- name: Fig 26
-  config:
-    gallery: viz/figures.html
+- name: Dispersal — clusters separate — interactive
+  address: local:GG1993DispersalSeparate
 embed_visualizations:
-- name: Reproduced figures
-  title: Dispersal - clusters separate — reproduced figures
+- name: Interactive figure
+  title: Dispersal — clusters separate — interactive
+  url: /workspace/studies/dispersal_separate/viz/interactive.html
+- name: All paper figures
+  title: Dispersal — clusters separate — full figure set
   url: /workspace/studies/dispersal_separate/viz/figures.html
 findings:
 - id: F-01

@@ -32,12 +32,14 @@ baseline:
 expected_behavior:
 - Medium pockets nucleate internally lined by light cells (approximate; delicate case)
 visualizations:
-- name: Fig 28
-  config:
-    gallery: viz/figures.html
+- name: Vacancy nucleation (cavity) — interactive
+  address: local:GG1993VacancyCavity
 embed_visualizations:
-- name: Reproduced figures
-  title: Vacancy nucleation (cavity) — reproduced figures
+- name: Interactive figure
+  title: Vacancy nucleation (cavity) — interactive
+  url: /workspace/studies/vacancy_cavity/viz/interactive.html
+- name: All paper figures
+  title: Vacancy nucleation (cavity) — full figure set
   url: /workspace/studies/vacancy_cavity/viz/figures.html
 findings:
 - id: F-01

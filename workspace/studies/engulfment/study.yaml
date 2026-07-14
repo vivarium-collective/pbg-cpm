@@ -33,15 +33,14 @@ expected_behavior:
 - Light forms an outer layer over dark by 10000 MCS
 - Light-medium fraction rises while dark-medium falls to ~0
 visualizations:
-- name: Fig 18
-  config:
-    gallery: viz/figures.html
-- name: Fig 19
-  config:
-    gallery: viz/figures.html
+- name: Engulfment — interactive
+  address: local:GG1993Engulfment
 embed_visualizations:
-- name: Reproduced figures
-  title: Engulfment — reproduced figures
+- name: Interactive figure
+  title: Engulfment — interactive
+  url: /workspace/studies/engulfment/viz/interactive.html
+- name: All paper figures
+  title: Engulfment — full figure set
   url: /workspace/studies/engulfment/viz/figures.html
 findings:
 - id: F-01

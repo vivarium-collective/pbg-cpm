@@ -31,12 +31,14 @@ baseline:
 expected_behavior:
 - Light and dark clusters remain connected at 2000 MCS (contrast Fig 26)
 visualizations:
-- name: Fig 27
-  config:
-    gallery: viz/figures.html
+- name: Dispersal — clusters do not separate — interactive
+  address: local:GG1993DispersalNoSeparate
 embed_visualizations:
-- name: Reproduced figures
-  title: Dispersal - clusters do not separate — reproduced figures
+- name: Interactive figure
+  title: Dispersal — clusters do not separate — interactive
+  url: /workspace/studies/dispersal_no_separate/viz/interactive.html
+- name: All paper figures
+  title: Dispersal — clusters do not separate — full figure set
   url: /workspace/studies/dispersal_no_separate/viz/figures.html
 findings:
 - id: F-01

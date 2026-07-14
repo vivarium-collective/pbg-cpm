@@ -32,12 +32,14 @@ expected_behavior:
 - Light cells detach from the aggregate into the medium
 - Dark cells remain a compact rounded mass
 visualizations:
-- name: Fig 25
-  config:
-    gallery: viz/figures.html
+- name: Dispersal — light-cell sloughing — interactive
+  address: local:GG1993DispersalSloughing
 embed_visualizations:
-- name: Reproduced figures
-  title: Dispersal - light-cell sloughing — reproduced figures
+- name: Interactive figure
+  title: Dispersal — light-cell sloughing — interactive
+  url: /workspace/studies/dispersal_sloughing/viz/interactive.html
+- name: All paper figures
+  title: Dispersal — light-cell sloughing — full figure set
   url: /workspace/studies/dispersal_sloughing/viz/figures.html
 findings:
 - id: F-01

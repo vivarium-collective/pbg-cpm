@@ -33,21 +33,14 @@ expected_behavior:
 - Light-dark heterotypic fraction is the largest cell-cell contact term
 - Total boundary length decreases monotonically (Fig 8a)
 visualizations:
-- name: Fig 7
-  config:
-    gallery: viz/figures.html
-- name: Fig 8
-  config:
-    gallery: viz/figures.html
-- name: Fig 9
-  config:
-    gallery: viz/figures.html
-- name: Table I
-  config:
-    gallery: viz/figures.html
+- name: Checkerboard (negative surface tension) — interactive
+  address: local:GG1993Checkerboard
 embed_visualizations:
-- name: Reproduced figures
-  title: Checkerboard (negative surface tension) — reproduced figures
+- name: Interactive figure
+  title: Checkerboard (negative surface tension) — interactive
+  url: /workspace/studies/checkerboard/viz/interactive.html
+- name: All paper figures
+  title: Checkerboard (negative surface tension) — full figure set
   url: /workspace/studies/checkerboard/viz/figures.html
 findings:
 - id: F-01

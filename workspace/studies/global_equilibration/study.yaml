@@ -33,15 +33,14 @@ expected_behavior:
 - Aggregate rounds from rectangle to disk within 400 MCS
 - Equilibrated <n> in [6.0, 6.1], mu2 near 0.69 (Fig 4b targets)
 visualizations:
-- name: Fig 4
-  config:
-    gallery: viz/figures.html
-- name: Fig 5
-  config:
-    gallery: viz/figures.html
+- name: Global pattern equilibration — interactive
+  address: local:GG1993GlobalEquilibration
 embed_visualizations:
-- name: Reproduced figures
-  title: Global pattern equilibration — reproduced figures
+- name: Interactive figure
+  title: Global pattern equilibration — interactive
+  url: /workspace/studies/global_equilibration/viz/interactive.html
+- name: All paper figures
+  title: Global pattern equilibration — full figure set
   url: /workspace/studies/global_equilibration/viz/figures.html
 findings:
 - id: F-01
