@@ -82,3 +82,19 @@ behavior_tests:
   status: passed
   result: PASS
   paper_reference: Fig 28 — vacancy/cavity nucleation with dark accumulation
+gate_status: passed
+runs:
+- run_id: vacancy_cavity-reproduction
+  name: vacancy_cavity reproduction (seed 17)
+  status: completed
+  canonical: true
+  timestamp: '2026-07-14'
+  seeds:
+  - 17
+  emitter: gg1993_data/results series-json
+  outcomes:
+    Cavity nucleates and rounds; dark accumulates:
+      result: PASS
+      measured_value: 0.442
+      notes: boundary 36116→29650, frac_dd 0.351→0.442
+      evaluated_by: pbg_cpm_studies.gg1993.validate
