@@ -7,3 +7,17 @@ __pycache__/
 
 # maturin develop places the compiled engine here
 cpm/*.so
+
+
+# Added by pbg-superpowers in-place scaffolder
+.pbg/*
+!.pbg/schemas/
+!.pbg/hpc.env.example
+investigations/*/runs.db
+investigations/*/viz/
+investigations/*/.run.lock
+*.egg-info/
+.pytest_cache/
+workspace/reports/assets/*
+!workspace/reports/assets/.keep
+.superpowers/brainstorm/
