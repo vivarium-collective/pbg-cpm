@@ -43,6 +43,14 @@ all = ["pbg-cpm[sbml,ftu]"]
 Homepage = "https://github.com/vivarium-collective/pbg-cpm"
 Repository = "https://github.com/vivarium-collective/pbg-cpm"
 
+# Non-PyPI deps resolved from git so `uv sync` works in CI (publish-dashboard).
+# vivarium-workbench (the dashboard/publish CLI) and pbg-tellurium (sbml extra)
+# ship only 0.1.0 local placeholders with no registry entry; without these
+# sources `uv sync` fails resolution before the publish step runs.
+[tool.uv.sources]
+vivarium-workbench = { git = "https://github.com/vivarium-collective/vivarium-workbench.git", branch = "main" }
+pbg-tellurium = { git = "https://github.com/vivarium-collective/pbg-tellurium.git", branch = "main" }
+
 [tool.maturin]
 manifest-path = "crates/cpm-py/Cargo.toml"
 module-name = "cpm.cpm_core"
