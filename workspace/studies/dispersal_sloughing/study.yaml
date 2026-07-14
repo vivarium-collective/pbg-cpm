@@ -83,3 +83,19 @@ behavior_tests:
   status: passed
   result: PASS
   paper_reference: Fig 25 — light dissociates; light-medium interface surges
+gate_status: passed
+runs:
+- run_id: dispersal_sloughing-reproduction
+  name: dispersal_sloughing reproduction (seed 17)
+  status: completed
+  canonical: true
+  timestamp: '2026-07-14'
+  seeds:
+  - 17
+  emitter: gg1993_data/results series-json
+  outcomes:
+    Light cells slough off and disperse into the medium:
+      result: PASS
+      measured_value: 7.04
+      notes: frac_lM 0.073→0.513 (7.0×), boundary 39617→51795
+      evaluated_by: pbg_cpm_studies.gg1993.validate

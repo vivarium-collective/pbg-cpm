@@ -91,9 +91,10 @@ def _study_title(slug):
     return slug
 
 
-def write_cards():
+def write_cards(results=None):
     """Render every study's report card into ``studies/<slug>/charts/``."""
-    results = validate_all()
+    if results is None:
+        results = validate_all()
     n = 0
     for slug, r in results.items():
         charts = os.path.join(STU_DIR, slug, "charts")

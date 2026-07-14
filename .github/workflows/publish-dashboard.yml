@@ -56,6 +56,18 @@ jobs:
         # force current main so `vivarium-workbench-publish` exists.
         run: uv pip install --reinstall-package vivarium-workbench "vivarium-workbench @ git+https://github.com/vivarium-collective/vivarium-workbench.git@main"
 
+      - name: Refresh study conclusions from run data
+        # Re-derive every study's acceptance tests / run outcomes / gate verdict
+        # from the committed metric series (workspace/gg1993_data/results/*/
+        # *_series.json) so the published report's "Ran · Tests · Verdict" strip
+        # is ALWAYS in sync with the data — never a stale hand-set value. Pure
+        # JSON->YAML (validate.py is decoupled from the Rust engine); best-effort
+        # so a data-less checkout still publishes.
+        run: |
+          source .venv/bin/activate
+          python -m pbg_cpm_studies.gg1993.validate || \
+            echo "::warning::conclusion refresh skipped (no series data present)"
+
       - name: Build dashboard snapshot
         # Run inside the activated venv, NOT `uv run` — `uv run` re-syncs to
         # uv.lock first, which would undo the ad-hoc vivarium-workbench@main

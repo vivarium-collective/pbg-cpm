@@ -209,16 +209,22 @@ def sync_study_charts(slug):
 
 
 def build_all():
+    # 1. Re-derive each study's conclusions (tests, run outcomes, gate verdict)
+    #    from the CURRENT run data so the report is never stale — this is the
+    #    single automatic source of truth for the "Ran · Tests · Verdict" strip.
+    from . import validate
+    results = validate.apply_conclusions()
+    npass = sum(1 for r in results.values() if r["passed"])
     pages = [build_study_page(s) for s in ORDER]
     chart_counts = {s: len(sync_study_charts(s)) for s in ORDER}
-    # Validation report card (00_report_card) per study — rendered AFTER the
-    # figure sync (which clears charts/) so it lands on top and sorts first.
+    # 2. Validation report card (00_report_card) per study — rendered AFTER the
+    #    figure sync (which clears charts/) so it lands on top and sorts first.
     from . import report_card
-    n_cards = report_card.write_cards()
+    n_cards = report_card.write_cards(results)
     report = build_investigation_report()
     total = sum(chart_counts.values())
-    print(f"{len(pages)} study pages + {total} charts + {n_cards} validation "
-          f"report cards synced to studies/*/charts/ + report -> {report}")
+    print(f"conclusions refreshed ({npass}/{len(results)} pass) · {len(pages)} study "
+          f"pages + {total} charts + {n_cards} report cards + report -> {report}")
     return report
 
 

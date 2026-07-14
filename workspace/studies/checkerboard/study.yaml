@@ -83,3 +83,19 @@ behavior_tests:
   status: passed
   result: PASS
   paper_reference: Fig 7-8 — negative γ_ld drives a light/dark checkerboard
+gate_status: passed
+runs:
+- run_id: checkerboard-reproduction
+  name: checkerboard reproduction (seed 17)
+  status: completed
+  canonical: true
+  timestamp: '2026-07-14'
+  seeds:
+  - 17
+  emitter: gg1993_data/results series-json
+  outcomes:
+    Heterotypic contacts dominate (checkerboard mixing):
+      result: PASS
+      measured_value: 0.59
+      notes: frac_ld=0.590 vs frac_ll=0.167, frac_dd=0.183
+      evaluated_by: pbg_cpm_studies.gg1993.validate
