@@ -76,7 +76,7 @@ readouts:
 behavior_tests:
 - name: Clusters stay aggregated (no separation)
   classification: primary
-  description: 'Paper: Fig 27 — same setup but clusters do NOT separate. Pass criterion: total boundary length does not increase (aggregate stays compact). Measured from the reproduced run: boundary 37138→36364 (ratio 0.979).'
+  description: 'Paper: Fig 27 — same setup but clusters do NOT separate. Pass criterion: total boundary length does not increase (aggregate stays compact). Measured from the reproduced run: boundary 37254→36232 (ratio 0.973).'
   measure: bl_total
   pass_if: total boundary length does not increase (aggregate stays compact)
   status: passed
@@ -95,6 +95,6 @@ runs:
   outcomes:
     Clusters stay aggregated (no separation):
       result: PASS
-      measured_value: 0.9792
-      notes: boundary 37138→36364 (ratio 0.979)
+      measured_value: 0.9726
+      notes: boundary 37254→36232 (ratio 0.973)
       evaluated_by: pbg_cpm_studies.gg1993.validate

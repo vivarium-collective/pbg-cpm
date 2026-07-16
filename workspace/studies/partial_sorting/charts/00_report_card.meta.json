@@ -1,6 +1,6 @@
 {
   "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
-  "caption": "Partial sorting \u2014 coarsening with incomplete demixing",
-  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. boundary length decreases yet light-dark contact stays high (>0.35, still mixed)",
-  "interpretation": "Measured: boundary 37097\u219236265, frac_ld=0.419"
+  "caption": "Partial sorting stalls: coarsening but no monolayer",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. light-dark contact drops (coarsening) BUT light never owns the surface \u2014 no monolayer (corr_lM<0.75, vs >0.85 for complete sorting)",
+  "interpretation": "Measured: frac_ld 0.400\u21920.126, corr_lM_final=0.618 (no monolayer)"
 }

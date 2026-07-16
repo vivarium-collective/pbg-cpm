@@ -163,8 +163,13 @@ def build_from_labels(labels_flat, type_of_label, energies, wp,
                neighbor_order=wp.neighbor_order, temperature=wp.temperature,
                boundary=wp.boundary, energies=energies,
                lambda_volume=lambda_volume,
-               label_types={int(l): types_map.get(int(l), default_type)
-                            for l in np.unique(labels_flat) if l != 0},
+               # Key by the *live cell id* (add_cell's return), NOT the input
+               # label: seed_from_labels assigns cell ids in first-encounter
+               # order, so for a non-raster-ordered label field (e.g. the saved
+               # equilibrated IC) cell-id != input-label. Keying by input label
+               # here scrambled every downstream anneal/measurement.
+               label_types={int(cid): int(types_map.get(int(label), default_type))
+                            for label, cid in label_to_cid.items()},
                target_by_type=dict(target_by_type))
 
 
@@ -197,7 +202,13 @@ def annealed_grids(sim, anneal_mcs=2, mcs_scale=MCS_SCALE, seed=12345):
     applied to a *copy* of the current pattern (running sim untouched)."""
     owner = sim.snapshot2d()
     labels_flat = owner.ravel().astype(np.uint32)
-    types_map = {int(k): int(v) for k, v in sim.label_types.items()}
+    # Types must come from the LIVE world (indexed by the current cell id that
+    # `owner` holds), not from a build-time label map — the running sim's owner
+    # array is cell ids, and the world knows each cell's type. Re-deriving here
+    # keeps the anneal copy faithful even though seed_from_labels re-permutes ids.
+    live_types = np.asarray(sim.world.cell_types(), dtype=np.int64)
+    types_map = {int(cid): int(live_types[cid])
+                 for cid in np.unique(labels_flat) if cid != 0}
     aworld = cpm_core.World((sim.nx, sim.ny, 1), sim.boundary,
                             sim.neighbor_order, 0.0)  # T = 0
     _apply_contacts(aworld, sim.energies)

@@ -76,7 +76,7 @@ readouts:
 behavior_tests:
 - name: Clusters separate (both types expose new medium surface)
   classification: primary
-  description: 'Paper: Fig 26 — clusters break apart and separate. Pass criterion: total boundary length increases and both medium-contact fractions rise. Measured from the reproduced run: boundary 37555→38572, frac_lM 0.047→0.105, frac_dM 0.043→0.100.'
+  description: 'Paper: Fig 26 — clusters break apart and separate. Pass criterion: total boundary length increases and both medium-contact fractions rise. Measured from the reproduced run: boundary 37643→37929, frac_lM 0.043→0.101, frac_dM 0.044→0.077.'
   measure: bl_total
   pass_if: total boundary length increases and both medium-contact fractions rise
   status: passed
@@ -95,6 +95,6 @@ runs:
   outcomes:
     Clusters separate (both types expose new medium surface):
       result: PASS
-      measured_value: 1.0271
-      notes: boundary 37555→38572, frac_lM 0.047→0.105, frac_dM 0.043→0.100
+      measured_value: 1.0076
+      notes: boundary 37643→37929, frac_lM 0.043→0.101, frac_dM 0.044→0.077
       evaluated_by: pbg_cpm_studies.gg1993.validate

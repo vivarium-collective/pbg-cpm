@@ -1,6 +1,6 @@
 {
   "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
-  "caption": "Coarsening proceeds but sorting is logarithmically slow",
-  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. total boundary length decreases while light-dark contact stays high (>0.35)",
-  "interpretation": "Measured: boundary 37304\u219236674, frac_ld\u2208[0.441,0.467]"
+  "caption": "Cells sort: dark cluster wrapped by a light monolayer",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. light-dark fraction falls \u226545% AND light holds >80% of the medium surface (monolayer)",
+  "interpretation": "Measured: frac_ld 0.435\u21920.079 (82% drop), corr_lM 0.462\u21921.000"
 }

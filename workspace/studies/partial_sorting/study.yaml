@@ -75,14 +75,14 @@ readouts:
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
 behavior_tests:
-- name: Partial sorting — coarsening with incomplete demixing
+- name: 'Partial sorting stalls: coarsening but no monolayer'
   classification: primary
-  description: 'Paper: Fig 22-24 — weaker γ gives partial, not complete, sorting. Pass criterion: boundary length decreases yet light-dark contact stays high (>0.35, still mixed). Measured from the reproduced run: boundary 37097→36265, frac_ld=0.419.'
+  description: 'Paper: Fig 22-24 — Young condition fails; clusters trap inclusions, no monolayer. Pass criterion: light-dark contact drops (coarsening) BUT light never owns the surface — no monolayer (corr_lM<0.75, vs >0.85 for complete sorting). Measured from the reproduced run: frac_ld 0.400→0.126, corr_lM_final=0.618 (no monolayer).'
   measure: frac_ld
-  pass_if: boundary length decreases yet light-dark contact stays high (>0.35, still mixed)
+  pass_if: light-dark contact drops (coarsening) BUT light never owns the surface — no monolayer (corr_lM<0.75, vs >0.85 for complete sorting)
   status: passed
   result: PASS
-  paper_reference: Fig 22-24 — weaker γ gives partial, not complete, sorting
+  paper_reference: Fig 22-24 — Young condition fails; clusters trap inclusions, no monolayer
 gate_status: passed
 runs:
 - run_id: partial_sorting-reproduction
@@ -94,8 +94,8 @@ runs:
   - 17
   emitter: gg1993_data/results series-json
   outcomes:
-    Partial sorting — coarsening with incomplete demixing:
+    'Partial sorting stalls: coarsening but no monolayer':
       result: PASS
-      measured_value: 0.419
-      notes: boundary 37097→36265, frac_ld=0.419
+      measured_value: 0.618
+      notes: frac_ld 0.400→0.126, corr_lM_final=0.618 (no monolayer)
       evaluated_by: pbg_cpm_studies.gg1993.validate

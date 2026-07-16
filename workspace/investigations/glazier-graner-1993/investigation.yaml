@@ -104,7 +104,8 @@ studies:
 - dispersal_separate
 - dispersal_no_separate
 - vacancy_cavity
-expert_docs: []
+expert_docs:
+- openvt-cell-sorting-spec
 acceptance_criteria:
 - study: annealing
   behavior: Bulk <n> reaches within 0.5% of its plateau by 2 MCS of T=0 annealing

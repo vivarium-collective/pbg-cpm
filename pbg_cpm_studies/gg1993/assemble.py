@@ -78,7 +78,7 @@ def build(slug, fig_dir):
     for fig, order, cols, ttl in [
         ("fig7", [10, 100, 1000, 2000], 2, "Fig 7 — checkerboard"),
         ("fig12", [0, 10, 100, 1000, 3000, 4000, 5000, 13500], 4, "Fig 12 — cell sorting"),
-        ("fig18", [0, 1000, 5000, 10000], 2, "Fig 18 — engulfment"),
+        ("fig18", [0, 1000, 5000, 10000, 20000], 3, "Fig 18 — engulfment"),
         ("fig20", [0, 50, 5000], 3, "Fig 20 — position reversal"),
         ("fig22", [10, 100, 1000, 2000], 2, "Fig 22 — partial cell sorting"),
     ]:

@@ -90,11 +90,14 @@ _add(
 _add(
     slug="engulfment", title="Engulfment", section="III C",
     J=dict(_SORT_J), temperature=10.0, ic="half_split",
-    image_mcs=[0, 1000, 5000, 10000], series_max_mcs=10000,
+    image_mcs=[0, 1000, 5000, 10000, 20000], series_max_mcs=20000,
     figures=["fig18", "fig19"],
     notes="Same energies as cell sorting. IC: upper half light, lower half "
-          "dark. Fig18 patterns 0/1000/5000/10000. Fig19 homotypic (ll,dd) & "
-          "heterotypic (lM,dM,ld) fractional lengths.",
+          "dark (clean interface, Fig 18a). Paper runs to 10000 MCS (still "
+          "incomplete; linear fit R^2=0.987 extrapolates complete engulfment at "
+          "~11000 MCS). We extend to 20000 MCS to observe the light monolayer "
+          "actually close over the dark mass. Fig18 patterns 0/1000/5000/10000/"
+          "20000. Fig19 homotypic (ll,dd) & heterotypic (lM,dM,ld) frac lengths.",
 )
 
 # 6. Position reversal (Figs 20, 21)

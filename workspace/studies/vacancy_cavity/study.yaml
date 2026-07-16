@@ -76,7 +76,7 @@ readouts:
 behavior_tests:
 - name: Cavity nucleates and rounds; dark accumulates
   classification: primary
-  description: 'Paper: Fig 28 — vacancy/cavity nucleation with dark accumulation. Pass criterion: total boundary length decreases (cavity rounds) and dark-dark contact rises. Measured from the reproduced run: boundary 36116→29650, frac_dd 0.351→0.442.'
+  description: 'Paper: Fig 28 — vacancy/cavity nucleation with dark accumulation. Pass criterion: total boundary length decreases (cavity rounds) and dark-dark contact rises. Measured from the reproduced run: boundary 36301→28836, frac_dd 0.358→0.543.'
   measure: frac_dd
   pass_if: total boundary length decreases (cavity rounds) and dark-dark contact rises
   status: passed
@@ -95,6 +95,6 @@ runs:
   outcomes:
     Cavity nucleates and rounds; dark accumulates:
       result: PASS
-      measured_value: 0.442
-      notes: boundary 36116→29650, frac_dd 0.351→0.442
+      measured_value: 0.543
+      notes: boundary 36301→28836, frac_dd 0.358→0.543
       evaluated_by: pbg_cpm_studies.gg1993.validate

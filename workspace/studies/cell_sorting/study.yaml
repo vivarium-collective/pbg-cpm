@@ -75,14 +75,14 @@ readouts:
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
 behavior_tests:
-- name: Coarsening proceeds but sorting is logarithmically slow
+- name: 'Cells sort: dark cluster wrapped by a light monolayer'
   classification: primary
-  description: 'Paper: Fig 12-13 — random-IC sort is very slow; only partial demixing. Pass criterion: total boundary length decreases while light-dark contact stays high (>0.35). Measured from the reproduced run: boundary 37304→36674, frac_ld∈[0.441,0.467].'
+  description: 'Paper: Fig 12-13 — light-dark contact collapses; light monolayer (light-Medium correlation→1). Pass criterion: light-dark fraction falls ≥45% AND light holds >80% of the medium surface (monolayer). Measured from the reproduced run: frac_ld 0.435→0.079 (82% drop), corr_lM 0.462→1.000.'
   measure: bl_total
-  pass_if: total boundary length decreases while light-dark contact stays high (>0.35)
+  pass_if: light-dark fraction falls ≥45% AND light holds >80% of the medium surface (monolayer)
   status: passed
   result: PASS
-  paper_reference: Fig 12-13 — random-IC sort is very slow; only partial demixing
+  paper_reference: Fig 12-13 — light-dark contact collapses; light monolayer (light-Medium correlation→1)
 gate_status: passed
 runs:
 - run_id: cell_sorting-reproduction
@@ -94,8 +94,8 @@ runs:
   - 17
   emitter: gg1993_data/results series-json
   outcomes:
-    Coarsening proceeds but sorting is logarithmically slow:
+    'Cells sort: dark cluster wrapped by a light monolayer':
       result: PASS
-      measured_value: 0.9831
-      notes: boundary 37304→36674, frac_ld∈[0.441,0.467]
+      measured_value: 1.0
+      notes: frac_ld 0.435→0.079 (82% drop), corr_lM 0.462→1.000
       evaluated_by: pbg_cpm_studies.gg1993.validate
