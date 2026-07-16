@@ -75,14 +75,14 @@ readouts:
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
 behavior_tests:
-- name: Reversed surface arrangement (dark on the outside)
+- name: 'Position reversal: dark forms the outer monolayer'
   classification: primary
-  description: 'Paper: Fig 20-21 — arrangement reverses vs the sorted state. Pass criterion: dark-medium contact correlation exceeds light-medium (dark at the surface). Measured from the reproduced run: corr_dM=0.515 vs corr_lM=0.485.'
+  description: 'Paper: Fig 20-21 — light-Medium correlation→0; dark owns the surface. Pass criterion: dark holds >80% of the medium surface (light-Medium→0) AND light-dark contact falls (sorting). Measured from the reproduced run: corr_dM_final=1.000 (corr_lM 0.442→0.000), frac_ld 0.439→0.058.'
   measure: corr_dM
-  pass_if: dark-medium contact correlation exceeds light-medium (dark at the surface)
+  pass_if: dark holds >80% of the medium surface (light-Medium→0) AND light-dark contact falls (sorting)
   status: passed
   result: PASS
-  paper_reference: Fig 20-21 — arrangement reverses vs the sorted state
+  paper_reference: Fig 20-21 — light-Medium correlation→0; dark owns the surface
 gate_status: passed
 runs:
 - run_id: position_reversal-reproduction
@@ -94,8 +94,8 @@ runs:
   - 17
   emitter: gg1993_data/results series-json
   outcomes:
-    Reversed surface arrangement (dark on the outside):
+    'Position reversal: dark forms the outer monolayer':
       result: PASS
-      measured_value: 0.031
-      notes: corr_dM=0.515 vs corr_lM=0.485
+      measured_value: 1.0
+      notes: corr_dM_final=1.000 (corr_lM 0.442→0.000), frac_ld 0.439→0.058
       evaluated_by: pbg_cpm_studies.gg1993.validate

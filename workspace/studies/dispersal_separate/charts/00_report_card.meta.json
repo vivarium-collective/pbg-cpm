@@ -2,5 +2,5 @@
   "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
   "caption": "Clusters separate (both types expose new medium surface)",
   "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. total boundary length increases and both medium-contact fractions rise",
-  "interpretation": "Measured: boundary 37555\u219238572, frac_lM 0.047\u21920.105, frac_dM 0.043\u21920.100"
+  "interpretation": "Measured: boundary 37643\u219237929, frac_lM 0.043\u21920.101, frac_dM 0.044\u21920.077"
 }

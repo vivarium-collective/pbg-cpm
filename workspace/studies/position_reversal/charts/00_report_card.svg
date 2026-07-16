@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-14T21:22:49.254698</dc:date>
+    <dc:date>2026-07-16T12:26:31.916108</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 3.7152 6.048 3.7152 11.088
 L 3.7152 240.912 
 Q 3.7152 245.952 16.0992 245.952 
 z
-" clip-path="url(#p76d618ec73)" style="fill: #ffffff; stroke: #e5e7eb; stroke-width: 1.2; stroke-linejoin: miter"/>
+" clip-path="url(#p486c04f76c)" style="fill: #ffffff; stroke: #e5e7eb; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 7.4304 244.44 
@@ -48,7 +48,7 @@ L 14.8608 244.44
 L 14.8608 7.56 
 L 7.4304 7.56 
 z
-" clip-path="url(#p76d618ec73)" style="fill: #0d9488; stroke: #0d9488; stroke-linejoin: miter"/>
+" clip-path="url(#p486c04f76c)" style="fill: #0d9488; stroke: #0d9488; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="30.96" y="39.17707" transform="rotate(-0 30.96 39.17707)">Position reversal</text>
@@ -64,32 +64,32 @@ Q 492.8832 19.152 492.8832 26.712
 L 492.8832 43.848 
 Q 492.8832 51.408 511.4592 51.408 
 z
-" clip-path="url(#p76d618ec73)" style="fill: #0d9488"/>
+" clip-path="url(#p486c04f76c)" style="fill: #0d9488"/>
    </g>
    <g id="text_2">
     <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="87.858516" transform="rotate(-0 30.96 87.858516)">Paper behaviour</text>
    </g>
    <g id="text_3">
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="87.858516" transform="rotate(-0 204.336 87.858516)">Fig 20-21 — arrangement reverses vs the sorted state</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="87.858516" transform="rotate(-0 204.336 87.858516)">Fig 20-21 — light-Medium correlation→0; dark owns the surface</text>
    </g>
    <g id="text_4">
     <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="126.917773" transform="rotate(-0 30.96 126.917773)">Acceptance test</text>
    </g>
    <g id="text_5">
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="126.918516" transform="rotate(-0 204.336 126.918516)">Reversed surface arrangement (dark on the outside)</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="126.918516" transform="rotate(-0 204.336 126.918516)">Position reversal: dark forms the outer monolayer</text>
    </g>
    <g id="text_6">
     <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="165.978516" transform="rotate(-0 30.96 165.978516)">Criterion</text>
    </g>
    <g id="text_7">
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2937" transform="translate(204.336 166.929443)">dark-medium contact correlation exceeds light-medium (dark at</text>
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2937" transform="translate(204.336 178.332041)">the surface)</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2937" transform="translate(204.336 166.929443)">dark holds &gt;80% of the medium surface (light-Medium→0) AND</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2937" transform="translate(204.336 178.332041)">light-dark contact falls (sorting)</text>
    </g>
    <g id="text_8">
     <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="205.038516" transform="rotate(-0 30.96 205.038516)">Measured (reproduced run)</text>
    </g>
    <g id="text_9">
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="205.038516" transform="rotate(-0 204.336 205.038516)">corr_dM=0.515 vs corr_lM=0.485</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="205.038516" transform="rotate(-0 204.336 205.038516)">corr_dM_final=1.000 (corr_lM 0.442→0.000), frac_ld 0.439→0.058</text>
    </g>
    <g id="text_10">
     <text style="font-size: 7.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="240.088535" transform="rotate(-0 30.96 240.088535)">Validated against Glazier &amp; Graner, Phys. Rev. E 47, 2128 (1993) · pbg-cpm reproduction — every value computed from our own simulation run</text>
@@ -100,7 +100,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p76d618ec73">
+  <clipPath id="p486c04f76c">
    <rect x="0" y="0" width="619.2" height="252"/>
   </clipPath>
  </defs>

@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-14T21:22:49.230119</dc:date>
+    <dc:date>2026-07-16T12:26:31.889938</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 3.7152 6.048 3.7152 11.088
 L 3.7152 240.912 
 Q 3.7152 245.952 16.0992 245.952 
 z
-" clip-path="url(#pf0a23c23a6)" style="fill: #ffffff; stroke: #e5e7eb; stroke-width: 1.2; stroke-linejoin: miter"/>
+" clip-path="url(#pd30a8a792f)" style="fill: #ffffff; stroke: #e5e7eb; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 7.4304 244.44 
@@ -48,7 +48,7 @@ L 14.8608 244.44
 L 14.8608 7.56 
 L 7.4304 7.56 
 z
-" clip-path="url(#pf0a23c23a6)" style="fill: #0d9488; stroke: #0d9488; stroke-linejoin: miter"/>
+" clip-path="url(#pd30a8a792f)" style="fill: #0d9488; stroke: #0d9488; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="30.96" y="39.17707" transform="rotate(-0 30.96 39.17707)">Checkerboard (negative surface tension)</text>
@@ -64,7 +64,7 @@ Q 492.8832 19.152 492.8832 26.712
 L 492.8832 43.848 
 Q 492.8832 51.408 511.4592 51.408 
 z
-" clip-path="url(#pf0a23c23a6)" style="fill: #0d9488"/>
+" clip-path="url(#pd30a8a792f)" style="fill: #0d9488"/>
    </g>
    <g id="text_2">
     <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="87.858516" transform="rotate(-0 30.96 87.858516)">Paper behaviour</text>
@@ -89,7 +89,7 @@ z
     <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="205.038516" transform="rotate(-0 30.96 205.038516)">Measured (reproduced run)</text>
    </g>
    <g id="text_9">
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="205.038516" transform="rotate(-0 204.336 205.038516)">frac_ld=0.590 vs frac_ll=0.167, frac_dd=0.183</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2937" x="204.336" y="205.038516" transform="rotate(-0 204.336 205.038516)">frac_ld=0.837 vs frac_ll=0.042, frac_dd=0.061</text>
    </g>
    <g id="text_10">
     <text style="font-size: 7.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6b7280" x="30.96" y="240.088535" transform="rotate(-0 30.96 240.088535)">Validated against Glazier &amp; Graner, Phys. Rev. E 47, 2128 (1993) · pbg-cpm reproduction — every value computed from our own simulation run</text>
@@ -100,7 +100,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pf0a23c23a6">
+  <clipPath id="pd30a8a792f">
    <rect x="0" y="0" width="619.2" height="252"/>
   </clipPath>
  </defs>

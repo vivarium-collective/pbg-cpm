@@ -101,54 +101,88 @@ def _t_checkerboard(mcs, S):
 
 
 def _t_cell_sorting(mcs, S):
-    b0, b1 = _first_last(S, "bl_total")
-    ld_min, ld_max = _minmax(S, "frac_ld")
-    # Paper: sorting from a random IC is logarithmically slow — coarsening
-    # proceeds (boundary length falls) but demixing stays partial.
-    passed = b1 < b0 and ld_max > 0.35
+    # Paper Fig 12-13: a random mix demixes into a dark cluster wrapped by a
+    # light monolayer. Signatures: heterotypic light-dark contact collapses,
+    # AND light comes to own essentially the whole medium surface (monolayer).
+    ld0, ld1 = _first_last(S, "frac_ld")
+    clM0, clM1 = _first_last(S, "corr_lM")
+    demix = ld1 < 0.55 * ld0          # heterotypic contact roughly halves+
+    monolayer = clM1 > 0.80           # light holds >80% of the medium contact
+    passed = demix and monolayer
     return dict(
-        name="Coarsening proceeds but sorting is logarithmically slow",
-        paper_ref="Fig 12-13 — random-IC sort is very slow; only partial demixing",
-        expected="total boundary length decreases while light-dark contact stays high (>0.35)",
-        measured=f"boundary {b0:.0f}→{b1:.0f}, frac_ld∈[{ld_min:.3f},{ld_max:.3f}]",
-        value=round(b1 / b0, 4), passed=passed)
+        name="Cells sort: dark cluster wrapped by a light monolayer",
+        paper_ref="Fig 12-13 — light-dark contact collapses; light monolayer (light-Medium correlation→1)",
+        expected="light-dark fraction falls ≥45% AND light holds >80% of the medium surface (monolayer)",
+        measured=f"frac_ld {ld0:.3f}→{ld1:.3f} ({100*(1-ld1/max(ld0,1e-9)):.0f}% drop), corr_lM {clM0:.3f}→{clM1:.3f}",
+        value=round(clM1, 3), passed=passed)
 
 
 def _t_engulfment(mcs, S):
-    lM0, lM1 = _first_last(S, "frac_lM")
+    # Paper Fig 18-19: a CLEAN top-light/bottom-dark split; light slowly
+    # engulfs the dark mass. Two things distinguish true engulfment from mere
+    # mixing: (1) the two blocks stay coherent — heterotypic light-dark contact
+    # stays LOW throughout (it does NOT balloon the way a checkerboard/partial
+    # sort does); (2) the dark mass loses its medium surface as the light
+    # monolayer closes over it. The paper's run is still incomplete at 10000
+    # MCS (extrapolated ~11000); we run to 20000 to see it close.
     dM0, dM1 = _first_last(S, "frac_dM")
-    passed = dM1 < dM0 / 2.0 and lM1 > lM0
+    clM1 = _first_last(S, "corr_lM")[1]
+    ld_min, ld_max = _minmax(S, "frac_ld")
+    coherent = ld_max < 0.20          # blocks slide past each other, never mix
+    engulfed = dM1 < 0.20 * dM0       # dark loses ≥80% of its medium contact
+    monolayer = clM1 > 0.85           # light owns >85% of the medium surface
+    passed = coherent and engulfed and monolayer
     return dict(
-        name="Light engulfs dark (dark loses its medium contact)",
-        paper_ref="Fig 18-19 — light forms the outer layer; dark-medium → ~0",
-        expected="dark-medium fraction falls ≥2× and light-medium fraction rises",
-        measured=f"frac_dM {dM0:.4f}→{dM1:.4f} ({dM0/max(dM1,1e-9):.1f}× drop), frac_lM {lM0:.4f}→{lM1:.4f}",
-        value=round(dM0 / max(dM1, 1e-9), 2), passed=passed)
+        name="Light engulfs the coherent dark mass (no mixing)",
+        paper_ref="Fig 18-19 — clean split; dark-Medium→~0, light monolayer closes; ld stays low",
+        expected="light-dark stays low (<0.20, no mixing) AND dark-medium falls ≥80% AND light owns >85% of the surface",
+        measured=f"frac_dM {dM0:.4f}→{dM1:.4f} ({100*(1-dM1/max(dM0,1e-9)):.0f}% drop), corr_lM_final={clM1:.3f}, max frac_ld={ld_max:.3f}",
+        value=round(clM1, 3), passed=passed)
 
 
 def _t_position_reversal(mcs, S):
-    clM = _first_last(S, "corr_lM")[1]
-    cdM = _first_last(S, "corr_dM")[1]
-    # Reversed relative to engulfment: dark preferentially contacts the medium.
-    passed = cdM > clM
+    # Paper Fig 20-21: raising gamma_lM (=23) reverses the layering — DARK forms
+    # the outer monolayer. Fig 21(b): the light-Medium correlation falls to ~0,
+    # i.e. dark comes to own essentially the entire medium surface. A bare
+    # corr_dM > corr_lM (the old test) passed at a trivial 0.51 vs 0.49; the
+    # paper demands near-total reversal.
+    clM0, clM1 = _first_last(S, "corr_lM")
+    cdM1 = _first_last(S, "corr_dM")[1]
+    ld0, ld1 = _first_last(S, "frac_ld")
+    reversed_surface = cdM1 > 0.80    # dark owns >80% of the medium surface
+    demix = ld1 < 0.80 * ld0          # genuine sorting occurred (not frozen mix)
+    passed = reversed_surface and demix
     return dict(
-        name="Reversed surface arrangement (dark on the outside)",
-        paper_ref="Fig 20-21 — arrangement reverses vs the sorted state",
-        expected="dark-medium contact correlation exceeds light-medium (dark at the surface)",
-        measured=f"corr_dM={cdM:.3f} vs corr_lM={clM:.3f}",
-        value=round(cdM - clM, 3), passed=passed)
+        name="Position reversal: dark forms the outer monolayer",
+        paper_ref="Fig 20-21 — light-Medium correlation→0; dark owns the surface",
+        expected="dark holds >80% of the medium surface (light-Medium→0) AND light-dark contact falls (sorting)",
+        measured=f"corr_dM_final={cdM1:.3f} (corr_lM {clM0:.3f}→{clM1:.3f}), frac_ld {ld0:.3f}→{ld1:.3f}",
+        value=round(cdM1, 3), passed=passed)
 
 
 def _t_partial_sorting(mcs, S):
-    b0, b1 = _first_last(S, "bl_total")
-    ld1 = _first_last(S, "frac_ld")[1]
-    passed = b1 < b0 and ld1 > 0.35
+    # Paper Fig 22-24: the Young condition is violated (gamma_ld=7.5), so
+    # sorting starts — clusters coarsen and heterotypic contact drops — but
+    # STALLS: no light monolayer ever closes, clusters trap heterotypic
+    # inclusions. The discriminating signature vs complete sorting is that
+    # light never comes to own the medium surface. So we require BOTH: real
+    # coarsening happened, AND the light monolayer did NOT form.
+    ld0, ld1 = _first_last(S, "frac_ld")
+    clM1 = _first_last(S, "corr_lM")[1]
+    # Partial sorting DOES coarsen (heterotypic contact can fall a lot via
+    # clustering); what makes it *partial* is that no light monolayer ever
+    # closes — light does not come to own the aggregate surface the way
+    # complete sorting does (corr_lM stays well short of the ~0.85 monolayer
+    # value; measured ~0.62 here vs >0.85 for complete cell_sorting).
+    coarsened = ld1 < 0.8 * ld0       # sorting genuinely progressed
+    no_monolayer = clM1 < 0.75        # light never wrapped the aggregate
+    passed = coarsened and no_monolayer
     return dict(
-        name="Partial sorting — coarsening with incomplete demixing",
-        paper_ref="Fig 22-24 — weaker γ gives partial, not complete, sorting",
-        expected="boundary length decreases yet light-dark contact stays high (>0.35, still mixed)",
-        measured=f"boundary {b0:.0f}→{b1:.0f}, frac_ld={ld1:.3f}",
-        value=round(ld1, 3), passed=passed)
+        name="Partial sorting stalls: coarsening but no monolayer",
+        paper_ref="Fig 22-24 — Young condition fails; clusters trap inclusions, no monolayer",
+        expected="light-dark contact drops (coarsening) BUT light never owns the surface — no monolayer (corr_lM<0.75, vs >0.85 for complete sorting)",
+        measured=f"frac_ld {ld0:.3f}→{ld1:.3f}, corr_lM_final={clM1:.3f} (no monolayer)",
+        value=round(clM1, 3), passed=passed)
 
 
 def _t_dispersal_sloughing(mcs, S):

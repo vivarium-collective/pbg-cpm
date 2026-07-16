@@ -1,6 +1,6 @@
 {
   "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
-  "caption": "Light engulfs dark (dark loses its medium contact)",
-  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. dark-medium fraction falls \u22652\u00d7 and light-medium fraction rises",
-  "interpretation": "Measured: frac_dM 0.0304\u21920.0065 (4.7\u00d7 drop), frac_lM 0.0297\u21920.0538"
+  "caption": "Light engulfs the coherent dark mass (no mixing)",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. light-dark stays low (<0.20, no mixing) AND dark-medium falls \u226580% AND light owns >85% of the surface",
+  "interpretation": "Measured: frac_dM 0.0282\u21920.0000 (100% drop), corr_lM_final=1.000, max frac_ld=0.047"
 }

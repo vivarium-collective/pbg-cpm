@@ -77,7 +77,7 @@ readouts:
 behavior_tests:
 - name: Heterotypic contacts dominate (checkerboard mixing)
   classification: primary
-  description: 'Paper: Fig 7-8 — negative γ_ld drives a light/dark checkerboard. Pass criterion: light-dark fraction > 0.5 and larger than light-light & dark-dark. Measured from the reproduced run: frac_ld=0.590 vs frac_ll=0.167, frac_dd=0.183.'
+  description: 'Paper: Fig 7-8 — negative γ_ld drives a light/dark checkerboard. Pass criterion: light-dark fraction > 0.5 and larger than light-light & dark-dark. Measured from the reproduced run: frac_ld=0.837 vs frac_ll=0.042, frac_dd=0.061.'
   measure: frac_ld
   pass_if: light-dark fraction > 0.5 and larger than light-light & dark-dark
   status: passed
@@ -96,6 +96,6 @@ runs:
   outcomes:
     Heterotypic contacts dominate (checkerboard mixing):
       result: PASS
-      measured_value: 0.59
-      notes: frac_ld=0.590 vs frac_ll=0.167, frac_dd=0.183
+      measured_value: 0.837
+      notes: frac_ld=0.837 vs frac_ll=0.042, frac_dd=0.061
       evaluated_by: pbg_cpm_studies.gg1993.validate

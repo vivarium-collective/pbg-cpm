@@ -75,14 +75,14 @@ readouts:
   status: measured
   description: Type-type adjacency-edge and medium-contact correlations.
 behavior_tests:
-- name: Light engulfs dark (dark loses its medium contact)
+- name: Light engulfs the coherent dark mass (no mixing)
   classification: primary
-  description: 'Paper: Fig 18-19 — light forms the outer layer; dark-medium → ~0. Pass criterion: dark-medium fraction falls ≥2× and light-medium fraction rises. Measured from the reproduced run: frac_dM 0.0304→0.0065 (4.7× drop), frac_lM 0.0297→0.0538.'
+  description: 'Paper: Fig 18-19 — clean split; dark-Medium→~0, light monolayer closes; ld stays low. Pass criterion: light-dark stays low (<0.20, no mixing) AND dark-medium falls ≥80% AND light owns >85% of the surface. Measured from the reproduced run: frac_dM 0.0282→0.0000 (100% drop), corr_lM_final=1.000, max frac_ld=0.047.'
   measure: frac_dM
-  pass_if: dark-medium fraction falls ≥2× and light-medium fraction rises
+  pass_if: light-dark stays low (<0.20, no mixing) AND dark-medium falls ≥80% AND light owns >85% of the surface
   status: passed
   result: PASS
-  paper_reference: Fig 18-19 — light forms the outer layer; dark-medium → ~0
+  paper_reference: Fig 18-19 — clean split; dark-Medium→~0, light monolayer closes; ld stays low
 gate_status: passed
 runs:
 - run_id: engulfment-reproduction
@@ -94,8 +94,8 @@ runs:
   - 17
   emitter: gg1993_data/results series-json
   outcomes:
-    Light engulfs dark (dark loses its medium contact):
+    Light engulfs the coherent dark mass (no mixing):
       result: PASS
-      measured_value: 4.71
-      notes: frac_dM 0.0304→0.0065 (4.7× drop), frac_lM 0.0297→0.0538
+      measured_value: 1.0
+      notes: frac_dM 0.0282→0.0000 (100% drop), corr_lM_final=1.000, max frac_ld=0.047
       evaluated_by: pbg_cpm_studies.gg1993.validate

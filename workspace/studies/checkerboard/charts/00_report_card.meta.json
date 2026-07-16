@@ -2,5 +2,5 @@
   "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
   "caption": "Heterotypic contacts dominate (checkerboard mixing)",
   "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. light-dark fraction > 0.5 and larger than light-light & dark-dark",
-  "interpretation": "Measured: frac_ld=0.590 vs frac_ll=0.167, frac_dd=0.183"
+  "interpretation": "Measured: frac_ld=0.837 vs frac_ll=0.042, frac_dd=0.061"
 }

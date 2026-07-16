@@ -1,6 +1,6 @@
 {
   "title": "\u2713 Validation PASS \u2014 reproduces the paper's behaviour",
-  "caption": "Reversed surface arrangement (dark on the outside)",
-  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. dark-medium contact correlation exceeds light-medium (dark at the surface)",
-  "interpretation": "Measured: corr_dM=0.515 vs corr_lM=0.485"
+  "caption": "Position reversal: dark forms the outer monolayer",
+  "simulations": "Validation report card. The PASS/FAIL badge is the result of an automated acceptance test (pbg_cpm_studies.gg1993.validate) evaluated against this study's own reproduced metric time series \u2014 not a hand-set verdict. dark holds >80% of the medium surface (light-Medium\u21920) AND light-dark contact falls (sorting)",
+  "interpretation": "Measured: corr_dM_final=1.000 (corr_lM 0.442\u21920.000), frac_ld 0.439\u21920.058"
 }
