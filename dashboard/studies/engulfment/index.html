@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Study: engulfment</title>
 <link rel="stylesheet" href="/pbg-cpm/dashboard/assets/style.css">
+<link rel="stylesheet" href="/pbg-cpm/dashboard/assets/progress-track.css">
 </head>
 <body>
 <main class="study-page">
@@ -795,10 +796,10 @@
     
     
     
-    <li class="expected-behavior-item" id="bt-Light engulfs dark (dark loses its medium contact)"
+    <li class="expected-behavior-item" id="bt-Light engulfs the coherent dark mass (no mixing)"
         data-test-kind="behavioral"
         
-        data-pytest-node="Light engulfs dark (dark loses its medium contact)"
+        data-pytest-node="Light engulfs the coherent dark mass (no mixing)"
         data-classification="primary"
         data-result="PASS"
         style="margin: 0 0 10px 0; padding: 10px 12px; border-left: 4px solid #10b981; background: #f8fafc; border-radius: 4px;">
@@ -807,17 +808,17 @@
       <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
         <span class="bt-result" style="font-size: 0.75em; font-family: monospace; padding: 2px 8px; border-radius: 9999px; background: #d1fae5; color: #065f46">✓ PASS</span>
         <span class="classification-pill classification-primary">primary</span>
-        <strong style="font-size: 0.9em;">Light engulfs dark (dark loses its medium contact)</strong>
+        <strong style="font-size: 0.9em;">Light engulfs the coherent dark mass (no mixing)</strong>
         
       </div>
-      <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 18-19 — light forms the outer layer; dark-medium → ~0. Pass criterion: dark-medium fraction falls ≥2× and light-medium fraction rises. Measured from the reproduced run: frac_dM 0.0304→0.0065 (4.7× drop), frac_lM 0.0297→0.0538.</div>
+      <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 18-19 — clean split; dark-Medium→~0, light monolayer closes; ld stays low. Pass criterion: light-dark stays low (&lt;0.20, no mixing) AND dark-medium falls ≥80% AND light owns &gt;85% of the surface. Measured from the reproduced run: frac_dM 0.0282→0.0000 (100% drop), corr_lM_final=1.000, max frac_ld=0.047.</div>
       
       <div style="margin-top:6px;font-size:0.85em;padding:6px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:3px">
         <strong>Latest result:</strong>
         
-          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">measured_value: 4.71</code>
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">measured_value: 1.0</code>
         
-          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">notes: frac_dM 0.0304→0.0065 (4.7× drop), frac_lM 0.0297→0.0538</code>
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">notes: frac_dM 0.0282→0.0000 (100% drop), corr_lM_final=1.000, max frac_ld=0.047</code>
         
           <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">evaluated_by: pbg_cpm_studies.gg1993.validate</code>
         
@@ -827,7 +828,7 @@
       <details style="margin-top: 6px; font-size: 0.82em;">
         <summary class="muted" style="cursor: pointer;">Assertion</summary>
         <pre style="background:#fff; padding:8px; margin:4px 0 0 0; border:1px solid #e2e8f0; border-radius:3px; overflow-x:auto;">measure: "frac_dM"
-pass_if: "dark-medium fraction falls \u22652\u00d7 and light-medium fraction rises"</pre>
+pass_if: "light-dark stays low (\u003c0.20, no mixing) AND dark-medium falls \u226580% AND light owns \u003e85% of the surface"</pre>
       </details>
       
       
@@ -1095,6 +1096,9 @@ window._seedFollowupStudy = _seedFollowupStudy;
 window._seedFollowupProposal = _seedFollowupProposal;
 </script>
 <script src="/pbg-cpm/dashboard/assets/configure-run.js"></script>
+<!-- ProgressTrack must load BEFORE study-detail.js: _renderRemoteRunProgress
+     (the pinned-build run card's progress adapter) depends on window.ProgressTrack. -->
+<script src="/pbg-cpm/dashboard/assets/progress-track.js"></script>
 <script src="/pbg-cpm/dashboard/assets/study-detail.js"></script>
 <script>
 // Re-assert the refresh-aware seed handlers AFTER study-detail.js (which
@@ -1114,6 +1118,10 @@ window._seedFollowupProposal = _seedFollowupProposal;
   ConfigureRun.mount(el, { composite: compositeRef, target: "study", study: slug });
   // Read-only bundle: there's no live backend to run on — hide the remote-run
   // launcher (the Configure & Run widget already renders a disabled preview).
+  // The ProgressTrack progress bar (progress-track.js) is inert here by
+  // construction: it makes ZERO network calls and only ever renders via
+  // _renderRemoteRunProgress, which is reachable only from the run button
+  // inside this now-hidden panel — so snapshots never invoke it.
   if (window.__DASH_CONFIG__ && window.__DASH_CONFIG__.mode === "snapshot") {
     var rp = document.getElementById("remote-run-panel");
     if (rp) rp.style.display = "none";

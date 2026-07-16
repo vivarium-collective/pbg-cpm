@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Study: dispersal_no_separate</title>
 <link rel="stylesheet" href="/pbg-cpm/dashboard/assets/style.css">
+<link rel="stylesheet" href="/pbg-cpm/dashboard/assets/progress-track.css">
 </head>
 <body>
 <main class="study-page">
@@ -810,14 +811,14 @@
         <strong style="font-size: 0.9em;">Clusters stay aggregated (no separation)</strong>
         
       </div>
-      <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 27 — same setup but clusters do NOT separate. Pass criterion: total boundary length does not increase (aggregate stays compact). Measured from the reproduced run: boundary 37138→36364 (ratio 0.979).</div>
+      <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 27 — same setup but clusters do NOT separate. Pass criterion: total boundary length does not increase (aggregate stays compact). Measured from the reproduced run: boundary 37254→36232 (ratio 0.973).</div>
       
       <div style="margin-top:6px;font-size:0.85em;padding:6px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:3px">
         <strong>Latest result:</strong>
         
-          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">measured_value: 0.9792</code>
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">measured_value: 0.9726</code>
         
-          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">notes: boundary 37138→36364 (ratio 0.979)</code>
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">notes: boundary 37254→36232 (ratio 0.973)</code>
         
           <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">evaluated_by: pbg_cpm_studies.gg1993.validate</code>
         
@@ -1095,6 +1096,9 @@ window._seedFollowupStudy = _seedFollowupStudy;
 window._seedFollowupProposal = _seedFollowupProposal;
 </script>
 <script src="/pbg-cpm/dashboard/assets/configure-run.js"></script>
+<!-- ProgressTrack must load BEFORE study-detail.js: _renderRemoteRunProgress
+     (the pinned-build run card's progress adapter) depends on window.ProgressTrack. -->
+<script src="/pbg-cpm/dashboard/assets/progress-track.js"></script>
 <script src="/pbg-cpm/dashboard/assets/study-detail.js"></script>
 <script>
 // Re-assert the refresh-aware seed handlers AFTER study-detail.js (which
@@ -1114,6 +1118,10 @@ window._seedFollowupProposal = _seedFollowupProposal;
   ConfigureRun.mount(el, { composite: compositeRef, target: "study", study: slug });
   // Read-only bundle: there's no live backend to run on — hide the remote-run
   // launcher (the Configure & Run widget already renders a disabled preview).
+  // The ProgressTrack progress bar (progress-track.js) is inert here by
+  // construction: it makes ZERO network calls and only ever renders via
+  // _renderRemoteRunProgress, which is reachable only from the run button
+  // inside this now-hidden panel — so snapshots never invoke it.
   if (window.__DASH_CONFIG__ && window.__DASH_CONFIG__.mode === "snapshot") {
     var rp = document.getElementById("remote-run-panel");
     if (rp) rp.style.display = "none";

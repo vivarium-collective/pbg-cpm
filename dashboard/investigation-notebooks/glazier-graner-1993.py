@@ -284,7 +284,7 @@ _save_viz('cell_sorting', 'Cell_sorting_interactive', _render_one('local:GG1993C
 #
 # | test | measures | passes if |
 # | --- | --- | --- |
-# | Coarsening proceeds but sorting is logarithmically slow | bl_total | total boundary length decreases while light-dark contact stays high (>0.35) |
+# | Cells sort: dark cluster wrapped by a light monolayer | bl_total | light-dark fraction falls ≥45% AND light holds >80% of the medium surface (monolayer) |
 
 # ## Study: `engulfment`
 #
@@ -323,7 +323,7 @@ _save_viz('engulfment', 'Engulfment_interactive', _render_one('local:GG1993Engul
 #
 # | test | measures | passes if |
 # | --- | --- | --- |
-# | Light engulfs dark (dark loses its medium contact) | frac_dM | dark-medium fraction falls ≥2× and light-medium fraction rises |
+# | Light engulfs the coherent dark mass (no mixing) | frac_dM | light-dark stays low (<0.20, no mixing) AND dark-medium falls ≥80% AND light owns >85% of the surface |
 
 # ## Study: `position_reversal`
 #
@@ -362,7 +362,7 @@ _save_viz('position_reversal', 'Position_reversal_interactive', _render_one('loc
 #
 # | test | measures | passes if |
 # | --- | --- | --- |
-# | Reversed surface arrangement (dark on the outside) | corr_dM | dark-medium contact correlation exceeds light-medium (dark at the surface) |
+# | Position reversal: dark forms the outer monolayer | corr_dM | dark holds >80% of the medium surface (light-Medium→0) AND light-dark contact falls (sorting) |
 
 # ## Study: `partial_sorting`
 #
@@ -401,7 +401,7 @@ _save_viz('partial_sorting', 'Partial_cell_sorting_interactive', _render_one('lo
 #
 # | test | measures | passes if |
 # | --- | --- | --- |
-# | Partial sorting — coarsening with incomplete demixing | frac_ld | boundary length decreases yet light-dark contact stays high (>0.35, still mixed) |
+# | Partial sorting stalls: coarsening but no monolayer | frac_ld | light-dark contact drops (coarsening) BUT light never owns the surface — no monolayer (corr_lM<0.75, vs >0.85 for complete sorting) |
 
 # ## Study: `dispersal_sloughing`
 #

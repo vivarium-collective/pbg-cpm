@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Study: cell_sorting</title>
 <link rel="stylesheet" href="/pbg-cpm/dashboard/assets/style.css">
+<link rel="stylesheet" href="/pbg-cpm/dashboard/assets/progress-track.css">
 </head>
 <body>
 <main class="study-page">
@@ -795,10 +796,10 @@
     
     
     
-    <li class="expected-behavior-item" id="bt-Coarsening proceeds but sorting is logarithmically slow"
+    <li class="expected-behavior-item" id="bt-Cells sort: dark cluster wrapped by a light monolayer"
         data-test-kind="behavioral"
         
-        data-pytest-node="Coarsening proceeds but sorting is logarithmically slow"
+        data-pytest-node="Cells sort: dark cluster wrapped by a light monolayer"
         data-classification="primary"
         data-result="PASS"
         style="margin: 0 0 10px 0; padding: 10px 12px; border-left: 4px solid #10b981; background: #f8fafc; border-radius: 4px;">
@@ -807,17 +808,17 @@
       <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
         <span class="bt-result" style="font-size: 0.75em; font-family: monospace; padding: 2px 8px; border-radius: 9999px; background: #d1fae5; color: #065f46">✓ PASS</span>
         <span class="classification-pill classification-primary">primary</span>
-        <strong style="font-size: 0.9em;">Coarsening proceeds but sorting is logarithmically slow</strong>
+        <strong style="font-size: 0.9em;">Cells sort: dark cluster wrapped by a light monolayer</strong>
         
       </div>
-      <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 12-13 — random-IC sort is very slow; only partial demixing. Pass criterion: total boundary length decreases while light-dark contact stays high (&gt;0.35). Measured from the reproduced run: boundary 37304→36674, frac_ld∈[0.441,0.467].</div>
+      <div style="margin-top: 6px; font-size: 0.95em;">Paper: Fig 12-13 — light-dark contact collapses; light monolayer (light-Medium correlation→1). Pass criterion: light-dark fraction falls ≥45% AND light holds &gt;80% of the medium surface (monolayer). Measured from the reproduced run: frac_ld 0.435→0.079 (82% drop), corr_lM 0.462→1.000.</div>
       
       <div style="margin-top:6px;font-size:0.85em;padding:6px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:3px">
         <strong>Latest result:</strong>
         
-          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">measured_value: 0.9831</code>
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">measured_value: 1.0</code>
         
-          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">notes: boundary 37304→36674, frac_ld∈[0.441,0.467]</code>
+          <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">notes: frac_ld 0.435→0.079 (82% drop), corr_lM 0.462→1.000</code>
         
           <code style="font-family:ui-monospace,monospace;color:#475569;margin-right:8px">evaluated_by: pbg_cpm_studies.gg1993.validate</code>
         
@@ -827,7 +828,7 @@
       <details style="margin-top: 6px; font-size: 0.82em;">
         <summary class="muted" style="cursor: pointer;">Assertion</summary>
         <pre style="background:#fff; padding:8px; margin:4px 0 0 0; border:1px solid #e2e8f0; border-radius:3px; overflow-x:auto;">measure: "bl_total"
-pass_if: "total boundary length decreases while light-dark contact stays high (\u003e0.35)"</pre>
+pass_if: "light-dark fraction falls \u226545% AND light holds \u003e80% of the medium surface (monolayer)"</pre>
       </details>
       
       
@@ -1095,6 +1096,9 @@ window._seedFollowupStudy = _seedFollowupStudy;
 window._seedFollowupProposal = _seedFollowupProposal;
 </script>
 <script src="/pbg-cpm/dashboard/assets/configure-run.js"></script>
+<!-- ProgressTrack must load BEFORE study-detail.js: _renderRemoteRunProgress
+     (the pinned-build run card's progress adapter) depends on window.ProgressTrack. -->
+<script src="/pbg-cpm/dashboard/assets/progress-track.js"></script>
 <script src="/pbg-cpm/dashboard/assets/study-detail.js"></script>
 <script>
 // Re-assert the refresh-aware seed handlers AFTER study-detail.js (which
@@ -1114,6 +1118,10 @@ window._seedFollowupProposal = _seedFollowupProposal;
   ConfigureRun.mount(el, { composite: compositeRef, target: "study", study: slug });
   // Read-only bundle: there's no live backend to run on — hide the remote-run
   // launcher (the Configure & Run widget already renders a disabled preview).
+  // The ProgressTrack progress bar (progress-track.js) is inert here by
+  // construction: it makes ZERO network calls and only ever renders via
+  // _renderRemoteRunProgress, which is reachable only from the run button
+  // inside this now-hidden panel — so snapshots never invoke it.
   if (window.__DASH_CONFIG__ && window.__DASH_CONFIG__.mode === "snapshot") {
     var rp = document.getElementById("remote-run-panel");
     if (rp) rp.style.display = "none";
