@@ -316,6 +316,23 @@ body.focus-mode .viv-content{
 }
 body.focus-mode .page.active{ display:block !important; min-height:0 !important }
 
+/* …except for pages whose whole content is ONE fill-the-viewport app (the loom
+ * iframe). The rules above force .viv-content to display:block, which breaks the
+ * flex chain those pages size themselves with — and an iframe with height:auto
+ * in a block container falls back to its intrinsic 150px, so the Composite
+ * Explorer opened via ?focus=composite-explore rendered a ~150px letterbox with
+ * its own scrollbar inside a page of empty space. Restore the flex column (and
+ * the single-scrollbar contract) for exactly those pages. */
+body.focus-mode.focus-composite-explore .viv-content{
+  display:flex !important; flex-direction:column !important;
+  overflow:hidden !important;
+  padding:8px 12px !important;
+}
+body.focus-mode.focus-composite-explore .page.active{
+  display:flex !important; flex-direction:column !important;
+  flex:1 1 auto !important; min-height:0 !important;
+}
+
 /* ── Composite explorer diagram (v0.5.1.6) ─────────────────────────────
  * Server preserves graphviz's natural pt dimensions; CSS only shrinks
  * the SVG if the container is narrower. For wider containers, the SVG
@@ -572,6 +589,11 @@ body.focus-mode .page.active{ display:block !important; min-height:0 !important 
 }
 .investigation-card .ic-title{
   font-weight:600; font-size:1.02em; color:#111827;
+  /* A flex item's min-width defaults to its CONTENT width, so a long unbroken
+     slug ("colonies-03-wcm-rss-leak") refused to shrink and shoved the
+     flex:none status pill past the card's right edge — 16px of page-wide
+     horizontal scrollbar on the Studies grid, from one card. */
+  min-width:0; overflow-wrap:anywhere;
 }
 .investigation-card .ic-status{
   flex:none;
@@ -693,6 +715,27 @@ body.focus-mode .page.active{ display:block !important; min-height:0 !important 
 .viv-rail-section + .viv-rail-section{
   border-top:1px solid #ececec; margin-top:4px;
 }
+/* Studies fill the rail's remaining height and scroll on their own, so a long
+   study list (many investigations) never clips below the rail's bottom edge.
+   The nav above stays fixed; only this section scrolls. min-height:0 is what
+   lets a flex child shrink below its content height and actually overflow. */
+#viv-rail-studies-section{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+#viv-rail-investigations{
+  flex:1 1 auto; min-height:0;
+  overflow-y:auto; overflow-x:hidden;
+}
+
+/* Clickable "Needs attention" items — hover affordance so it reads as a link
+   to the associated study (each opens that study at its verdict). */
+.na-item-click{ transition:background 0.12s ease, box-shadow 0.12s ease; }
+.na-item-click:hover{ background:rgba(0,0,0,0.05); box-shadow:inset 0 0 0 1px rgba(0,0,0,0.10); }
+.na-item-click:hover span[style*="float:right"]{ opacity:0.9 !important; }
+/* "Needs attention" starts collapsed; hide the "click to expand" hint once open. */
+.needs-attention-banner[open] .na-toggle-hint{ display:none; }
 .viv-rail-section-label{
   padding:0 16px 6px;
   font-size:0.68em; font-weight:600; letter-spacing:0.08em;
@@ -1026,6 +1069,9 @@ body.focus-mode .page.active{ display:block !important; min-height:0 !important 
 .viv-content{
   flex:1 1 auto;
   overflow-y:auto; overflow-x:hidden;
+  /* Always reserve the scrollbar gutter so switching between a short tab and a
+     long one (e.g. Registry Modules -> Discovered) doesn't shift the content. */
+  scrollbar-gutter: stable;
   padding:24px;
   background:var(--bg);
 }
@@ -1935,7 +1981,10 @@ body.focus-mode .page.active{ display:block !important; min-height:0 !important 
   color: var(--accent-blue, #2563eb);
   border-bottom-color: var(--accent-blue, #2563eb);
 }
-.registry-subtab-panel { display: none; }
+/* Flush, uniform sub-tab panels (override the .panel card chrome) so switching
+   Modules <-> Discovered doesn't shift the layout or change margins. */
+.registry-subtab-panel { display: none; padding: 0; margin: 0; border: none;
+  background: none; border-radius: 0; box-shadow: none; }
 .registry-subtab-panel.active { display: block; }
 
 /* ───────────────────────────────────────────────────────────────────
@@ -2384,3 +2433,102 @@ details.overview-section[open] > summary.overview-label{ margin-bottom:8px; }
 .cfg-run-btn { padding: 8px 18px; font-size: 0.95em; }
 .cfg-status { margin-top: 12px; font-size: 0.9em; }
 .cfg-loading { color: #6b7280; padding: 8px 0; }
+
+/* ── Composite Explorer: full-bleed + single scrollbar ──────────────────────
+ * The loom iframe is a full app that scrolls itself, so a fixed iframe height
+ * plus the outer .viv-content scroll gave TWO scrollbars, and the page sat in a
+ * centred column with wide side margins. Mirror the Studies full-bleed pattern:
+ * make the page a flex column that fills the viewport and let #ce-main + the
+ * loom card flex-grow into the remaining space, with viv-content's own scroll
+ * killed — so the loom iframe's scrollbar (far right) is the only one. */
+.viv-content:has(> #page-composite-explore.active){
+  padding:8px 12px !important;
+  width:100% !important; max-width:none !important;
+  overflow:hidden !important;
+  display:flex; flex-direction:column;
+}
+.viv-content > #page-composite-explore.active,
+#page-composite-explore.active{
+  max-width:none !important; width:100% !important; margin:0 !important;
+  box-sizing:border-box;
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column;
+}
+#page-composite-explore.active #ce-main{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column;
+}
+/* compact metadata card at the top; small gap to the loom card below */
+#page-composite-explore.active #ce-main > #ce-meta{
+  flex:0 0 auto; margin-bottom:8px;
+}
+/* the loom card grows to fill — trim its panel padding so the iframe uses the
+   full width/height (the loom app scrolls itself, so there's no wasted chrome) */
+#page-composite-explore.active #ce-main > .panel:last-child{
+  flex:1 1 auto; min-height:0;
+  display:flex; flex-direction:column;
+  margin-bottom:0; padding:6px;
+}
+#page-composite-explore.active #composite-explore-frame{
+  flex:1 1 auto !important;
+  height:auto !important; min-height:0 !important;
+  width:100% !important;
+}
+/* ── Registry: full-bleed, flush Modules / Discovered sub-tabs ───────────────
+ * The two sub-tabs (Modules, Discovered registry) used to render in a centred
+ * column, leaving a wide blank strip on the right and shifting margins when you
+ * switched between them. Tighten the outer padding and force the page + every
+ * sub-tab container to fill the content width, so both sub-tabs share one
+ * uniform, marginless layout with a single (gutter-stable) scrollbar. */
+.viv-content:has(> #page-registry.active){
+  padding:8px 16px !important;
+  width:100% !important; max-width:none !important;
+}
+.viv-content > #page-registry.active,
+#page-registry.active{
+  max-width:none !important; width:100% !important; margin:0 !important;
+  box-sizing:border-box;
+}
+#page-registry.active .registry-subtabs,
+#page-registry.active .registry-subtab-panel.active,
+#page-registry.active .registry-tabs,
+#page-registry.active .registry-tab-panel,
+#page-registry.active .card-browse-toolbar,
+#page-registry.active .module-grid,
+#page-registry.active .registry-search{
+  width:100% !important; max-width:none !important;
+  margin-left:0 !important; margin-right:0 !important;
+  box-sizing:border-box;
+}
+/* ── Investigation DAG semantic zoom slider ────────────────────────────────── */
+#aig-zoom-slider {
+  cursor: pointer;
+  vertical-align: middle;
+  accent-color: #2563eb;
+}
+#aig-zoom-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+#aig-zoom-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563eb;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Investigation-graph semantic zoom: status-badge click affordance + band tweaks. */
+.aig-status-badge { border-radius: 3px; padding: 0 2px; }
+.aig-status-badge:hover { background: rgba(0,0,0,0.06); }
+.aig-status-badge:focus-visible { outline: 2px solid #6366f1; outline-offset: 1px; }
+/* Far (overview) band: tighter cards so the whole DAG reads at a glance. */
+#investigation-dag-shell.aig-zoom-far .iset-dag-node { padding: 6px 8px; }

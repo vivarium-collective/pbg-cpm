@@ -64,6 +64,30 @@
     _afterSwitch(r);
   }
 
+  // Session-per-tab (pinned-for-life): a tab is one source for its life, so a
+  // selection OPENS A NEW TAB bound to it rather than re-pointing this one.
+  //   local workspace → /?workspace=<catalog-name>   (session.js binds by name)
+  //   sms-api build    → /?build=<simulator_id>        (…→ switch-build, materialize)
+  // session.js's bootstrap force-mints a fresh per-tab session in the new tab and
+  // performs the bind; session-status.js shows the ⏳ favicon while a build
+  // materializes. A local entry with no catalog name falls back to the in-place
+  // switch (can't spawn by name).
+  function _openEntry(entry) {
+    if (!entry) return;
+    // Honor the deployment base path (e.g. "/workbench" behind the ALB). The
+    // global fetch/XHR shim prefixes /api/… itself, but does NOT patch
+    // window.open, and "/?workspace=" wouldn't match its prefix list anyway — so
+    // build the spawn URL with __BASE_PATH__ here. Empty in local/root hosting.
+    var BP = window.__BASE_PATH__ || "";
+    if (entry.simulator_id != null) {
+      window.open(BP + "/?build=" + encodeURIComponent(entry.simulator_id), "_blank");
+    } else if (entry.name) {
+      window.open(BP + "/?workspace=" + encodeURIComponent(entry.name), "_blank");
+    } else if (entry.path) {
+      _switchLocal(entry.path);   // name-less catalog entry → in-place fallback
+    }
+  }
+
   async function _switchRemote(simulatorId, btn) {
     if (btn) { btn.disabled = true; btn.textContent = "Loading…"; }
     // First materialization downloads the build's workspace (~hundreds of MB,
@@ -118,11 +142,18 @@
   async function _loadEntries() {
     state.error = null;  // start each load clean so a stale remote error never lingers
     if (state.scope === "local") {
-      var r = await fetch("/api/workspaces");
-      var d = r.ok ? await r.json() : { workspaces: [] };
+      // Reuse the workspaces payload refresh() already fetched (it's slow); only
+      // fetch again if we don't have it (e.g. a scope-toggle re-load).
+      var d = state._wsData;
+      if (!d) {
+        var r = await fetch("/api/workspaces").catch(function () { return null; });
+        d = (r && r.ok) ? await r.json() : { workspaces: [] };
+      }
+      state._wsData = null;  // consume it, so an explicit reload refetches
       state.entries = (d.workspaces || []).map(function (w) {
         return { repo: w.repo || w.name, branch: w.branch || "", commit: w.commit || "",
-                 label: w.label || w.name, path: w.path, current: w.status === "current" };
+                 label: w.label || w.name, path: w.path, name: w.name,
+                 current: w.status === "current" };
       });
     } else {
       var rb = await fetch("/api/source/builds").catch(function () { return null; });
@@ -223,15 +254,15 @@
 
     // Actions
     var actions = _el("div", "viv-bs-actions");
-    var switchBtn = _el("button", "viv-bs-action", "Switch"); switchBtn.id = "viv-bs-switch";
+    var switchBtn = _el("button", "viv-bs-action", "Open"); switchBtn.id = "viv-bs-switch";
+    switchBtn.title = "Open this source in a new tab";
     switchBtn.addEventListener("click", function () {
       var s = state.selected || {};
-      // Prefer an on-disk path (workspace-catalog entry, in-process re-point);
-      // fall back to an sms-api build (simulator_id). Path-first so a misread
-      // scope can never leave the button doing nothing.
-      if (s.path) _switchLocal(s.path);
-      else if (s.simulator_id != null) _switchRemote(s.simulator_id, switchBtn);
-      else alert("Nothing to switch to — pick a repo/branch with a build or workspace.");
+      // Pinned-for-life: open the selection in a new tab (build → /?build=,
+      // workspace → /?workspace=). Path-first fallback so a misread scope can
+      // never leave the button doing nothing.
+      if (s.path || s.name || s.simulator_id != null) _openEntry(s);
+      else alert("Nothing to open — pick a repo/branch with a build or workspace.");
     });
     actions.appendChild(switchBtn);
 
@@ -326,12 +357,17 @@
 
     // Search / paste-a-commit filter. While filtering in remote scope, search
     // across ALL builds of the repo (every branch) so you can paste any commit.
-    var search = _el("input", "viv-bs-search");
-    search.type = "search";
-    search.placeholder = state.scope === "remote"
-      ? "search or paste a commit / date / branch…" : "filter workspaces…";
-    search.value = state.filter || "";
-    host.appendChild(search);
+    // Only shown when there's actually more than one source to pick from — a lone
+    // current workspace doesn't need a filter box (it read as idle noise).
+    var search = null;
+    if (matches.length > 1 || (state.filter || "").trim()) {
+      search = _el("input", "viv-bs-search");
+      search.type = "search";
+      search.placeholder = state.scope === "remote"
+        ? "search or paste a commit / date / branch…" : "filter workspaces…";
+      search.value = state.filter || "";
+      host.appendChild(search);
+    }
 
     var list = _el("ul", "viv-bs-list");
     host.appendChild(list);
@@ -351,11 +387,8 @@
         var li = _el("li", "viv-bs-list-row" + (m.current ? " current" : ""));
         var lbl = _el("span", "viv-bs-list-label", _entryText(m));
         lbl.style.cursor = "pointer";
-        lbl.title = "Switch to this source";
-        lbl.addEventListener("click", function () {
-          if (m.simulator_id != null) _switchRemote(m.simulator_id);
-          else if (m.path) _switchLocal(m.path);
-        });
+        lbl.title = "Open this source in a new tab";
+        lbl.addEventListener("click", function () { _openEntry(m); });
         li.appendChild(lbl);
         if (state.scope === "local" && !m.current && m.path) {
           var x = _el("button", "viv-bs-forget", "✕"); x.title = "Forget";
@@ -364,9 +397,11 @@
         }
         list.appendChild(li);
       });
-      if (!rows.length) list.appendChild(_el("li", "viv-bs-list-empty", "no matches"));
+      // "no matches" only while actively filtering — never as idle noise when
+      // there's simply nothing else to switch to.
+      if (!rows.length && f) list.appendChild(_el("li", "viv-bs-list-empty", "no matches"));
     }
-    search.addEventListener("input", function () { state.filter = search.value; _fillList(); });
+    if (search) search.addEventListener("input", function () { state.filter = search.value; _fillList(); });
     _fillList();
   }
 
@@ -477,8 +512,19 @@
     if (!host) return;
     if (SNAP) { await _loadSnapshotEntries(); _renderSnapshot(); return; }
     _stopBuildsPoll();
+    // Paint the Source shell (title + Scope toggle + selectors) IMMEDIATELY so it
+    // appears on the first visit even while the workspace/builds fetches are in
+    // flight — those can take many seconds, and the panel previously stayed blank
+    // until they finished. A second _render() below fills in the loaded entries.
+    state.loading = true;
+    _render();
+    // /api/workspaces is slow (git status across every workspace). Fetch it ONCE
+    // here and reuse it for both `current` and the local entries (was fetched
+    // twice, doubling the wait).
     var r = await fetch("/api/workspaces").catch(function () { return null; });
-    var cur = (r && r.ok) ? ((await r.json()).current || null) : null;
+    var wsData = (r && r.ok) ? await r.json().catch(function () { return {}; }) : {};
+    state._wsData = wsData;
+    var cur = wsData.current || null;
     var curPath = (cur && cur.path) || "";
     // A materialized remote build lives at .../build-cache/sim<id>-<commit>.
     var bm = curPath.match(/build-cache\/sim(\d+)-/);
@@ -493,6 +539,7 @@
     }
     state.current = cur ? { repo: cur.name } : null;
     await _loadEntries();
+    state.loading = false;
     // Seed the selectors from the active remote build so it shows as current.
     if (state.currentSimId != null) {
       var cb = state.entries.filter(function (e) { return e.simulator_id === state.currentSimId; })[0];

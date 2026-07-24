@@ -33,6 +33,19 @@
     return cfg().basePath || "";
   }
 
+  // Prefix a root-absolute app path (e.g. "/api/composite-test-run") with the
+  // configured base path in BOTH live and snapshot mode. Under the co-tenant ALB
+  // the workbench is served at /workbench, so an un-prefixed "/api/…" misroutes to
+  // sms-api → 404. Composite-explore run/resolve calls route through this so they
+  // reach the workbench. Composes safely with the global _base_path_shim (which
+  // skips a URL already starting with the base path), so no double-prefix.
+  function apiUrl(path) {
+    var bp = _base();
+    if (!bp || typeof path !== "string" || path.charAt(0) !== "/") return path;
+    if (path.indexOf(bp + "/") === 0 || path === bp) return path;
+    return bp + path;
+  }
+
   async function _get(url) {
     // GitHub Pages / Fastly returns 429 (occasionally 503) under per-IP rate
     // limiting when the hosted snapshot fires its burst of parallel /api/*.json
@@ -89,6 +102,12 @@
     return cfg().mode === "snapshot"
       ? _base() + "/api/investigation-summaries.json"
       : "/api/investigation-summaries";
+  }
+
+  function _investigationGraphUrl(slug) {
+    return cfg().mode === "snapshot"
+      ? _base() + "/api/investigation-graph/" + encodeURIComponent(slug) + ".json"
+      : "/api/investigation-graph?investigation=" + encodeURIComponent(slug);
   }
 
   function _inputsUrl(slug) {
@@ -156,6 +175,12 @@
       : "/api/saved-visualizations";
   }
 
+  function _analysisViewersUrl() {
+    return cfg().mode === "snapshot"
+      ? _base() + "/api/analysis-viewers.json"
+      : "/api/analysis-viewers";
+  }
+
   function _referencesBibUrl() {
     return cfg().mode === "snapshot"
       ? _base() + "/api/references-bib.json"
@@ -169,12 +194,22 @@
     /** Return the configured base path ("" in local mode). */
     basePath: _base,
 
+    /** Prefix a root-absolute "/api/…" path with the base path (live + snapshot). */
+    apiUrl: apiUrl,
+
     /**
      * Return the URL for the saved-visualizations payload (Analyses gallery).
      * Local mode:    /api/saved-visualizations
      * Snapshot mode: <base>/api/saved-visualizations.json from the static bundle
      */
     savedVisualizationsUrl: _savedVisualizationsUrl,
+
+    /**
+     * Return the URL for the analysis-viewers payload (Analyses page tools).
+     * Local mode:    /api/analysis-viewers
+     * Snapshot mode: <base>/api/analysis-viewers.json from the static bundle
+     */
+    analysisViewersUrl: _analysisViewersUrl,
 
     /**
      * Return the URL for the parsed papers.bib payload (References cards).
@@ -230,6 +265,15 @@
      */
     async loadIsetList() {
       return _get(_isetListUrl());
+    },
+
+    /**
+     * Investigation graph (study nodes + typed evidence chains) for one
+     * investigation. Local: GET /api/investigation-graph?investigation=<slug>.
+     * Snapshot: /api/investigation-graph/<slug>.json from the static bundle.
+     */
+    async loadInvestigationGraph(slug) {
+      return _get(_investigationGraphUrl(slug));
     },
 
     /**

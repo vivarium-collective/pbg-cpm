@@ -2,6 +2,14 @@
 (function () {
   "use strict";
 
+  // Prefix a root-absolute /api path with the dashboard base path (e.g. /workbench)
+  // so composite-explore run/resolve/status calls reach the workbench under the
+  // co-tenant ALB instead of misrouting to sms-api → 404. No-op at root; composes
+  // safely with the global _base_path_shim (which skips already-prefixed URLs).
+  function _api(p) {
+    return (window.DataSource && window.DataSource.apiUrl) ? window.DataSource.apiUrl(p) : p;
+  }
+
   // Module-level so EVERY render function can call it. It was previously only
   // defined nested inside the investigation-report builder, but called from
   // sibling scopes (tick / study-card / v4 renderers) — which threw
@@ -15,6 +23,12 @@
     if (rest.length > 60) rest = rest.slice(0, 57) + '…';
     return {chip: m[1], title: rest};
   }
+
+  // -------------------------------------------------------------------------
+  // Investigation DAG band state
+  // -------------------------------------------------------------------------
+  var aigBand = 1;                 // 0=far, 1=mid, 2=near (default = current detail)
+  var _lastDagArgs = null;         // [studies, chainsBySlug] for re-render on band change
 
   // -------------------------------------------------------------------------
   // Generic modal helpers
@@ -231,6 +245,39 @@
   }
   window._studyHref = _studyHref;
 
+  // Size an embedded study iframe to the space actually left below it, instead
+  // of the hardcoded calc(100vh - 220px) guess at how tall the chrome above is.
+  // That guess was ~150px short on a 1000px viewport: an 850px porthole onto a
+  // 2100px report, so the report's scrollbar sat inside the page's scrollbar
+  // with a strip of dead space under it. These embeds keep their OWN scroll
+  // context on purpose (the study's .study-tabs are position:sticky and stick to
+  // the iframe's top), so the fix is to make the porthole reach the bottom of
+  // the window — not to auto-grow the iframe, which would strand the tabs.
+  // `panel` is the embed's wrapper (header + iframe). Measuring the header
+  // WITHIN the panel keeps this independent of scroll position — reading the
+  // frame's viewport top instead would race the smooth scrollIntoView that
+  // opens the embed and, mid-flight, compute a negative height that clamps to
+  // the minimum (the bug this replaced).
+  function _fitEmbedToViewport(frame, panel, minH) {
+    if (!frame) return;
+    var fit = function () {
+      if (!frame.isConnected) return;
+      var chrome = 0;
+      if (panel) {
+        var pr = panel.getBoundingClientRect(), fr = frame.getBoundingClientRect();
+        chrome = Math.max(0, Math.round(fr.top - pr.top));   // the embed's own header
+      }
+      var h = Math.max(minH || 480, Math.round(window.innerHeight - chrome - 24));
+      frame.style.height = h + 'px';
+    };
+    fit();
+    if (!frame._fitBound) {
+      window.addEventListener('resize', fit);
+      frame._fitBound = true;
+    }
+  }
+  window._fitEmbedToViewport = _fitEmbedToViewport;
+
   function _openStudyEmbedded(name) {
     if (!name) return;
     var frame = document.getElementById('study-detail-frame');
@@ -249,6 +296,7 @@
     if (nameEl) nameEl.textContent = name;
     window._studyDetailCurrent = name;
     panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+    _fitEmbedToViewport(frame, panel, 560);
   }
   window._openStudyEmbedded = _openStudyEmbedded;
 
@@ -490,6 +538,13 @@
     if (pageId === 'visualizations') {
       _loadAnalysesPage();
     }
+    // Branch page: render the Source (Scope Local/Remote, repo, branch) section on
+    // every navigation, so it's populated from the first visit instead of relying
+    // on the one-time DOMContentLoaded render (which may not have finished — or ran
+    // before the page existed — the first time the user opens Branch).
+    if (pageId === 'github' && typeof window._renderBranchSource === 'function') {
+      window._renderBranchSource();
+    }
     if (pageId === 'simulation-setup') {
       _loadComposites();
     }
@@ -662,12 +717,21 @@
     return '<p class="muted" style="font-style:italic;margin:4px 0">none</p>';
   }
 
-  // A download link to a workspace-relative path. The server GET-serves any
-  // file under the workspace by its workspace-relative path (do_GET ->
-  // WORKSPACE / rel), so the href is simply '/' + path.
+  // A download link to a workspace-relative path.
+  //  - Live server: GET-serves any file under the workspace by its
+  //    workspace-relative path (do_GET -> WORKSPACE / rel), so href = '/' + path.
+  //  - Published snapshot: input binaries (expert docs / datasets) are NOT
+  //    staged in the bundle, so a '/' + path href 404s on GitHub Pages. Instead
+  //    link to the committed file in the GitHub source repo via the raw base
+  //    injected as __DASH_CONFIG__.inputsDownloadBase (see publish.py). Falls
+  //    back to '/' + path when no base is configured.
   function _inputsDownloadLink(path, label) {
     if (!path) return '';
-    var href = '/' + String(path).replace(/^\/+/, '');
+    var cfg = window.__DASH_CONFIG__ || {};
+    var rel = String(path).replace(/^\/+/, '');
+    var href = (cfg.mode === 'snapshot' && cfg.inputsDownloadBase)
+      ? String(cfg.inputsDownloadBase).replace(/\/+$/, '') + '/' + rel
+      : '/' + rel;
     return '<a href="' + _esc(href) + '" download class="action-btn" ' +
       'style="font-size:0.8em;padding:1px 8px;text-decoration:none">⬇ ' +
       _esc(label || 'Download') + '</a>';
@@ -745,8 +809,13 @@
       var bibId = 'bibtex-' + (key || Math.random().toString(36).slice(2));
       bibBlock = '<details style="margin-top:6px">' +
         '<summary style="cursor:pointer;font-size:0.82em;color:#475569">BibTeX</summary>' +
+        // Wrap instead of scroll: a BibTeX entry's `title = {…}` line runs
+        // 200-400px past the panel, and overflow:auto turned every reference
+        // into its own horizontal scrollbar. Wrapping costs a line and removes
+        // the scrollbar entirely.
         '<pre id="' + _esc(bibId) + '" style="background:#f8fafc;border:1px solid #e2e8f0;' +
-        'border-radius:4px;padding:8px;font-size:0.78em;overflow:auto;margin:6px 0">' +
+        'border-radius:4px;padding:8px;font-size:0.78em;margin:6px 0;' +
+        'white-space:pre-wrap;overflow-wrap:anywhere">' +
         _esc(bibtex) + '</pre>' +
         '<button class="action-btn" style="font-size:0.78em;padding:1px 8px" ' +
         'onclick="_copyBibtex(\'' + _esc(bibId) + '\', this)">Copy BibTeX</button>' +
@@ -1403,19 +1472,27 @@
       // service, so surface an honest note instead of a button that would 404.
       var _isSnapshot = (window.__DASH_CONFIG__ || {}).mode === 'snapshot';
       html += '<div class="viewer-target-list">' + targets.map(function(t) {
-        var action = _isSnapshot
+        // A target may carry a self-contained external URL (e.g. a publicly
+        // hosted 3D viewer) — it opens directly in BOTH live and read-only,
+        // since it needs no local launch backend. Otherwise fall back to the
+        // live Launch button / the read-only "local workbench" note.
+        var action = t.href
+          ? '<a class="btn-mini" href="' + _esc(t.href) + '" target="_blank" rel="noopener">Open</a>'
+          : (_isSnapshot
           ? '<span class="muted" style="font-size:0.8em">Launch from the local workbench</span>'
-          : '<button class="btn-mini" onclick="_launchViewer(\'' + _esc(v.uid) + '\',\'' + _esc(t.study) + '\')">Launch</button>';
+          : '<button class="btn-mini" onclick="_launchViewer(\'' + _esc(v.uid) + '\',\'' + _esc(t.study) + '\')">Launch</button>');
         return '<div class="picker-row">' +
           '<div class="picker-row-main"><strong>' + _esc(t.label || t.study) + '</strong>' +
             (t.detail ? ' <span class="muted" style="font-size:0.82em">' + _esc(t.detail) + '</span>' : '') + '</div>' +
           '<div class="picker-row-actions">' + action + '</div>' +
         '</div>';
       }).join('') + '</div>';
-      if (_isSnapshot) {
+      var _needsLaunch = targets.some(function(t) { return !t.href; });
+      if (_isSnapshot && _needsLaunch) {
         html += '<p class="muted" style="font-size:0.8em;margin:8px 0 0">' +
-          'This viewer launches against a local service and is only available when running ' +
-          'the workbench locally; this read-only view shows which studies have exports.</p>';
+          'Available in the live workbench: this viewer launches against a local ' +
+          'service, so this read-only view lists which studies have exports rather ' +
+          'than opening it.</p>';
       }
     }
     html += '</div>';
@@ -1469,11 +1546,20 @@
     // v2ecoli) — it doesn't apply to e.g. agent-based colony workspaces.
     // NOTE: per-study comparison "report cards" are intentionally NOT shown
     // here — they live on each study's detail page.
-    var _viewersUrl = (window.DataSource && window.DataSource.basePath)
-      ? (window.DataSource.basePath() + '/api/analysis-viewers')
+    // Snapshot mode reads the static api/analysis-viewers.json bundle file; live
+    // mode hits the /api/analysis-viewers endpoint. Parse defensively via text()
+    // so a missing/HTML response degrades to "no viewers" instead of throwing a
+    // JSON SyntaxError into the page ("did not match the expected pattern").
+    var _viewersUrl = (window.DataSource && window.DataSource.analysisViewersUrl)
+      ? window.DataSource.analysisViewersUrl()
       : '/api/analysis-viewers';
     fetch(_viewersUrl)
-      .then(function(r) { return r.json(); })
+      .then(function(r) { return r.text(); })
+      .then(function(t) {
+        var data = {};
+        try { data = t ? JSON.parse(t) : {}; } catch (e) { data = {}; }
+        return data;
+      })
       .then(function(data) {
         data = data || {};
         var viewers = data.viewers || [];
@@ -3466,7 +3552,10 @@
       : fetch('/api/investigations').then(function(r) { return r.json(); })
     ).catch(function() { return {investigations: []}; });
     var p2 = hasIsetUI
-      ? fetch('/api/investigation-summaries').then(function(r) { return r.json(); }).catch(function() { return {investigations: []}; })
+      ? (window.DataSource && window.DataSource.loadIsetList
+          ? window.DataSource.loadIsetList()
+          : fetch('/api/investigation-summaries').then(function(r) { return r.json(); })
+        ).catch(function() { return {investigations: []}; })
       : Promise.resolve({investigations: []});
     Promise.all([p1, p2]).then(function(arr) {
       window._investigations = arr[0].investigations || [];
@@ -3930,7 +4019,7 @@
     if (window._ceHistoryFetching) return;
     window._ceHistoryFetching = true;
     var id = window._ceCurrent.id;
-    fetch('/api/composite-runs?spec_id=' + encodeURIComponent(id))
+    fetch(_api('/api/composite-runs?spec_id=' + encodeURIComponent(id)))
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var runs = data.runs || [];
@@ -4017,7 +4106,7 @@
     var body = document.getElementById('ce-compare-body');
     body.innerHTML = '<p class="empty-state">Loading&hellip;</p>';
     Promise.all(ids.map(function(id) {
-      return fetch('/api/composite-run/' + encodeURIComponent(id))
+      return fetch(_api('/api/composite-run/' + encodeURIComponent(id)))
         .then(function(r) { return r.json(); });
     })).then(function(results) {
       var runs = ids.map(function(id, i) {
@@ -4104,7 +4193,7 @@
       _ceShowState(run_id, step, cached);
       return;
     }
-    fetch('/api/composite-run/' + encodeURIComponent(run_id))
+    fetch(_api('/api/composite-run/' + encodeURIComponent(run_id)))
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var trajectory = data.trajectory || [];
@@ -4252,8 +4341,8 @@
       p = window.DataSource.loadCompositeResolve(id);
     } else {
       // Live mode: fetch resolve endpoint with overrides.
-      var url = '/api/composite-resolve?id=' + encodeURIComponent(id) +
-        '&overrides=' + encodeURIComponent(JSON.stringify(window._ceCurrent.overrides));
+      var url = _api('/api/composite-resolve?id=' + encodeURIComponent(id) +
+        '&overrides=' + encodeURIComponent(JSON.stringify(window._ceCurrent.overrides)));
       // Parse defensively: an unguarded r.json() on a non-2xx / non-JSON
       // response throws "SyntaxError: The string did not match the expected
       // pattern" (Safari) → a useless "Network error". Unregistered refs 404;
@@ -4362,7 +4451,7 @@
     var el = document.getElementById('composite-explore-svg-legacy');
     if (!el) return;
     el.innerHTML = '<p style="color:#888">Loading SVG…</p>';
-    fetch('/api/composite-resolve?id=' + encodeURIComponent(ref))
+    fetch(_api('/api/composite-resolve?id=' + encodeURIComponent(ref)))
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.svg) {
@@ -4530,7 +4619,7 @@
     var overrides = _ceCollectOverrides();
     var resultsEl = document.getElementById('ce-test-results');
     resultsEl.innerHTML = '<p class="empty-state">Starting run&hellip;</p>';
-    fetch('/api/composite-test-run', {
+    fetch(_api('/api/composite-test-run'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -4911,18 +5000,44 @@
     _filterInvestigations();
   }
 
-  // Client-side filter for the landing list: matches the query against each
-  // card's title + slug + status (data-attrs), updates per-group counts, hides
-  // empty groups, and toggles the "no matches" line. No re-fetch, no re-render.
+  // Client-side filter for the Investigations landing list. UNIFIED with the
+  // side-rail studies search (same _tokensMatch engine, same AND-first/OR-
+  // fallback): an investigation card shows when the investigation itself OR any
+  // of its member studies matches — so searching "basal" surfaces the
+  // v2ecoli-vEcoli comparison investigation via its `basal` study. Updates
+  // per-group counts, hides empty groups, toggles the "no matches" line.
   function _filterInvestigations() {
     var input = document.getElementById('investigations-filter');
-    var q = ((input && input.value) || '').trim().toLowerCase();
+    var tokens = _tokenize(input && input.value);
+    var cards = document.querySelectorAll('#investigations-list .investigation-set-card');
+
+    // iset slug -> member study objects, for study-aware matching.
+    var studiesByIset = {};
+    (window._isetIndex || []).forEach(function(iset) {
+      studiesByIset[iset.name] = (iset.studies || [])
+        .map(function(slug) {
+          return (window._investigations || []).find(function(s) { return s.name === slug; });
+        }).filter(Boolean);
+    });
+
+    function _cardMatches(card, requireAll) {
+      var slug = card.getAttribute('data-iset-slug') || '';
+      var title = card.getAttribute('data-iset-title') || '';
+      var status = card.getAttribute('data-iset-status') || '';
+      if (_tokensMatch(_searchHay([title, slug, status]), tokens, requireAll)) return true;
+      return (studiesByIset[slug] || []).some(function(s) {
+        return _tokensMatch(_studyHay(s, title), tokens, requireAll);
+      });
+    }
+
+    // AND-first, OR-fallback across investigations AND their studies.
+    var requireAll = !!tokens.length && Array.prototype.some.call(cards, function(c) {
+      return _cardMatches(c, true);
+    });
+
     var anyVisible = false;
-    document.querySelectorAll('#investigations-list .investigation-set-card').forEach(function(card) {
-      var hay = (card.getAttribute('data-iset-title') || '') + ' ' +
-                (card.getAttribute('data-iset-slug') || '') + ' ' +
-                (card.getAttribute('data-iset-status') || '');
-      var show = !q || hay.indexOf(q) !== -1;
+    cards.forEach(function(card) {
+      var show = !tokens.length || _cardMatches(card, requireAll);
       card.style.display = show ? '' : 'none';
       if (show) anyVisible = true;
     });
@@ -5373,8 +5488,14 @@
         (function () {
           var slug = d.slug || d.name || name;
           if (!slug) { _renderInvestigationDag(d.studies || []); return; }
-          fetch('/api/investigation-graph?investigation=' + encodeURIComponent(slug))
-            .then(function (r) { if (!r.ok) throw new Error('graph ' + r.status); return r.json(); })
+          // Snapshot-aware: DataSource resolves to /api/investigation-graph/<slug>.json
+          // in the published read-only (a raw fetch of the query-string endpoint
+          // 404s there, dropping the evidence chains from every card).
+          (window.DataSource && window.DataSource.loadInvestigationGraph
+            ? window.DataSource.loadInvestigationGraph(slug)
+            : fetch('/api/investigation-graph?investigation=' + encodeURIComponent(slug))
+                .then(function (r) { if (!r.ok) throw new Error('graph ' + r.status); return r.json(); })
+          )
             .then(function (graph) {
               _renderInvestigationDag(d.studies || [], (graph && graph.chains) || {});
             })
@@ -5425,33 +5546,64 @@
       var bySev = d.summary.by_severity || {};
       var high = bySev.high || 0;
       var head = '⚠ Needs attention — ' + high + ' high, ' + total + ' total';
+      // Human-readable name + which study tab a click should land on, per kind.
+      // These are follow-ups the deterministic scan flags — NOT app updates.
+      var _naKindMeta = {
+        diagnostic_branch_needed: {label: 'Diagnostic study needed', tab: 'conclusions'},
+        next_action_ready:        {label: 'Next action ready',        tab: 'conclusions'},
+        invariant_regression:     {label: 'Invariant regression',     tab: 'conclusions'},
+        uncovered_ac:             {label: 'Acceptance criterion uncovered', tab: 'tests'},
+        open_feedback:            {label: 'Open expert feedback',      tab: 'overview'}
+      };
       var items = (d.items || []).map(function(it) {
         var st = _naSeverityStyle(it.severity);
         var ref = (it.study || it.ref || '').toString();
-        var kind = _esc((it.kind || '').toString());
+        var kindRaw = (it.kind || '').toString();
+        var meta = _naKindMeta[kindRaw] || {label: kindRaw.replace(/_/g, ' '), tab: 'conclusions'};
         var refHtml = ref ? '<code>' + _esc(ref) + '</code>' : '<span class="muted">—</span>';
         var hint = it.action_hint ? ' &nbsp;·&nbsp; ' + _esc(it.action_hint.toString()) : '';
         var titleLine = it.title
           ? '<div style="font-size:0.9em;margin-top:2px">' + _esc(it.title.toString()) + '</div>'
           : '';
-        return '<li style="margin-top:7px;padding-left:10px;border-left:3px solid ' + st.bd + '">'
+        // Clickable when the item names a study: open it at the relevant tab
+        // (verdict-based items → the conclusions/Decide tab).
+        var open = ref
+          ? ' role="button" tabindex="0" onclick="_openStudyInsideInvestigation(\'' + _esc(ref) + '\',\'' + meta.tab + '\')"'
+            + ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click();}"'
+            + ' title="Open study &quot;' + _esc(ref) + '&quot; at its verdict"'
+          : '';
+        var arrow = ref ? '<span style="float:right;opacity:.55;font-size:0.9em">open →</span>' : '';
+        return '<li class="na-item' + (ref ? ' na-item-click' : '') + '"' + open
+          + ' style="margin-top:7px;padding:5px 8px 6px 10px;border-left:3px solid ' + st.bd + ';border-radius:4px'
+          + (ref ? ';cursor:pointer' : '') + '">'
+          + arrow
           + '<span style="color:' + st.dot + ';font-weight:700">●</span> '
-          + '<code style="font-size:0.85em">' + kind + '</code> &nbsp;·&nbsp; ' + refHtml + hint
+          + '<strong style="font-size:0.9em">' + _esc(meta.label) + '</strong> &nbsp;·&nbsp; ' + refHtml + hint
           + titleLine + '</li>';
       }).join('');
       var byKind = d.summary.by_kind || {};
       var breakdown = Object.keys(byKind).sort(function(a, b) {
         return (byKind[b] || 0) - (byKind[a] || 0);
-      }).map(function(k) { return (byKind[k] || 0) + '× ' + _esc(k); }).join(' &nbsp;·&nbsp; ');
+      }).map(function(k) {
+        var m = _naKindMeta[k];
+        return (byKind[k] || 0) + '× ' + _esc(m ? m.label : k.replace(/_/g, ' '));
+      }).join(' &nbsp;·&nbsp; ');
       var sev = _naSeverityStyle(high ? 'high' : 'medium');
+      // Plain-language explainer so the panel is self-describing (the user asked
+      // "what ARE these?"): they're automated follow-ups, and each is clickable.
+      var explain = '<div class="muted" style="font-size:0.84em;margin:2px 14px 4px;line-height:1.45">'
+        + 'Automated checks (no AI) that flag studies needing a follow-up — e.g. a study whose '
+        + 'verdict is <em>failed</em> or <em>needs-calibration</em> but has no diagnostic study seeded '
+        + 'to investigate why. Not app updates. <strong>Click any item</strong> to open that study at the verdict.</div>';
       container.innerHTML =
         '<details class="needs-attention-banner" style="margin:10px 0 14px 0;background:' + sev.bg
         + ';border:1px solid ' + sev.bd + ';border-left-width:5px;border-radius:6px;color:' + sev.col + '">'
         + '<summary style="padding:10px 14px;cursor:pointer;list-style:none;outline:none">'
-        + '<strong>' + head + '</strong> ' + lbl
-        + (breakdown ? '<div class="muted" style="font-size:0.82em;margin-top:5px">' + breakdown
-            + ' &nbsp;·&nbsp; <span style="opacity:.7;font-style:italic">click to expand</span></div>' : '')
+        + '<strong>' + head + '</strong>'
+        + '<span class="na-toggle-hint" style="opacity:.6;font-style:italic;font-size:0.85em;margin-left:8px">— click to expand</span>'
+        + (breakdown ? '<div class="muted" style="font-size:0.82em;margin-top:5px">' + breakdown + '</div>' : '')
         + '</summary>'
+        + explain
         + '<ul style="margin:4px 0 12px 0;padding:0 14px 0 18px;list-style:none;font-size:0.92em">'
         + items + '</ul>'
         + '</details>';
@@ -5641,6 +5793,11 @@
   // VERTICAL flow: y = topological depth (top = roots), x = within-depth slot.
   // Cards as absolute-positioned <div>s; edges as SVG cubic-Bezier paths.
   function _renderInvestigationDag(studies, chainsBySlug) {
+    _lastDagArgs = [studies, chainsBySlug];
+    var _opts = window._layoutOptsForBand(aigBand);
+    var shellEl = document.getElementById('investigation-dag-shell');
+    if (shellEl) { shellEl.classList.remove('aig-zoom-far','aig-zoom-mid','aig-zoom-near'); shellEl.classList.add(_opts.cls); }
+
     var nodesHost = document.getElementById('investigation-dag-nodes');
     var edgesSvg  = document.getElementById('investigation-dag-edges');
     nodesHost.innerHTML = '';
@@ -5694,8 +5851,8 @@
     // each card grows to fit its full text. We render once, measure each card,
     // then stack + center the columns by the measured heights (two passes) so
     // nothing is clipped.
-    var CARD_W = 210;
-    var X_GAP = 64, Y_GAP = 22;
+    var CARD_W = _opts.cardW;
+    var X_GAP = _opts.xGap, Y_GAP = 22;
     var PAD_X = 24, PAD_Y = 16;
     var svgNS = 'http://www.w3.org/2000/svg';
     var pos = {};
@@ -5748,18 +5905,13 @@
 
       var node = document.createElement('div');
       node.className = 'iset-dag-node';
+      // Single click opens the full study view directly — no quick-look
+      // side-card, no double-click.
       node.onclick = function() {
-        if (window._openInvestigationDrawer) window._openInvestigationDrawer('study', s);
-        else _openStudyInsideInvestigation(s.name);
-      };
-      // Double-click opens the full study directly (dismisses the quick-look drawer).
-      node.ondblclick = function() {
-        var _drawer = document.getElementById('investigation-detail-drawer');
-        if (_drawer) _drawer.style.display = 'none';
         _openStudyInsideInvestigation(s.name);
       };
       node.title = s.name + ' — ' + confidence + (claim ? '\n\nFinds: ' + claim : '') +
-        '\n\nClick for a quick look · double-click to open the study';
+        '\n\nClick to open the study';
       var x = PAD_X + depth[s.name] * (CARD_W + X_GAP);
       node.style.cssText =
         'position:absolute;left:' + x + 'px;top:0px;' +
@@ -5781,30 +5933,44 @@
         '<div style="display:flex;align-items:flex-start;gap:6px">' +
           '<span style="color:' + ss.color + ';font-size:1.05em;line-height:1.1;flex:none">' + ss.icon + '</span>' +
           '<strong style="font-size:0.85em;line-height:1.25;color:#1e293b;flex:1">' + _esc(prettyTitle) + '</strong>' +
-          '<span style="font-size:0.62em;font-weight:700;color:' + ss.color + ';white-space:nowrap;margin-top:1px">' + _esc(confidence) + '</span>' +
+          '<span class="aig-status-badge" role="button" tabindex="0" title="Why: open this study\'s finding & evidence" ' +
+            'style="font-size:0.62em;font-weight:700;color:' + ss.color + ';white-space:nowrap;margin-top:1px;cursor:pointer;text-decoration:underline dotted">' +
+            _esc(confidence) + '</span>' +
         '</div>' +
-        (asks
+        (_opts.asks && asks
           ? '<div style="font-size:0.72em;margin-top:7px;line-height:1.35;color:#64748b;' + _clamp(2) + '">' +
               '<span style="font-weight:600;color:#475569">Asks:</span> ' + _esc(asks) + '</div>'
           : '') +
-        '<div style="font-size:0.72em;margin-top:5px;line-height:1.35;color:#64748b;' + _clamp(5) + '">' +
-          '<span style="font-weight:600;color:#475569">Finds:</span> ' +
-          (claim ? _esc(claim) : '<em style="color:#94a3b8">pending evidence</em>') +
-        '</div>' +
-        (moreN ? '<div style="font-size:0.72em;margin-top:2px;color:#94a3b8">+' + moreN + ' more</div>' : '') +
-        followUpsChip +
-        ((chainsBySlug && typeof window._chainBlockHtml === 'function')
+        (_opts.finds
+          ? '<div style="font-size:0.72em;margin-top:5px;line-height:1.35;color:#64748b;' + _clamp(5) + '">' +
+              '<span style="font-weight:600;color:#475569">Finds:</span> ' +
+              (claim ? _esc(claim) : '<em style="color:#94a3b8">pending evidence</em>') +
+            '</div>'
+          : '') +
+        (_opts.finds && moreN ? '<div style="font-size:0.72em;margin-top:2px;color:#94a3b8">+' + moreN + ' more</div>' : '') +
+        (_opts.followups ? followUpsChip : '') +
+        (_opts.chain && chainsBySlug && typeof window._chainBlockHtml === 'function'
           ? window._chainBlockHtml(chainsBySlug[s.name]) : '');
       node._followUps = followUps;
       nodesHost.appendChild(node);
+      var _badge = node.querySelector('.aig-status-badge');
+      if (_badge) {
+        var _openReason = function (ev) {
+          ev.stopPropagation();
+          // The quick-look side-card is gone — the verdict badge opens the full
+          // study (its findings/evidence live there).
+          _openStudyInsideInvestigation(s.name);
+        };
+        _badge.addEventListener('click', _openReason);
+        _badge.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); _openReason(ev); } });
+      }
       if (chainsBySlug && window._groupClaims && window._openInvestigationDrawer) {
         (function (study, chain) {
           var claims = window._groupClaims(chain);
           node.querySelectorAll('.aig-claim-row').forEach(function (row) {
             row.addEventListener('click', function (ev) {
               ev.stopPropagation();
-              var idx = parseInt(row.getAttribute('data-claim-index'), 10);
-              if (claims[idx]) window._openInvestigationDrawer('claim', { claim: claims[idx], study: study });
+              _openStudyInsideInvestigation(study.name);
             });
           });
         })(s, chainsBySlug[s.name]);
@@ -5927,6 +6093,36 @@
     }
   }
   window._renderInvestigationDag = _renderInvestigationDag;
+
+  function _setAigBand(b) {
+    var nb = Math.max(0, Math.min(2, b | 0));
+    var sl = document.getElementById('aig-zoom-slider');
+    if (sl && String(sl.value) !== String(nb)) sl.value = String(nb);
+    // No band change → keep the slider synced (above) but skip the re-render.
+    if (nb === aigBand) return;
+    aigBand = nb;
+    if (_lastDagArgs) _renderInvestigationDag(_lastDagArgs[0], _lastDagArgs[1]);
+  }
+  window._setAigBand = _setAigBand;
+
+  // Wheel semantic-zooms bands ONLY when the pointer is over a study card; over
+  // the graph background the wheel is left alone so the page scrolls normally
+  // (so you can scroll past the graph without it hijacking the wheel). One notch
+  // per gesture, with a threshold + cooldown so a single scroll doesn't skip
+  // bands.
+  (function _wireAigWheel() {
+    var lastWheel = 0;
+    document.addEventListener('wheel', function (ev) {
+      var card = ev.target && ev.target.closest && ev.target.closest('.iset-dag-node');
+      if (!card) return;                                  // background → page scrolls
+      ev.preventDefault();
+      var now = Date.now();
+      if (now - lastWheel < 220) return;                  // cooldown between steps
+      if (Math.abs(ev.deltaY) < 4) return;
+      lastWheel = now;
+      _setAigBand(aigBand + (ev.deltaY > 0 ? -1 : 1));    // scroll down = zoom out
+    }, { passive: false });
+  })();
 
   // ── DAG follow-ups popover ───────────────────────────────────────────────
   // Surfaced when phase=Decide. Lists each follow_up_studies entry with a
@@ -6148,22 +6344,26 @@
   // Click a DAG node → load the full study in an in-page iframe BELOW the
   // DAG (no jump to the legacy Studies tab). The iframe is the same
   // /studies/<name> route the standalone embed uses.
-  function _openStudyInsideInvestigation(name) {
+  function _openStudyInsideInvestigation(name, tab) {
     var panel = document.getElementById('investigation-study-embed-panel');
     var frame = document.getElementById('investigation-study-embed-frame');
     var nameEl = document.getElementById('investigation-study-embed-name');
+    // Optional deep-link to a specific study tab (e.g. a Needs-attention item
+    // pointing at the verdict opens ?tab=conclusions).
+    var href = _studyHref(name) + (tab ? (_studyHref(name).indexOf('?') >= 0 ? '&' : '?') + 'tab=' + encodeURIComponent(tab) : '');
     if (!panel || !frame) {
       // This view (e.g. the report / deep-link investigation view) has no
       // in-place study-embed panel — navigate to the study page directly so the
       // sidebar study link still works instead of dying silently.
-      window.location = _studyHref(name);
+      window.location = href;
       return;
     }
     window._currentInvestigationStudy = name;
-    frame.src = _studyHref(name);
+    frame.src = href;
     if (nameEl) nameEl.textContent = name;
     panel.style.display = '';
     panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+    _fitEmbedToViewport(frame, panel, 600);
   }
   window._openStudyInsideInvestigation = _openStudyInsideInvestigation;
 
@@ -12011,16 +12211,85 @@
         + '</div>';
     }
 
+    // Live study-search filter (the #viv-rail-study-search input). Token-AND
+    // over a broad per-study haystack (name/title/objective/tags + the group
+    // title), so e.g. "basal simulation" finds the `basal` study in the
+    // v2ecoli-vEcoli comparison investigation. While searching, non-matching
+    // groups are hidden and matching groups are force-expanded so hits show.
+    var q = (window._railStudyQuery || '').trim().toLowerCase();
+    var tokens = q ? q.split(/\s+/) : [];
+    var searching = tokens.length > 0;
+
+    // AND-first, OR-fallback. Prefer studies matching EVERY token (precise); but
+    // if nothing matches all tokens, fall back to matching ANY token so a natural
+    // phrase like "basal simulation" still surfaces the `basal` study even when
+    // "simulation" appears in none of its fields.
+    var requireAll = searching && ordered.some(function(g) {
+      return g.studies.some(function(s) { return _studyMatchesQuery(s, g.title, tokens, true); });
+    });
+
     var html = ordered.map(function(g, i) {
-      // With no active investigation, open the first group so the rail isn't
+      var studies = g.studies;
+      if (searching) {
+        studies = g.studies.filter(function(s) {
+          return _studyMatchesQuery(s, g.title, tokens, requireAll);
+        });
+        if (!studies.length) return '';   // hide groups with no match
+        g = { name: g.name, title: g.title, studies: studies, _ungrouped: g._ungrouped };
+      }
+      // While searching, force groups open so matches are visible. Otherwise:
+      // with no active investigation, open the first group so the rail isn't
       // entirely collapsed on load.
-      return _railGroupHtml(g, !hasActive && i === 0);
+      return _railGroupHtml(g, searching || (!hasActive && i === 0));
     }).join('');
+
+    if (!html && searching) {
+      html = '<div class="viv-rail-empty" style="font-size:0.85em;color:#94a3b8;'
+           + 'padding:6px 14px;font-style:italic">No studies match “' + _esc(q) + '”.</div>';
+    }
 
     host.innerHTML = html
       || '<div class="viv-rail-empty" style="font-size:0.85em;color:#94a3b8;'
        + 'padding:6px 14px;font-style:italic">No studies yet.</div>';
   }
+
+  // A study matches the rail search when EVERY whitespace-delimited token of the
+  // query is a substring of its combined searchable text (study fields + the
+  // investigation/group title it's rendered under). Broad + forgiving on purpose.
+  // ── Shared search engine ────────────────────────────────────────────
+  // ONE implementation for every search box (side-rail studies, Investigations
+  // tab, Studies grid) so behaviour never diverges. Token match with the caller
+  // deciding AND (requireAll) vs OR across its candidate set — enabling the
+  // AND-first/OR-fallback pattern used everywhere.
+  function _tokenize(q) {
+    q = String(q || '').trim().toLowerCase();
+    return q ? q.split(/\s+/) : [];
+  }
+  function _searchHay(parts) {
+    return parts.filter(Boolean).map(String).join(' ').toLowerCase();
+  }
+  function _tokensMatch(hay, tokens, requireAll) {
+    if (!tokens || !tokens.length) return true;
+    return requireAll
+      ? tokens.every(function(t) { return hay.indexOf(t) !== -1; })
+      : tokens.some(function(t) { return hay.indexOf(t) !== -1; });
+  }
+  // A study's searchable haystack (+ optional extra text, e.g. its group title).
+  function _studyHay(s, extra) {
+    return _searchHay([s.name, s.title, s.slug, s.objective, s.question,
+      s.description, s.summary, s.status,
+      Array.isArray(s.tags) ? s.tags.join(' ') : '', extra]);
+  }
+
+  function _studyMatchesQuery(s, groupTitle, tokens, requireAll) {
+    return _tokensMatch(_studyHay(s, groupTitle), tokens, requireAll);
+  }
+
+  // Study-search input handler: store the query and re-render the rail groups.
+  window._filterRailStudies = function(value) {
+    window._railStudyQuery = String(value || '');
+    _renderRailInvestigationGroups();
+  };
 
   // Per-workspace localStorage key for the remembered investigation. The URL
   // path differs per hosted workspace (base-path), so it namespaces cleanly.
@@ -12121,16 +12390,16 @@
     var grid = document.getElementById('investigations-grid');
     if (!grid) return;
     var f = window._investigationsFilter;
-    var q = f.search.toLowerCase();
     var dag = _buildInvestigationDag(window._investigations);
     window._investigationsChildren = dag.children;
     window._investigationsDepth = dag.depth;
+    // Same shared engine + AND-first/OR-fallback as the rail / Investigations tab.
+    var tokens = _tokenize(f.search);
+    var requireAll = !!tokens.length && window._investigations.some(function(inv) {
+      return _tokensMatch(_studyHay(inv), tokens, true);
+    });
     var filtered = window._investigations.filter(function(inv) {
-      if (q) {
-        var hay = (inv.name + ' ' + (inv.description || '') + ' ' +
-                    (inv.tags || []).join(' ')).toLowerCase();
-        if (hay.indexOf(q) < 0) return false;
-      }
+      if (tokens.length && !_tokensMatch(_studyHay(inv), tokens, requireAll)) return false;
       if (f.tags.size > 0) {
         var match = (inv.tags || []).some(function(t) { return f.tags.has(t); });
         if (!match) return false;
@@ -14552,10 +14821,18 @@
       'title="emitter / persistence format">' + _escSim(t) + '</span>';
   }
 
+  // Single source for the Origin column's text — used by BOTH the pill and the
+  // sort key so they can't diverge. `remote_origin` is an OBJECT
+  // ({deployment, simulation_id, …}) or null; it is never a bare string.
+  function _simOriginLabel(row) {
+    var o = row && row.remote_origin;
+    return o ? String(o.deployment || 'remote') : 'local';
+  }
+
   function _simOriginPill(row) {
     var o = row && row.remote_origin;
     if (!o) return '<span class="origin-pill origin-local" title="local run">local</span>';
-    var dep = o.deployment || 'remote';
+    var dep = _simOriginLabel(row);
     var tip = 'Remote run on ' + dep + ' (AWS GovCloud)'
       + (o.simulation_id != null ? ' — sim ' + o.simulation_id : '')
       + (o.experiment_id ? '\nexperiment: ' + o.experiment_id : '')
@@ -14612,6 +14889,19 @@
   }
   window._openSimulationInExplorer = _openSimulationInExplorer;
 
+  /** Open a Simulations-DB row: the associated STUDY when the run has one, else
+   *  the Composite Explorer (bigraph-loom) seeded to this run's results.
+   *  Study-associated runs NAVIGATE to the study page — not _openStudyEmbedded,
+   *  whose embed panel lives in a different page section that is hidden while the
+   *  Simulations page is active, so it silently did nothing here. */
+  function _openSimulation(row) {
+    if (!row) return;
+    var study = _simStudy(row);
+    if (study) { window.location = _studyHref(study); return; }
+    if (row.run_id && row.spec_id) { _openSimulationInExplorer(row.run_id, row.spec_id); }
+  }
+  window._openSimulation = _openSimulation;
+
   function _renderSimRow(row) {
     var inv = _simInvestigation(row);
     var invCell = inv
@@ -14647,7 +14937,8 @@
         'href="/api/study-analysis-zip?study=' + encodeURIComponent(studySlug) + '" download style="text-decoration:none;">⬇ Analysis</a>'
       : '';
     return (
-      '<tr data-run-id="' + _escSim(runId) + '" style="border-bottom:1px solid #f3f4f6;">' +
+      '<tr data-run-id="' + _escSim(runId) + '" style="border-bottom:1px solid #f3f4f6;cursor:pointer;" ' +
+        'title="Click to open this run — its study, or the Composite Explorer">' +
       '<td style="padding:6px 8px; overflow-wrap:anywhere;">' + invCell + '</td>' +
       '<td style="padding:6px 8px; overflow-wrap:anywhere;">' + studyCell + '</td>' +
       '<td style="padding:6px 8px; overflow:hidden;"><code style="font-size:11px; color:#6b7280; ' +
@@ -14664,6 +14955,53 @@
     );
   }
 
+  // Client-side column sort for the Simulations DB table. Purely a rendering
+  // concern on top of the server-ordered (newest-first) _simRows — clicking a
+  // sortable <th> toggles asc/desc and re-runs _applySimFilter, which applies
+  // _sortSimRows to the filtered rows before rendering.
+  let _simSortState = { key: null, dir: 'desc' };
+
+  function _simSortValue(row, key) {
+    if (key === 'time') return row.completed_at || row.started_at || 0;
+    if (key === 'emitter_type') return String(row.emitter_type || '').toLowerCase();
+    // remote_origin is an OBJECT — read the same label the pill renders. A bare
+    // `.toLowerCase()` on it threw and aborted the whole re-sort (Origin looked
+    // like it "didn't sort"). String() on every branch keeps a stray non-string
+    // value from ever breaking the comparator again.
+    if (key === 'origin') return _simOriginLabel(row).toLowerCase();
+    if (key === 'study') return String(_simStudy(row) || '').toLowerCase();
+    if (key === 'investigation') return String(_simInvestigation(row) || '').toLowerCase();
+    if (key === 'run') return String(row.sim_name || row.label || row.run_id || '').toLowerCase();
+    if (key === 'status') return String(row.status || '').toLowerCase();
+    return '';
+  }
+
+  function _sortSimRows(rows, key, dir) {
+    if (!key) return rows;
+    const s = rows.slice().sort(function (a, b) {
+      var va = _simSortValue(a, key), vb = _simSortValue(b, key);
+      if (va < vb) return -1;
+      if (va > vb) return 1;
+      return 0;
+    });
+    return dir === 'desc' ? s.reverse() : s;
+  }
+
+  function _onSimHeaderClick(th) {
+    var key = th.getAttribute('data-sort-key');
+    if (!key) return;
+    if (_simSortState.key === key) {
+      _simSortState.dir = _simSortState.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      _simSortState = { key: key, dir: 'asc' };
+    }
+    document.querySelectorAll('#page-simulations th[data-sort-key]')
+      .forEach(function (h) { h.removeAttribute('data-sort-dir'); });
+    th.setAttribute('data-sort-dir', _simSortState.dir);   // CSS ::after renders ▲/▼
+    _applySimFilter();
+  }
+  window._onSimHeaderClick = _onSimHeaderClick;
+
   // Populate the Study + Emitter dropdowns from the data (preserving any
   // current selection), then render rows through the active filters.
   function _applySimFilter() {
@@ -14676,6 +15014,7 @@
     var studyVal = studySel ? studySel.value : '';
     var emitterVal = emitterSel ? emitterSel.value : '';
 
+    // Dropdown filters first (Investigation / Study / Emitter).
     var visible = rows.filter(function (r) {
       if (invVal && _simInvestigation(r) !== invVal) return false;
       if (studyVal && _simStudy(r) !== studyVal) return false;
@@ -14683,10 +15022,50 @@
       return true;
     });
 
+    // Free-text search (#sim-text-filter) over each run's searchable fields
+    // (study, investigation, run name/label/id, spec, status, emitter, origin),
+    // combined with the dropdowns above. AND-first, OR-fallback: prefer runs
+    // matching EVERY token; if none do, match ANY token so a natural phrase
+    // still surfaces relevant runs.
+    var textEl = document.getElementById('sim-text-filter');
+    var textTokens = textEl && textEl.value.trim()
+      ? textEl.value.trim().toLowerCase().split(/\s+/) : [];
+    if (textTokens.length) {
+      var _simHay = function (r) {
+        return [
+          _simStudy(r), _simInvestigation(r), r.status, r.emitter_type,
+          _simOriginLabel(r), r.sim_name, r.label, r.run_id, r.spec_id
+        ].filter(Boolean).join(' ').toLowerCase();
+      };
+      var andRows = visible.filter(function (r) {
+        var h = _simHay(r);
+        return textTokens.every(function (t) { return h.indexOf(t) !== -1; });
+      });
+      visible = andRows.length ? andRows : visible.filter(function (r) {
+        var h = _simHay(r);
+        return textTokens.some(function (t) { return h.indexOf(t) !== -1; });
+      });
+    }
+
+    visible = _sortSimRows(visible, _simSortState.key, _simSortState.dir);
+
     var tbody = document.getElementById('sim-tbody');
     var table = document.getElementById('sim-table');
     var empty = document.getElementById('sim-empty');
     if (tbody) tbody.innerHTML = visible.map(_renderSimRow).join('');
+    // Row click opens the run (delegated once, survives re-renders); the
+    // download links/buttons keep their own behaviour.
+    if (tbody && !tbody._simClickWired) {
+      tbody._simClickWired = true;
+      tbody.addEventListener('click', function (e) {
+        if (e.target.closest('a, button, .action-btn')) return;
+        var tr = e.target.closest('tr[data-run-id]');
+        if (!tr) return;
+        var rid = tr.getAttribute('data-run-id');
+        var row = (window._simRows || []).filter(function (r) { return String(r.run_id) === rid; })[0];
+        if (row) _openSimulation(row);
+      });
+    }
     if (table) table.style.display = visible.length ? '' : 'none';
     if (empty) empty.style.display = visible.length ? 'none' : '';
 
@@ -14702,6 +15081,9 @@
       }
     }
   }
+
+  // Exposed for the #sim-text-filter input's inline oninput handler.
+  window._applySimFilter = _applySimFilter;
 
   // Rebuild the Study + Emitter <select> option lists from the current data.
   function _populateSimFilters() {
@@ -15091,12 +15473,12 @@
 
     function tick() {
       Promise.all([
-        fetch('/api/composite-run/' + encodeURIComponent(run_id) + '/status')
+        fetch(_api('/api/composite-run/' + encodeURIComponent(run_id) + '/status'))
           .then(function(r) {
             if (r.status === 404) return { _gone: true };
             return r.json();
           }),
-        fetch('/api/composite-run/' + encodeURIComponent(run_id))
+        fetch(_api('/api/composite-run/' + encodeURIComponent(run_id)))
           .then(function(r) { return r.ok ? r.json() : { trajectory: [] }; })
           .catch(function() { return { trajectory: [] }; }),
       ]).then(function(parts) {
